@@ -1,0 +1,42 @@
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+	<div th:fragment="transactionModal" class="modal fade" id="transactionModal" tabindex="-1" role="dialog"
+		aria-labelledby="transactionModalLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="transactionModalLabel">Enter Transaction Details</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<!-- Form -->
+					<form action="/addManualTransaction" method="post">
+						<label for="date">Date:</label><br>
+						<input type="date" id="date" name="date"><br>
+						<label for="account">Account:</label><br>
+						<input type="string" id="account" name="account"><br>
+                        <label for="description">Description:</label><br>
+						<input type="string" id="description" name="description"><br>
+						<label for="type">Type:</label><br>
+						
+						<select id="type" name="type" class="new-transaction">
+							<option th:each="type : ${T(com.example.springboot.accounting.model.TransactionType).values()}"
+								th:value="${type}" th:text="${type}"></option>
+						</select><br>
+						<label for="amount">Amount:</label><br>
+						<input type="number" id="amount" name="amount" step="0.01"><br>					
+					</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button type="submit" class="btn btn-primary">Submit</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+
+</html>

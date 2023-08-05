@@ -1,0 +1,54 @@
+plugins {
+	id 'org.springframework.boot' version '3.0.0'
+	id 'io.spring.dependency-management' version '1.1.0'
+	id 'java'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '17'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+	// tag::actuator[]
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	// end::actuator[]
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	// tag::tests[]
+	testImplementation('org.springframework.boot:spring-boot-starter-test')
+	// end::tests[]
+	
+  
+	runtimeOnly 'org.postgresql:postgresql'
+	
+	implementation group: 'org.webjars', name: 'jquery', version: '3.6.4'
+    
+    implementation group: 'org.webjars', name: 'popper.js', version: '2.11.7'
+   
+    implementation group: 'org.webjars', name: 'bootstrap', version: '5.3.0'
+    
+    implementation group: 'org.webjars', name: 'datatables', version: '1.13.5'
+    
+    implementation group: 'org.webjars', name: 'datatables-buttons', version: '2.4.1'
+    
+    implementation group: 'org.webjars', name: 'jszip', version: '3.10.1'
+    
+    implementation group: 'org.webjars.bower', name: 'pdfmake', version: '0.1.72'
+    
+    implementation group: 'org.webjars', name: 'datatables-colvis', version: '1.1.1'
+    
+    implementation group: 'org.webjars.bower', name: 'datatables.net-buttons', version: '1.5.3'
+
+}
+
+test {
+	useJUnitPlatform()
+}

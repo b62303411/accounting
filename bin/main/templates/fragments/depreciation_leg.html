@@ -1,0 +1,24 @@
+<div th:fragment="depreciationLegFields(leg, legStatus)">
+    <h3>Leg [[${legStatus.index + 1}]]</h3>
+    <label>Depreciation Amount:</label>
+    <input type="number" step="0.01" th:field="*{depreciationLegs[__${legStatus.index}__].depreciationAmount}" required/>
+
+    <label>Depreciation Date:</label>
+    <input type="date" th:field="*{depreciationLegs[__${legStatus.index}__].depreciationDate}" required/>
+
+    <br/>
+    		<div class="container my-3">
+			<h2 class="text-center">Depreciation Legs</h2>
+			<div th:each="leg, legStatus : ${#numbers.sequence(0, asset.numDepreciationLegs - 1)}">
+				<h3>Leg [[${legStatus.index + 1}]]</h3>
+				<label>Depreciation Amount:</label>
+				<input type="number" step="0.01" th:field="*{depreciationLegs[__${legStatus.index}__].amount}"
+					required />
+
+				<label>Depreciation Date:</label>
+				<input type="date" th:field="*{depreciationLegs[__${legStatus.index}__].date}" required />
+
+				<br />
+			</div>
+		</div>
+</div>

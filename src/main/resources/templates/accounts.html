@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Account Information</title>
+	<style>
+		table,
+		th,
+		td {
+			border: 1px solid black;
+			border-collapse: collapse;
+		}
+
+		th,
+		td {
+			padding: 15px;
+			text-align: left;
+		}
+	</style>
+</head>
+
+<body>
+	<header th:replace="fragments/header :: header"></header>
+	<div class="container">
+		<h1 class="mt-4 mb-4">Account Information</h1>
+
+		<table>
+			<thead>
+				<tr>
+					<th>Account No</th>
+					<th>Account Name</th>
+					<th>Alias</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="account : ${accounts}">
+					<td th:text="${account.accountNo}"></td>
+					<td th:text="${account.accountName}"></td>
+					<td th:text="${account.alias}"></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</body>
+
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Assets</title>
+	<!-- include Bootstrap CSS -->
+	<link rel="stylesheet" type="text/css" href="/webjars/bootstrap/5.3.0/css/bootstrap.min.css" />
+
+    <style>
+        @import url('https://fonts.googleapis.com/css?family=Assistant');
+
+        body {
+            background: #eee;
+            font-family: Assistant, sans-serif;
+        }
+
+        .cell-1 {
+          border-collapse: separate;
+          border-spacing: 0 4em;
+          background: #ffffff;
+          border-bottom: 5px solid transparent;
+          /*background-color: gold;*/
+          background-clip: padding-box;
+          cursor: pointer;
+        }
+
+        thead {
+          background: #dddcdc;
+        }
+
+        .table-elipse {
+          cursor: pointer;
+        }
+
+        #demo {
+          -webkit-transition: all 0.3s ease-in-out;
+          -moz-transition: all 0.3s ease-in-out;
+          -o-transition: all 0.3s 0.1s ease-in-out;
+          transition: all 0.3s ease-in-out;
+        }
+
+        .row-child {
+          background-color: #000;
+          color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+	<header th:replace="fragments/header :: header"></header>
+	<div class="container my-3">
+		<h1>Assets</h1>
+		<table class="table">
+			<thead>
+				<tr>
+					<th scope="col">Transaction</th>
+					<th scope="col">Purchaced price</th>
+					<th scope="col">Asset Type</th>
+					<th scope="col">Number of Depreciation Legs</th>
+					<!-- add more columns headers as needed -->
+				</tr>
+			</thead>
+			<tbody>
+				<!-- loop through each asset -->
+				<th:block th:each="asset, stat : ${assets}">
+					<tr class="cell-1" data-toggle="collapse" th:data-target="'#demo' + ${stat.index}">
+						<td th:text="*{asset.purchaceTransaction.description}"></td>
+						<td th:text="*{asset.purchaceTransaction.amount}"></td>
+						<td th:text="*{asset.type}"></td>
+						<td th:text="*{asset.amortisation.numDepreciationLegs}"></td>
+						<!-- add more data columns as needed -->
+						<td class="table-elipse" data-toggle="collapse" th:data-target="'#demo' + ${stat.index}"><i
+								class="fa fa-ellipsis-h text-black-50"></i></td>
+					</tr>
+					<tr th:id="'demo' + ${stat.index}" class="collapse cell-1 row-child">
+						<td class="text-center" colspan="1"><i class="fa fa-angle-up"></i></td>
+						<td colspan="3">
+							<p th:each="leg : *{asset.getDepreciationLegs()}">
+								Leg: <span th:text="*{leg.id}"></span>,
+								Fiscal Year: <span th:text="*{leg.fiscalYear}"></span>,
+								Amount: <span th:text="${#numbers.formatDecimal(leg.amount, 1, 'COMMA', 2, 'POINT')}+'$'"></span>
+								Remaining Value: <span th:text="${#numbers.formatDecimal(leg.remainingValue, 1, 'COMMA', 2, 'POINT')}+'$'"></span>
+							</p>
+						</td>
+						<!-- Adjust colspan as needed -->
+					</tr>
+				</th:block>
+			</tbody>
+		</table>
+
+	</div>
+	<script src="/webjars/jquery/3.6.4/jquery.min.js"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+	<!-- add more content or navigation here -->
+	<script>
+		$(document).ready(function () {
+			$('.clickable-row').on('click', function () {
+				$(this).next('tr').toggle();
+			});
+		});
+	</script>
+</body>
+
+</html>

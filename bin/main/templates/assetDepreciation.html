@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Asset Depreciation</title>
+</head>
+<body>
+    <h1>Asset Depreciation</h1>
+    <form action="#" th:object="${asset}">
+        <label>Original Value:</label>
+        <input type="number" step="0.01" th:field="*{originalValue}" required/><br/>
+
+        <label>Current Value:</label>
+        <input type="number" step="0.01" th:field="*{currentValue}" required/><br/>
+
+        <label>Date of Purchase:</label>
+        <input type="date" th:field="*{dateOfPurchase}" required/><br/>
+
+        <h2>Depreciation Legs</h2>
+        <div th:each="leg, legStatus : ${asset.depreciationLegs}">
+            <label>Depreciation Amount:</label>
+            <input type="number" step="0.01" th:field="*{depreciationLegs[__${legStatus.index}__].depreciationAmount}" required/>
+
+            <label>Depreciation Date:</label>
+            <input type="date" th:field="*{depreciationLegs[__${legStatus.index}__].depreciationDate}" required/>
+
+            <br/>
+        </div>
+
+        <button type="submit">Submit Asset Depreciation</button>
+    </form>
+</body>
+</html>
