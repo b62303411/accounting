@@ -4,6 +4,7 @@ import java.util.Date;
 
 import org.hibernate.annotations.Formula;
 
+import com.example.springboot.accounting.model.TransactionNature;
 import com.example.springboot.accounting.model.TransactionType;
 
 import jakarta.persistence.Entity;
@@ -32,6 +33,8 @@ public class Transaction {
     @Formula("(CASE WHEN type IN ('SalesRevenue', 'CostOfGoods', 'OperatingExpenses', 'AssetPurchased', 'AssetSales', 'DeptRepayment', 'LoanProceeds', 'Dividend', 'InvestmentIncome') THEN true ELSE false END)")
     private boolean isCashFlow;
     private String note;
+    @Enumerated(EnumType.STRING)
+    private TransactionNature transactionNature;
     
 
     
@@ -105,6 +108,12 @@ public class Transaction {
 	}
 	public void setAccount(String account) {
 		this.account = account;
+	}
+	public TransactionNature getTransactionNature() {
+		return transactionNature;
+	}
+	public void setTransactionNature(TransactionNature transactionNature) {
+		this.transactionNature = transactionNature;
 	}
 	
 	

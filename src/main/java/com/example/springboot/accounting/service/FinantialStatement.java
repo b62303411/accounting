@@ -1,5 +1,12 @@
 package com.example.springboot.accounting.service;
-
+/**
+ * revenue
+ * cogs
+ * operation
+ * depreciation
+ * otherExpenses
+ * otherRevenue
+ */
 public class FinantialStatement {
 	Double revenue;
 	Double cogs;

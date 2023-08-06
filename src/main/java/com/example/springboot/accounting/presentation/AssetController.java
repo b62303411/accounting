@@ -32,6 +32,7 @@ public class AssetController {
 	{	
 		List<Asset> assets = assetService.findAll();
 		model.addAttribute("assets", assets);
+		model.addAttribute("year", 2023);
 		return "assets";
 	}
 	
@@ -43,7 +44,7 @@ public class AssetController {
 		Transaction transaction = transactionService.findById(transactionId);
 		model.addAttribute("transaction", transaction);
 		model.addAttribute("request", request);
-		
+		model.addAttribute("year", 2023);
 	
 		return "assetCreation";
 	}
