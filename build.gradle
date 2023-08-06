@@ -46,6 +46,8 @@ dependencies {
     implementation group: 'org.webjars', name: 'datatables-colvis', version: '1.1.1'
     
     implementation group: 'org.webjars.bower', name: 'datatables.net-buttons', version: '1.5.3'
+    
+    implementation group: 'org.webjars', name: 'font-awesome', version: '4.7.0'
 
 }
 
