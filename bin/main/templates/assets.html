@@ -79,6 +79,7 @@
                     <th scope="col">#</th>
                     <th scope="col">Transaction</th>
                     <th scope="col">Purchaced price</th>
+                    <th scope="col">Current Value</th>
                     <th scope="col">Asset Type</th>
                     <th scope="col">Number of Depreciation Legs</th>
                 </tr>
@@ -89,6 +90,7 @@
                     <th scope="row">1 <i class="bi bi-chevron-down"></i></th>
                   	<td th:text="*{asset.purchaceTransaction.description}"></td>
 					<td th:text="*{asset.purchaceTransaction.amount}+'$'"></td>
+					<td th:text="${#numbers.formatDecimal(asset.currentValue, 1, 'COMMA', 2, 'POINT')}+'$'"></td>
 					<td th:text="*{asset.type}"></td>
                 	<td th:text="*{asset.amortisation.numDepreciationLegs}"></td>
                 </tr>
@@ -99,7 +101,7 @@
 								Fiscal Year: <span th:text="*{leg.fiscalYear}"></span>,
 								Amount: <span th:text="${#numbers.formatDecimal(leg.amount, 1, 'COMMA', 2, 'POINT')}+'$'"></span>
 								Remaining Value: <span th:text="${#numbers.formatDecimal(leg.remainingValue, 1, 'COMMA', 2, 'POINT')}+'$'"></span>
-							    <button th:if="!${leg.realized}" th:onclick="'window.location.href = \'/api/assets/execute-leg/' + ${leg.id} + '\''">Execute</button>
+							    <button th:if="!${leg.realized}" th:onclick="'window.location.href = \'/view/assets/execute-leg/' + ${leg.id} + '\''">Execute</button>
 							</p> 
 						 </td>
                 </tr>

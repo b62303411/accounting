@@ -18,7 +18,7 @@
 		</tr>
 		<tr th:each="line : ${assets}">
 			<td th:title="${line.tooltip}" th:text="${line.description}"></td>
-			<td th:text="${line.amount}"></td>
+			<td th:text="${#numbers.formatDecimal(line.amount, 1, 'COMMA', 2, 'POINT')}+'$'"></td>
 		</tr>
 	</table>
 
