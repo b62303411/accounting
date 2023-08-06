@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+</head>
+
+<body>
+	<header th:replace="fragments/header :: header"></header>
+	<div class="container">
+		<h4>Expenses Statement for <span th:text="${companyName}">Company</span> for the year ended 
+	<span th:text="${'AU ' + fiscal_end_day + ' ' + fiscal_end_month + ' ' + fiscal_end_year}"></span></h4>
+		<div class="container shadow min-vh-100 py-2">
+			<h4>Operating Expenses</h4>
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>Description</th>
+					<th>Amount</th>
+					<th>Date</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="line : ${expenses}">
+					<td th:text="${line.description}"></td>
+					<td th:text="${#numbers.formatDecimal(line.amount, 1, 'COMMA', 2, 'POINT')}+'$'"></td>				    
+					<td th:text="${line.date}"> </td>
+				</tr>
+				<tr>
+					<td th:text="${totals.description}"></td>
+					<td th:text="${#numbers.formatDecimal(totals.amount, 1, 'COMMA', 2, 'POINT')}+'$'"></td>		
+					<td> </td>
+				</tr>
+			</tbody>
+		</table>
+		</div>
+		<div class="container shadow min-vh-100 py-2">
+			<h4>Other Expenses</h4>
+				<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>Description</th>
+					<th>Amount</th>
+					<th>Date</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="line : ${otherExpenses}">
+					<td th:text="${line.description}"></td>
+					<td th:text="${#numbers.formatDecimal(line.amount, 1, 'COMMA', 2, 'POINT')}+'$'"></td>				    
+					<td th:text="${line.date}"> </td>
+				</tr>
+				<tr>
+					<td th:text="${totalOthers.description}"></td>
+					<td th:text="${#numbers.formatDecimal(totalOthers.amount, 1, 'COMMA', 2, 'POINT')}+'$'"></td>		
+					<td> </td>
+				</tr>
+			</tbody>
+		</table>
+		</div>
+	</div>
+</body>
+
+</html>

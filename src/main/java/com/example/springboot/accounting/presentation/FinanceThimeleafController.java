@@ -3,6 +3,7 @@ package com.example.springboot.accounting.presentation;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import com.example.springboot.accounting.model.TransactionType;
 import com.example.springboot.accounting.model.dto.AccountValidation;
 import com.example.springboot.accounting.model.dto.FinancialStatementLine;
 import com.example.springboot.accounting.model.dto.ReportAvailable;
+import com.example.springboot.accounting.model.dto.RevenueLine;
 import com.example.springboot.accounting.model.entities.Account;
 import com.example.springboot.accounting.model.entities.Asset;
 import com.example.springboot.accounting.model.entities.BankStatement;
@@ -48,7 +50,76 @@ public class FinanceThimeleafController {
 		this.assetService=assetService;
 
 	}
-
+	@GetMapping("/revenues/{year}")
+	public String revenues(Model model, @PathVariable("year") Integer year) {
+		List<RevenueLine> revenues = financeStatementService.getRevenues(year);
+		String na;
+		Date na2 = null;
+		
+		double grossAmount=0;
+		double taxes=0;
+		double revenue=0;
+		for (RevenueLine revenueLine : revenues) {
+			grossAmount+=revenueLine.getAmount();
+			taxes+= revenueLine.getTpsTvq();
+			revenue+=revenueLine.getRevenue();
+		}
+		RevenueLine totals = new RevenueLine(grossAmount, taxes, revenue, "Total", na2);
+		model.addAttribute("selectedYear", year);
+		model.addAttribute("companyName", service.getProfile().getName());	
+		model.addAttribute("revenues", revenues);
+		FiscalYearEnd fiscalYearEnd = service.getProfile().getFiscalYearEnd();
+		model.addAttribute("fiscal_end_day", fiscalYearEnd.day);
+		model.addAttribute("fiscal_end_month", fiscalYearEnd.month);
+		model.addAttribute("fiscal_end_year", year);
+		model.addAttribute("totals", totals);
+		return "revenue";
+	}
+	
+	@GetMapping("/expenses/{year}")
+	public String expenses(Model model, @PathVariable("year") Integer year) {
+		List<ExpensesLine> expenses = financeStatementService.getExpenses(year);
+		List<ExpensesLine> otherExpenses = financeStatementService.getOtherExpenses(year);
+		for (ExpensesLine expensesLine : otherExpenses) {
+			
+		}
+		String na;
+		Date na2 = null;
+		
+	
+		double taxes=0;
+		double revenue=0;
+		
+		ExpensesLine totals = getTotalLine(expenses);
+		
+		ExpensesLine totalOthers= getTotalLine(otherExpenses);
+		
+		
+		model.addAttribute("selectedYear", year);
+		model.addAttribute("companyName", service.getProfile().getName());	
+		model.addAttribute("expenses", expenses);
+		model.addAttribute("otherExpenses",otherExpenses);
+		FiscalYearEnd fiscalYearEnd = service.getProfile().getFiscalYearEnd();
+		model.addAttribute("fiscal_end_day", fiscalYearEnd.day);
+		model.addAttribute("fiscal_end_month", fiscalYearEnd.month);
+		model.addAttribute("fiscal_end_year", year);
+		model.addAttribute("totals", totals);
+		model.addAttribute("totalOthers", totalOthers);
+		return "expenses";
+	}
+	private ExpensesLine getTotalLine(List<ExpensesLine> expenses) {
+		double grossAmount=0;
+		for (ExpensesLine revenueLine : expenses) {
+			grossAmount+=revenueLine.getAmount();
+			//taxes+= revenueLine.getTpsTvq();
+			//revenue+=revenueLine.getRevenue();
+		}
+		ExpensesLine totals = new ExpensesLine();
+		totals.amount=grossAmount;
+		totals.description= "Total";
+		return totals;
+	}
+	
 	@GetMapping("/transactions/{year}")
 	public String transactions(Model model, @PathVariable("year") Integer year) {
 		

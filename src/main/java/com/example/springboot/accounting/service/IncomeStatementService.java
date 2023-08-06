@@ -3,6 +3,7 @@ package com.example.springboot.accounting.service;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.springboot.accounting.model.dto.FinancialStatementLine;
+import com.example.springboot.accounting.model.dto.RevenueLine;
+import com.example.springboot.accounting.model.entities.AmortisationLeg;
+import com.example.springboot.accounting.model.entities.Asset;
+import com.example.springboot.accounting.model.entities.Transaction;
+import com.example.springboot.accounting.presentation.ExpensesLine;
 import com.example.springboot.accounting.repository.TransactionRepository;
 
 @Service
@@ -19,15 +25,18 @@ public class IncomeStatementService {
 	private final CompanyProfileService profile;
 	private final TransactionService transactionService;
 	private final TransactionRepository transactionRepository;
+	private final AssetService assetServices;
 	private final FinancialStatementLineFactory fsf;
 
 	@Autowired
 	public IncomeStatementService(CompanyProfileService profile, FinancialStatementLineFactory fsf,
-			TransactionRepository transactionRepository, TransactionService transactionService) {
+			TransactionRepository transactionRepository, TransactionService transactionService,
+			AssetService assetServices) {
 		this.transactionRepository = transactionRepository;
 		this.transactionService = transactionService;
 		this.fsf = fsf;
 		this.profile = profile;
+		this.assetServices = assetServices;
 
 	}
 
@@ -43,33 +52,82 @@ public class IncomeStatementService {
 		statement.setCogs(getCogs(start, stop));
 		statement.getGrossProfit();
 		statement.setOperatingExpenses(getOperatingExpenses(start, stop));
-		statement.getOperatingIncome();
+
 		statement.setOtherExpenses(getOtherExpenses(start, stop));
+		// Small-Business Tax Rate: 3.2% (Quebec portion) + 9% (Federal portion) = 12.2%
+		// combined rate
+		Double operatingIncome = statement.getOperatingIncome();
+		if (operatingIncome > 0) {
+			double incomeTax = operatingIncome * 12.2 / 100;
+			statement.setIncomeTax(incomeTax);
+			statement.setQuebecTax(operatingIncome * 3.2 / 100);
+			statement.setFederalTax(operatingIncome * 9 / 100);
+		}
+		else 
+		{
+			statement.setIncomeTax(0.0);
+			statement.setQuebecTax(0.0);
+			statement.setFederalTax(0.0);
+		}
 		statement.otherRevenue = getOtherRevenue(start, stop);
 		return statement;
 	}
 
 	private Double getOtherRevenue(Date start, Date stop) {
-		Double value =  transactionRepository.getOtherIncomesForFiscalYear(start, stop);
-		if(null == value)
+		Double value = transactionRepository.getOtherIncomesForFiscalYear(start, stop);
+		if (null == value)
 			return 0.0;
-		else return value;
+		else
+			return value;
 	}
 
 	private Double getOtherExpenses(Date start, Date stop) {
-		Double value =  transactionRepository.getOtherExpensesForFiscalYear(start, stop);
-		if(null == value)
+		Double value = transactionRepository.getOtherExpensesBetween(start, stop);
+		if (null == value)
 			return 0.0;
-		else return value;
-		
+		else
+			return value;
+
 	}
 
 	private Double getOperatingExpenses(Date start, Date stop) {
-		return transactionRepository.getOperatingExpensesForFiscalYear(start, stop);
+		return getTotalOperatingExpensesBetween(start, stop);
+		// return transactionRepository.getOperatingExpensesForFiscalYear(start, stop);
+	}
+
+	private Double getTotalOperatingExpensesBetween(Date start, Date stop) {
+		List<ExpensesLine> expenses = getExpensesBetween(start, stop);
+		double grossAmount = 0;
+		for (ExpensesLine revenueLine : expenses) {
+			grossAmount += revenueLine.getAmount();
+		}
+		return grossAmount;
 	}
 
 	private Double getCogs(Date start, Date stop) {
 		return transactionRepository.getCOGSForFiscalYear(start, stop);
+	}
+
+	private class Boundaries {
+		public Date date_start;
+		public Date date_end;
+	}
+
+	private class TaxBreakDown {
+		double grossAmount;
+		double netAmount;
+		double taxes;
+
+	}
+
+	private TaxBreakDown breakDownAmount(double grossAmount) {
+		TaxBreakDown tbd = new TaxBreakDown();
+		double taxRate = 0.14975; // combined TPS and TVQ rate
+		tbd.grossAmount = grossAmount;
+		tbd.netAmount = grossAmount / (1 + taxRate); // this is the amount to be recorded as sales revenue
+		tbd.taxes = grossAmount - tbd.netAmount; // this is the amount to be remitted to the government
+
+		return tbd;
 	}
 
 	private Double getRevenue(Date start, Date stop) {
@@ -77,11 +135,10 @@ public class IncomeStatementService {
 		if (null == grossAmount)
 			return 0.0;
 		// the gross amount including TPS and TVQ
-		double taxRate = 0.14975; // combined TPS and TVQ rate
 
-		double netAmount = grossAmount / (1 + taxRate); // this is the amount to be recorded as sales revenue
-		double taxes = grossAmount - netAmount; // this is the amount to be remitted to the government
-		return netAmount;
+		TaxBreakDown tbd = breakDownAmount(grossAmount);
+
+		return tbd.netAmount;
 	}
 
 	public FinantialStatement getFinantialStatement(Integer year) {
@@ -91,7 +148,7 @@ public class IncomeStatementService {
 		statement.getGrossProfit();
 		statement.setOperatingExpenses(getOperatingExpenses(year));
 		statement.getOperatingIncome();
-		statement.setOtherExpenses(getOtherExpenses(year));
+		statement.setOtherExpenses(getOtherExpensesTotal(year));
 		statement.otherRevenue = getOtherRevenue(year);
 		return statement;
 	}
@@ -113,6 +170,18 @@ public class IncomeStatementService {
 		return lines;
 	}
 
+	private Boundaries getBoundaries(Integer year) {
+		Boundaries b = new Boundaries();
+		Map<String, LocalDate> boudnaries = profile.getProfile().getFiscalYearEnd().getFiscalYearBoundaries(year);
+		LocalDate start = boudnaries.get("start");
+		LocalDate end = boudnaries.get("end");
+
+		b.date_start = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
+		b.date_end = Date.from(end.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+		return b;
+	}
+
 	/**
 	 * When referring to a fiscal year, it's generally named after the year in which
 	 * it ends. For example, a fiscal year that runs from July 1, 2023, to June 30,
@@ -124,22 +193,123 @@ public class IncomeStatementService {
 	public List<FinancialStatementLine> getIncomeStatementForFiscalYear(Integer year) {
 		// List<FinancialStatementLine> transactions =
 		// financeStatementService.getIncomeStatement(year);
-		Map<String, LocalDate> boudnaries = profile.getProfile().getFiscalYearEnd().getFiscalYearBoundaries(year);
-		LocalDate start = boudnaries.get("start");
-		LocalDate end = boudnaries.get("end");
+		Boundaries b = getBoundaries(year);
 
-		Date date_start = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
-		Date date_end = Date.from(end.atStartOfDay(ZoneId.systemDefault()).toInstant());
-
-		double incomeTax;
-		FinantialStatement statement = getFinantialStatement(date_start, date_end);
+		double incomeTax = 0;
+		FinantialStatement statement = getFinantialStatement(b.date_start, b.date_end);
 
 		List<FinancialStatementLine> lines = convertToFinLines(statement);
 		return lines;
 	}
 
+	public double getTotalOperatingExpensesForFiscalYear(Integer year) {
+		List<ExpensesLine> expenses = getExpensesForFiscalYear(year);
+		double grossAmount = 0;
+		for (ExpensesLine revenueLine : expenses) {
+			grossAmount += revenueLine.getAmount();
+
+		}
+		return grossAmount;
+	}
+
+	public int getFiscalYear(Date start) {
+
+		System.out.println("Today's date: " + start);
+		Calendar calendar = Calendar.getInstance();
+		// Create a Calendar instance and set it to the current date
+
+		calendar.setTime(start);
+		// Add one day to the current date
+		calendar.add(Calendar.DATE, 1);
+		Date tomorrow = calendar.getTime();
+
+		return profile.getProfile().getFiscalYearEnd().getFiscalYear(tomorrow);
+	}
+
+	public List<ExpensesLine> getExpensesBetween(Date start, Date stop) {
+		
+		List<Transaction> value = transactionRepository.getExpensesTransactionsForFiscalYear(start, stop);
+		List<ExpensesLine> lines = getLinesFromTransactions(value);
+		List<Asset> assetList = assetServices.findAll();
+		int fy = getFiscalYear(start);
+		for (Asset asset : assetList) {
+			for ( AmortisationLeg leg : asset.getDepreciationLegs()) {
+				
+				if(leg.getFiscalYear() == fy) 
+				{
+					ExpensesLine l = new ExpensesLine();
+					l.amount=-leg.getAmount();
+					l.description = "Depreciation "+asset.getPurchaceTransaction().getDescription();
+					l.date=l.date;
+					lines.add(l);				
+				}
+			}
+			
+		}
+		return lines;
+	}
+
+	public List<ExpensesLine> getOtherExpensesBetween(Date start, Date stop) {
+
+		List<Transaction> value = transactionRepository.getOtherExpensesTransactionsBetween(start, stop);
+		List<ExpensesLine> lines = getLinesFromTransactions(value);
+		return lines;
+	}
+
+	private List<ExpensesLine> getLinesFromTransactions(List<Transaction> value) {
+		List<ExpensesLine> lines = new ArrayList<ExpensesLine>();
+		for (Transaction transaction : value) {
+			ExpensesLine line = new ExpensesLine();
+			switch (transaction.getTransactionNature()) {
+			case Credit:
+				line.amount = Math.abs(transaction.getAmount());
+				break;
+			case Debit:
+				line.amount = -Math.abs(transaction.getAmount());
+				break;
+			default:
+				line.amount = transaction.getAmount();
+			}
+
+			line.description = transaction.getDescription();
+			line.date = transaction.getDate();
+			lines.add(line);
+		}
+		return lines;
+	}
+
+	public List<ExpensesLine> getExpensesForFiscalYear(Integer year) {
+		Boundaries b = getBoundaries(year);
+		return getExpensesBetween(b.date_start, b.date_end);
+
+	}
+
+	public List<ExpensesLine> getOtherExpenses(Integer year) {
+		Boundaries b = getBoundaries(year);
+		return getOtherExpensesBetween(b.date_start, b.date_end);
+	}
+
+	public List<RevenueLine> getRevenuesForFiscalYear(Integer year) {
+		Boundaries b = getBoundaries(year);
+		List<Transaction> value = transactionRepository.getSalesTransactionsForFiscalYear(b.date_start, b.date_end);
+		List<RevenueLine> lines = new ArrayList<RevenueLine>();
+		for (Transaction transaction : value) {
+
+			Double amount = transaction.getAmount();
+			TaxBreakDown tbd = breakDownAmount(amount);
+			Double tpsTvq = tbd.taxes;
+			Double revenue = tbd.netAmount;
+			String description = transaction.getDescription();
+			Date date = transaction.getDate();
+			RevenueLine line = new RevenueLine(amount, tpsTvq, revenue, description, date);
+			lines.add(line);
+		}
+
+		return lines;
+	}
+
 	private List<FinancialStatementLine> convertToFinLines(FinantialStatement statement) {
-		List<FinancialStatementLine> lines = new ArrayList();
+		List<FinancialStatementLine> lines = new ArrayList<FinancialStatementLine>();
 		FinancialStatementLine revenue_line = makeFs(statement.revenue, "Revenue");
 		FinancialStatementLine cogs_line = makeFs(statement.cogs, "Cogs");
 		FinancialStatementLine grossProfit_line = makeFs(statement.getGrossProfit(), "Gross Profit");
@@ -148,7 +318,9 @@ public class IncomeStatementService {
 		FinancialStatementLine otherExpenses_line = makeFs(statement.otherExpenses, "Other Expenses");
 		FinancialStatementLine otherIncome_line = makeFs(statement.otherRevenue, "Other Revenue");
 		FinancialStatementLine pretaxIncome_line = makeFs(statement.getPretaxIncome(), "Pretax Income");
-		FinancialStatementLine incomeTax_line = makeFs(statement.incomeTax, "Income Tax");
+		FinancialStatementLine incomeTax_line = makeFs(statement.incomeTax, "Income Tax Small-Business Tax Rate: 12.2%");
+		FinancialStatementLine federalIncomeTax_line = makeFs(statement.getFederalTax(),"9% (Federal portion)");
+		FinancialStatementLine provincialIncomeTax_line = makeFs(statement.getQuebecTax()," 3.2% (Quebec portion)");
 		FinancialStatementLine netIncome_line = makeFs(statement.getNetIncome(), "Net Income");
 		lines.add(revenue_line);
 		lines.add(cogs_line);
@@ -159,6 +331,9 @@ public class IncomeStatementService {
 		lines.add(otherIncome_line);
 		lines.add(pretaxIncome_line);
 		lines.add(incomeTax_line);
+		lines.add(federalIncomeTax_line);
+		lines.add(provincialIncomeTax_line);
+		
 		lines.add(netIncome_line);
 		return lines;
 	}
@@ -211,7 +386,7 @@ public class IncomeStatementService {
 		return transactionRepository.getOperatingExpensesForYear(year);
 	}
 
-	public Double getOtherExpenses(Integer year) {
+	public Double getOtherExpensesTotal(Integer year) {
 		return transactionRepository.getOtherExpensesForYear(year);
 	}
 
@@ -230,4 +405,5 @@ public class IncomeStatementService {
 	public double getOtherExpensesIncome(Integer year) {
 		return transactionRepository.getOperatingExpensesForYear(year);
 	}
+
 }
