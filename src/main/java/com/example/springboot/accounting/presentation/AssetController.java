@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.example.springboot.accounting.model.dto.AssetCreationRequest;
+import com.example.springboot.accounting.model.entities.AmortisationLeg;
 import com.example.springboot.accounting.model.entities.Asset;
 import com.example.springboot.accounting.model.entities.Transaction;
 import com.example.springboot.accounting.service.AssetService;
@@ -47,6 +48,19 @@ public class AssetController {
 		model.addAttribute("year", 2023);
 	
 		return "assetCreation";
+	}
+	
+	@GetMapping("/execute-leg/{transactionId}")
+	public void executeLeg(Model model, @PathVariable("legId") Long legId)
+	{
+		AmortisationLeg leg = assetService.findLeg(legId);
+		Asset asset = leg.getAmortisation().getAsset();
+		Double currentValue = asset.getCurrentValue();
+		currentValue = leg.getAmount(); // Amount of the depreciation.
+		asset.setCurrentValue(currentValue );
+		leg.setRealized(true);
+		assetService.save(asset);
+		assetService.save(leg);
 	}
 
 }

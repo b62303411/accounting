@@ -1,5 +1,6 @@
 package com.example.springboot.accounting.presentation;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,6 +24,7 @@ import com.example.springboot.accounting.model.entities.KnownDescription;
 import com.example.springboot.accounting.model.entities.Transaction;
 import com.example.springboot.accounting.repository.AccountRepository;
 import com.example.springboot.accounting.repository.AssetRepository;
+import com.example.springboot.accounting.service.AssetService;
 import com.example.springboot.accounting.service.CompanyProfileService;
 import com.example.springboot.accounting.service.FinancialStatementService;
 
@@ -32,16 +34,18 @@ public class FinanceThimeleafController {
 	private final FinancialStatementService financeStatementService;
 	private final CompanyProfileService service;
 	private final AccountRepository accountRepo;
+	private final AssetService assetService;
 	private AssetRepository assetRepository;
 
 	@Autowired
-	public FinanceThimeleafController(
+	public FinanceThimeleafController(AssetService assetService,
 			AssetRepository assetRepository,AccountRepository accountRepo, CompanyProfileService service,
 			FinancialStatementService financeStatementService) {
 		this.financeStatementService = financeStatementService;
 		this.accountRepo = accountRepo;
 		this.assetRepository=assetRepository;
 		this.service = service;
+		this.assetService=assetService;
 
 	}
 
@@ -92,7 +96,7 @@ public class FinanceThimeleafController {
 		if(year == null) 
 		{year =2023;}
 		List<BankStatement> bankStatements = financeStatementService.getBankStatements(accountNumber, year);
-		List<String> froms = new ArrayList();
+		List<String> froms = new ArrayList<String>();
 		for (BankStatement bankStatement : bankStatements) {
 			froms.add(bankStatement.getTo().split("_")[0]);
 		}
@@ -112,7 +116,10 @@ public class FinanceThimeleafController {
 	public String balance(Model model, @PathVariable("year") Integer year) {
 		if(year == null) 
 		{year =2023;}
-		model.addAttribute("companyName", "Acme");
+		model.addAttribute("companyName", service.getProfile().getName());	
+		model.addAttribute("date",Instant.now().toString());
+		List<FinancialStatementLine> assets = assetService.getAssetFinantialStatement();
+		model.addAttribute("assets",assets);
 		model.addAttribute("selectedYear", year);
 		return "BalanceSheet";
 	}

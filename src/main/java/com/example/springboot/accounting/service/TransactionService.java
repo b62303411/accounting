@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.springboot.accounting.model.dto.TransactionRequest;
 import com.example.springboot.accounting.model.entities.KnownDescription;
 import com.example.springboot.accounting.model.entities.Transaction;
 import com.example.springboot.accounting.repository.KnownDescriptionRegistry;

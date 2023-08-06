@@ -7,9 +7,10 @@
 
 <body>
 	<header th:replace="fragments/header :: header"></header>
-	<h1>Balance Sheet for <span th:text="${companyName}">Company</span> as of <span th:text="${date}">Date</span></h1>
+	<div class="container shadow min-vh-100 py-2">
+	<h2>Balance Sheet for <span th:text="${companyName}">Company</span> as of <span th:text="${date}">Date</span></h2>
 
-	<h2>Assets</h2>
+	<h3>Assets</h3>
 	<table>
 		<tr>
 			<th>Type</th>
@@ -21,7 +22,7 @@
 		</tr>
 	</table>
 
-	<h2>Liabilities</h2>
+	<h3>Liabilities</h3>
 	<table>
 		<tr>
 			<th>Type</th>
@@ -33,7 +34,7 @@
 		</tr>
 	</table>
 
-	<h2>Equity</h2>
+	<h3>Equity</h3>
 	<table>
 		<tr>
 			<th>Type</th>
@@ -44,6 +45,7 @@
 			<td th:text="${line.amount}"></td>
 		</tr>
 	</table>
+	</div>
 </body>
 
 </html>

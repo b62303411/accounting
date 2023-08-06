@@ -2,12 +2,12 @@ package com.example.springboot.accounting.api;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.springboot.accounting.model.AssetType;
 import com.example.springboot.accounting.model.dto.AssetCreationRequest;
 import com.example.springboot.accounting.model.entities.Amortisation;
 import com.example.springboot.accounting.model.entities.Asset;
@@ -50,4 +50,6 @@ public class AssetApiController {
 	 
 	    return response;  // redirect to another page after handling the form submission
 	}
+	
+	
 }

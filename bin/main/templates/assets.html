@@ -70,7 +70,9 @@
 	<header th:replace="fragments/header :: header"></header>
 	<div class="table-responsive">
 <div class="container shadow min-vh-100 py-2">
+			<h1>Assets</h1>
     <div class="table-responsive">
+
         <table class="table accordion">
             <thead>
                 <tr>
@@ -86,7 +88,7 @@
                 <tr data-bs-toggle="collapse" th:data-bs-target="'#r'+${stat.index}">
                     <th scope="row">1 <i class="bi bi-chevron-down"></i></th>
                   	<td th:text="*{asset.purchaceTransaction.description}"></td>
-					<td th:text="*{asset.purchaceTransaction.amount}"></td>
+					<td th:text="*{asset.purchaceTransaction.amount}+'$'"></td>
 					<td th:text="*{asset.type}"></td>
                 	<td th:text="*{asset.amortisation.numDepreciationLegs}"></td>
                 </tr>
@@ -97,6 +99,7 @@
 								Fiscal Year: <span th:text="*{leg.fiscalYear}"></span>,
 								Amount: <span th:text="${#numbers.formatDecimal(leg.amount, 1, 'COMMA', 2, 'POINT')}+'$'"></span>
 								Remaining Value: <span th:text="${#numbers.formatDecimal(leg.remainingValue, 1, 'COMMA', 2, 'POINT')}+'$'"></span>
+							    <button th:if="!${leg.realized}" th:onclick="'window.location.href = \'/api/assets/execute-leg/' + ${leg.id} + '\''">Execute</button>
 							</p> 
 						 </td>
                 </tr>
@@ -106,50 +109,7 @@
         </table>
     </div>
 </div>
-	<div class="container my-3">
-		<h1>Assets</h1>
-		<table class="table accordion">
-			<thead>
-				<tr>
-					<th scope="col">Transaction</th>
-					<th scope="col">Purchaced price</th>
-					<th scope="col">Asset Type</th>
-					<th scope="col">Number of Depreciation Legs</th>
-					<!-- add more columns headers as needed -->
-				</tr>
-			</thead>
-			<tbody>
-				<!-- loop through each asset -->
-				<th:block th:each="asset, stat : ${assets}">
-					<tr th:id="'parent' + ${stat.index}" th:data-bs-target="'#child'+${stat.index}" >
-						<td class="expand-button"></td>
-						<td th:text="*{asset.purchaceTransaction.description}"></td>
-						<td th:text="*{asset.purchaceTransaction.amount}"></td>
-						<td th:text="*{asset.type}"></td>
-						<td th:text="*{asset.amortisation.numDepreciationLegs}"></td>
-						<!-- add more data columns as needed -->
-						<td class="table-elipse" data-toggle="collapse" th:data-target="'#demo' + ${stat.index}"><i
-								class="fa fa-ellipsis-h text-black-50"></i></td>
-					</tr>
-					<tr class="collapse accordion-collapse" th:id="'child' + ${stat.index}" data-bs-parent=".table">
-						<td class="text-center" colspan="1"><i class="fa fa-angle-up"></i></td>
-						<td colspan="3">
-						
-							<p th:each="leg : *{asset.getDepreciationLegs()}">
-								Leg: <span th:text="*{leg.id}"></span>,
-								Fiscal Year: <span th:text="*{leg.fiscalYear}"></span>,
-								Amount: <span th:text="${#numbers.formatDecimal(leg.amount, 1, 'COMMA', 2, 'POINT')}+'$'"></span>
-								Remaining Value: <span th:text="${#numbers.formatDecimal(leg.remainingValue, 1, 'COMMA', 2, 'POINT')}+'$'"></span>
-							</p>
-						
-						</td>
-						<!-- Adjust colspan as needed -->
-					</tr>
-				</th:block>
-			</tbody>
-		</table>
-
-	</div>
+	
 	<script src="/webjars/jquery/3.6.4/jquery.min.js"></script>
 	<script src="/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 	<script src="/webjars/popper.js/2.11.7/umd/popper.min.js"></script>
