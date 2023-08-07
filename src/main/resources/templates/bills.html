@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Assets</title>
+	<!-- include Bootstrap CSS -->
+	<link rel="stylesheet" type="text/css" href="/webjars/bootstrap/5.3.0/css/bootstrap.min.css" />
+	<link rel="stylesheet" type="text/css" href="/webjars/font-awesome/4.7.0/css/font-awesome.min.css" />
+	<style>
+		@import url('https://fonts.googleapis.com/css?family=Assistant');
+
+		body {
+			background: #eee;
+			font-family: Assistant, sans-serif;
+		}
+
+		.cell-1 {
+			border-collapse: separate;
+			border-spacing: 0 4em;
+			background: #ffffff;
+			border-bottom: 5px solid transparent;
+			/*background-color: gold;*/
+			background-clip: padding-box;
+			cursor: pointer;
+		}
+
+		thead {
+			background: #dddcdc;
+		}
+
+		.table-elipse {
+			cursor: pointer;
+		}
+
+		#demo {
+			-webkit-transition: all 0.3s ease-in-out;
+			-moz-transition: all 0.3s ease-in-out;
+			-o-transition: all 0.3s 0.1s ease-in-out;
+			transition: all 0.3s ease-in-out;
+		}
+
+		.row-child {
+			background-color: #000;
+			color: #fff;
+		}
+
+		tr.hide-table-padding td {
+			padding: 0;
+		}
+
+		.expand-button {
+			position: relative;
+		}
+
+		.accordion-toggle .expand-button:after {
+			position: absolute;
+			left: .75rem;
+			top: 50%;
+			transform: translate(0, -50%);
+			content: '-';
+		}
+
+		.accordion-toggle.collapsed .expand-button:after {
+			content: '+';
+		}
+	</style>
+</head>
+
+<body>
+	<header th:replace="fragments/header :: header"></header>
+	<div class="table-responsive">
+		<div class="container shadow min-vh-100 py-2">
+			<h1>Assets</h1>
+			<div class="table-responsive">
+
+				<h3>Create New Bill</h3>
+				<form th:action="@{/api/invoice/create}" method="post" enctype="multipart/form-data">
+					<div class="form-group">
+						<label for="description">Description:</label>
+						<input type="text" id="description" name="description" class="form-control" required />
+					</div>
+					<div class="form-group">
+						<label for="amount">Amount:</label>
+						<input type="number" id="amount" name="amount" class="form-control" required />
+					</div>
+					<div class="form-group">
+						<label for="date">Date:</label>
+						<input type="date" id="date" name="date" class="form-control" required />
+					</div>
+					<div class="form-group">
+						<label for="file">File (Bill):</label>
+						<input type="file" id="file" name="file" class="form-control-file" required />
+					</div>
+					<button type="submit" class="btn btn-primary">Create Bill</button>
+				</form>
+				<div class="container my-3">
+					<h1>Bills</h1>
+					<table class="table">
+						<thead>
+							<tr>
+								<th>ID</th>
+								<th>Description</th>
+								<th>Amount</th>
+								<th>Date</th>
+								<th>Attachments</th>
+								<th>Actions</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="bill : ${bills}">
+								<td th:text="${bill.id}"></td>
+								<td>
+									<span th:id="'description-'+${bill.id}" contenteditable="true"
+										th:text="${bill.description}"></span>
+								</td>
+								<td>
+									<span th:id="'amount-'+${bill.id}" contenteditable="true"
+										th:text="${bill.amount}"></span>
+								</td>
+								<td>
+									<input type="date" th:id="'date-'+${bill.id}" th:value="${#dates.format(bill.date, 'yyyy-MM-dd')}" />
+								</td>
+								<td>
+									<div th:each="attachment : ${bill.attachments}">
+										<button class="btn btn-primary"
+											th:onclick="'showPreview(' + ${bill.id} + ')'">Preview PDF</button>
+									</div>
+								</td>
+								<td>
+									<form th:action="@{/bills/{id}/addAttachment(id=${bill.id})}" method="post"
+										enctype="multipart/form-data">
+										<input type="file" name="attachment" required />
+										<button type="submit">Add Attachment</button>
+									</form>
+								</td>
+								<td>
+									<button th:onclick="'editBill(' + ${bill.id} + ')'">Edit</button>
+									<button th:onclick="'saveBill(' + ${bill.id} + ')'">Save</button>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<!-- Modal -->
+			<div class="modal fade" id="previewModal" tabindex="-1" role="dialog">
+				<div class="modal-dialog modal-lg" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title">PDF Preview</h5>
+
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+						</div>
+						<div class="modal-body">
+							<img id="previewImage" alt="PDF Preview" style="width: 100%;" />
+						</div>
+					</div>
+				</div>
+			</div>
+			<script src="/webjars/jquery/3.6.4/jquery.min.js"></script>
+			<script src="/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+			<script src="/webjars/popper.js/2.11.7/umd/popper.min.js"></script>
+			<!-- add more content or navigation here -->
+			<script>
+				function showPreview(billId) {
+					fetch("/api/attachment/preview/" + billId) // Replace "/preview/1" with the correct URL for the preview
+						.then(response => response.text())
+						.then(data => {
+							document.getElementById("previewImage").src = "data:image/png;base64," + data;
+							var previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+							previewModal.show();
+						});
+
+
+				}
+
+				function editBill(billId) {
+					// Toggle contenteditable attribute for the specific bill
+					var description = document.getElementById("description-" + billId);
+					var amount = document.getElementById("amount-" + billId);
+					var date = document.getElementById("date-" + billId);
+
+					var isEditable = description.isContentEditable;
+					description.contentEditable = !isEditable;
+					amount.contentEditable = !isEditable;
+					date.disabled = isEditable; // Enable or disable the date input field
+
+					// Optionally, change the styling of the row to indicate it's being edited
+					var row = description.closest('tr');
+					if (isEditable) {
+						row.classList.remove('editing');
+					} else {
+						row.classList.add('editing');
+					}
+				}
+
+				function saveBill(billId) {
+					// Get the edited values for the specific bill
+					var description = document.getElementById("description-" + billId).innerText;
+					var amount = document.getElementById("amount-" + billId).innerText;
+					var date = document.getElementById("date-" + billId).value;
+
+					// Create a data object to send to the server
+					var data = {
+						id: billId,
+						description: description,
+						amount: amount,
+						date: date
+						// Add other fields as needed
+					};
+
+					// Send the data to the server via an AJAX request
+					fetch("/api/invoice/updateBill", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json"
+						},
+						body: JSON.stringify(data)
+					})
+						.then(response => response.json())
+						.then(data => {
+							// Handle the response, e.g., show a success message or update the UI
+							if (data.success) {
+								alert("Bill updated successfully!");
+								// Optionally, update the UI or redirect the user
+							} else {
+								alert("An error occurred: " + data.message);
+							}
+						})
+						.catch(error => {
+							// Handle any errors that occur during the fetch
+							alert("An error occurred while updating the bill: " + error.message);
+						});
+				}
+
+
+			</script>
+</body>
+
+</html>

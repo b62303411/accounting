@@ -8,12 +8,12 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.example.springboot.accounting.model.dto.ExpensesLine;
 import com.example.springboot.accounting.model.dto.FinancialStatementLine;
 import com.example.springboot.accounting.model.dto.RevenueLine;
 import com.example.springboot.accounting.model.entities.BankStatement;
 import com.example.springboot.accounting.model.entities.KnownDescription;
 import com.example.springboot.accounting.model.entities.Transaction;
-import com.example.springboot.accounting.presentation.ExpensesLine;
 import com.example.springboot.accounting.repository.BankStatementRepository;
 import com.example.springboot.accounting.repository.TransactionRepository;
 

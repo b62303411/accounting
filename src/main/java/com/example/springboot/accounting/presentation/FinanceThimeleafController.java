@@ -4,7 +4,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,16 +17,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.example.springboot.accounting.model.FiscalYearEnd;
 import com.example.springboot.accounting.model.TransactionType;
 import com.example.springboot.accounting.model.dto.AccountValidation;
+import com.example.springboot.accounting.model.dto.ExpensesLine;
 import com.example.springboot.accounting.model.dto.FinancialStatementLine;
 import com.example.springboot.accounting.model.dto.ReportAvailable;
 import com.example.springboot.accounting.model.dto.RevenueLine;
 import com.example.springboot.accounting.model.entities.Account;
 import com.example.springboot.accounting.model.entities.Asset;
 import com.example.springboot.accounting.model.entities.BankStatement;
+import com.example.springboot.accounting.model.entities.Invoice;
 import com.example.springboot.accounting.model.entities.KnownDescription;
 import com.example.springboot.accounting.model.entities.Transaction;
 import com.example.springboot.accounting.repository.AccountRepository;
 import com.example.springboot.accounting.repository.AssetRepository;
+import com.example.springboot.accounting.repository.InvoiceRepository;
 import com.example.springboot.accounting.service.AssetService;
 import com.example.springboot.accounting.service.CompanyProfileService;
 import com.example.springboot.accounting.service.FinancialStatementService;
@@ -40,16 +42,18 @@ public class FinanceThimeleafController {
 	private final AccountRepository accountRepo;
 	private final AssetService assetService;
 	private AssetRepository assetRepository;
+	private InvoiceRepository invoiceRepo;
 
 	@Autowired
 	public FinanceThimeleafController(AssetService assetService,
 			AssetRepository assetRepository,AccountRepository accountRepo, CompanyProfileService service,
-			FinancialStatementService financeStatementService) {
+			FinancialStatementService financeStatementService,InvoiceRepository invoiceRepo) {
 		this.financeStatementService = financeStatementService;
 		this.accountRepo = accountRepo;
 		this.assetRepository=assetRepository;
 		this.service = service;
 		this.assetService=assetService;
+		this.invoiceRepo=invoiceRepo;
 
 	}
 	@GetMapping("/revenues/{year}")
@@ -76,6 +80,15 @@ public class FinanceThimeleafController {
 		model.addAttribute("fiscal_end_year", year);
 		model.addAttribute("totals", totals);
 		return "revenue";
+	}
+	
+	@GetMapping("/bills/{year}")
+	public String bills(Model model, @PathVariable("year") Integer year) 
+	{
+		List<Invoice> bills= new ArrayList<Invoice>();
+		bills = invoiceRepo.findAll();
+		model.addAttribute("bills", bills);
+		return "bills";
 	}
 	
 	@GetMapping("/expenses/{year}")

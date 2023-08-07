@@ -1,6 +1,5 @@
 package com.example.springboot.accounting.model.entities;
 
-import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,6 +15,8 @@ public abstract class Expense {
 	private Long id;
 	@OneToOne
 	private Transaction transaction;
+	@OneToOne
+	private Invoice invoice;
 	public Long getId() {
 		return id;
 	}

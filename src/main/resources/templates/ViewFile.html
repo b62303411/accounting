@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>PDF Preview</title>
+</head>
+<body>
+    <header th:replace="fragments/header :: header"></header>
+    <div class="container shadow min-vh-100 py-2">
+    <h1>PDF Preview</h1>
+    <img th:src="@{'data:image/png;base64,' + ${image}}" alt="PDF Preview" style="width: 50%;"/>
+    </div>
+</body>
+</html>
+
+
+
+

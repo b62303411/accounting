@@ -23,6 +23,7 @@
 			<thead>
 				<tr>
 					<th>Description</th>
+						<th>Type</th>
 					<th>Amount</th>
 					<th>Date</th>
 				</tr>
@@ -30,6 +31,7 @@
 			<tbody>
 				<tr th:each="line : ${expenses}">
 					<td th:text="${line.description}"></td>
+					<td th:text="${line.expenseType}"></td>
 					<td th:text="${#numbers.formatDecimal(line.amount, 1, 'COMMA', 2, 'POINT')}+'$'"></td>				    
 					<td th:text="${line.date}"> </td>
 				</tr>
@@ -47,6 +49,7 @@
 			<thead>
 				<tr>
 					<th>Description</th>
+				
 					<th>Amount</th>
 					<th>Date</th>
 				</tr>
@@ -54,6 +57,7 @@
 			<tbody>
 				<tr th:each="line : ${otherExpenses}">
 					<td th:text="${line.description}"></td>
+			
 					<td th:text="${#numbers.formatDecimal(line.amount, 1, 'COMMA', 2, 'POINT')}+'$'"></td>				    
 					<td th:text="${line.date}"> </td>
 				</tr>

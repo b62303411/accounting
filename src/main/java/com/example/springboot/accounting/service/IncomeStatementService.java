@@ -12,6 +12,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.springboot.accounting.model.dto.ExpensesLine;
 import com.example.springboot.accounting.model.dto.FinancialStatementLine;
 import com.example.springboot.accounting.model.dto.RevenueLine;
 import com.example.springboot.accounting.model.entities.AmortisationLeg;
@@ -19,7 +20,6 @@ import com.example.springboot.accounting.model.entities.Asset;
 import com.example.springboot.accounting.model.entities.Expense;
 import com.example.springboot.accounting.model.entities.ExploitationExpense;
 import com.example.springboot.accounting.model.entities.Transaction;
-import com.example.springboot.accounting.presentation.ExpensesLine;
 import com.example.springboot.accounting.repository.ExploitationExpenseRepository;
 import com.example.springboot.accounting.repository.TransactionRepository;
 
@@ -335,7 +335,8 @@ public class IncomeStatementService {
 			default:
 				line.amount = transaction.getAmount();
 			}
-
+			ExploitationExpense  ex =exploitationExpenseRepo.findByTransaction(transaction);
+			line.expenseType=ex.getTypeStr();
 			line.description = transaction.getDescription();
 			line.date = transaction.getDate();
 			lines.add(line);
