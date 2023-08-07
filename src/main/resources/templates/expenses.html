@@ -1,7 +1,12 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head>
+<head><style>
+	.chart-container {
+  max-width: 400px; /* Set the maximum width of the chart */
+  width: 100%; /* Make the chart take up the full width of its container */
+  position: relative; /* Needed for responsiveness */
+}</style>
 </head>
 
 <body>
@@ -11,6 +16,9 @@
 	<span th:text="${'AU ' + fiscal_end_day + ' ' + fiscal_end_month + ' ' + fiscal_end_year}"></span></h4>
 		<div class="container shadow min-vh-100 py-2">
 			<h4>Operating Expenses</h4>
+			<div class="chart-container">
+			<canvas id="spendingChart" width="100" height="100"></canvas>
+			</div>
 		<table class="table table-striped">
 			<thead>
 				<tr>
@@ -59,5 +67,33 @@
 		</div>
 	</div>
 </body>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script th:inline="javascript">
+  // Get the spending data from the Thymeleaf model
+  var spendingData = /*[[${spendingData}]]*/ {};
+
+  // Prepare the labels and values for the pie chart
+  var labels = Object.keys(spendingData);
+  var values = Object.values(spendingData);
+
+  // Get the canvas element
+  var ctx = document.getElementById('spendingChart').getContext('2d');
+
+  // Create the pie chart
+  var myPieChart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: values,
+        backgroundColor: [
+          // You can define colors for each segment here
+          'red', 'blue', 'green', 'yellow'// ...
+        ]
+      }]
+    }
+  });
+</script>
 
 </html>

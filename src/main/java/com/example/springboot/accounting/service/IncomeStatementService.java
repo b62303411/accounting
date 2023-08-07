@@ -5,6 +5,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,8 +16,11 @@ import com.example.springboot.accounting.model.dto.FinancialStatementLine;
 import com.example.springboot.accounting.model.dto.RevenueLine;
 import com.example.springboot.accounting.model.entities.AmortisationLeg;
 import com.example.springboot.accounting.model.entities.Asset;
+import com.example.springboot.accounting.model.entities.Expense;
+import com.example.springboot.accounting.model.entities.ExploitationExpense;
 import com.example.springboot.accounting.model.entities.Transaction;
 import com.example.springboot.accounting.presentation.ExpensesLine;
+import com.example.springboot.accounting.repository.ExploitationExpenseRepository;
 import com.example.springboot.accounting.repository.TransactionRepository;
 
 @Service
@@ -27,11 +31,14 @@ public class IncomeStatementService {
 	private final TransactionRepository transactionRepository;
 	private final AssetService assetServices;
 	private final FinancialStatementLineFactory fsf;
-
+	private final ExploitationExpenseRepository exploitationExpenseRepo;
 	@Autowired
-	public IncomeStatementService(CompanyProfileService profile, FinancialStatementLineFactory fsf,
+	public IncomeStatementService(
+			ExploitationExpenseRepository exploitationExpenseRepo,
+			CompanyProfileService profile, FinancialStatementLineFactory fsf,
 			TransactionRepository transactionRepository, TransactionService transactionService,
 			AssetService assetServices) {
+		this.exploitationExpenseRepo=exploitationExpenseRepo;
 		this.transactionRepository = transactionRepository;
 		this.transactionService = transactionService;
 		this.fsf = fsf;
@@ -96,7 +103,7 @@ public class IncomeStatementService {
 	}
 
 	private Double getTotalOperatingExpensesBetween(Date start, Date stop) {
-		List<ExpensesLine> expenses = getExpensesBetween(start, stop);
+		List<ExpensesLine> expenses = getExpensesLinesBetween(start, stop);
 		double grossAmount = 0;
 		for (ExpensesLine revenueLine : expenses) {
 			grossAmount += revenueLine.getAmount();
@@ -225,10 +232,68 @@ public class IncomeStatementService {
 
 		return profile.getProfile().getFiscalYearEnd().getFiscalYear(tomorrow);
 	}
-
-	public List<ExpensesLine> getExpensesBetween(Date start, Date stop) {
+	public  Map<String,Double> getExpenseReport(Integer year) {
+		Boundaries b = getBoundaries(year);
+		return getExpenseReport(b.date_start,b.date_end);
+		
+	}
+	public Map<String,Double> getExpenseReport(Date start,Date stop)
+	{
+		Map<String,Double> maps = new HashMap<String, Double>();
+		List<Expense> list = getExpensesBetween(start, stop);
+		double FraisBancaires=0;
+		double HonoraireProfessionel=0;
+		double FraisDeplacement=0;
+		double Fournitures=0;
+		for (Expense expense : list) {
+			switch(expense.getTypeStr()) 
+			{
+				case "FraisBancaires":
+					FraisBancaires+=expense.getTransaction().getAmount();
+					break;
+				case "HonoraireProfessionel":
+					 HonoraireProfessionel += expense.getTransaction().getAmount();
+					 break;
+				case "FraisDeplacement":
+					FraisDeplacement += expense.getTransaction().getAmount();
+					break;
+				case "Fournitures":
+					Fournitures += expense.getTransaction().getAmount();
+					break;
+			}
+		}
+		maps.put("FraisBancaires", FraisBancaires);
+		maps.put("HonoraireProfessionel", HonoraireProfessionel);
+		maps.put("FraisDeplacement", FraisDeplacement);
+		maps.put("Fournitures", Fournitures);
+		return maps;
+	
+	}
+	
+	public List<Expense> getExpensesBetween(Date start, Date stop) 
+	{
+		List<Expense> expenses = new ArrayList<Expense>();
+		List<Transaction> value = transactionRepository.getExpensesTransactionsForFiscalYear(start, stop);
+		for (Transaction transaction : value) 
+		{
+			ExploitationExpense  ex =exploitationExpenseRepo.findByTransaction(transaction);
+			expenses.add(ex);
+		}
+		return expenses;
+	}
+	
+	public List<ExpensesLine> getExpensesLinesBetween(Date start, Date stop) {
 		
 		List<Transaction> value = transactionRepository.getExpensesTransactionsForFiscalYear(start, stop);
+		for (Transaction transaction : value) {
+			ExploitationExpense  ex =exploitationExpenseRepo.findByTransaction(transaction);
+			if(null == ex) 
+			{
+				ex = new ExploitationExpense();
+				ex.setTransaction(transaction);
+				exploitationExpenseRepo.save(ex);
+			}
+		}
 		List<ExpensesLine> lines = getLinesFromTransactions(value);
 		List<Asset> assetList = assetServices.findAll();
 		int fy = getFiscalYear(start);
@@ -280,7 +345,7 @@ public class IncomeStatementService {
 
 	public List<ExpensesLine> getExpensesForFiscalYear(Integer year) {
 		Boundaries b = getBoundaries(year);
-		return getExpensesBetween(b.date_start, b.date_end);
+		return getExpensesLinesBetween(b.date_start, b.date_end);
 
 	}
 
@@ -405,5 +470,7 @@ public class IncomeStatementService {
 	public double getOtherExpensesIncome(Integer year) {
 		return transactionRepository.getOperatingExpensesForYear(year);
 	}
+
+	
 
 }

@@ -4,7 +4,9 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -80,20 +82,15 @@ public class FinanceThimeleafController {
 	public String expenses(Model model, @PathVariable("year") Integer year) {
 		List<ExpensesLine> expenses = financeStatementService.getExpenses(year);
 		List<ExpensesLine> otherExpenses = financeStatementService.getOtherExpenses(year);
-		for (ExpensesLine expensesLine : otherExpenses) {
-			
-		}
-		String na;
-		Date na2 = null;
-		
-	
-		double taxes=0;
-		double revenue=0;
-		
+		Map<String, Double> spendingData = financeStatementService.getExpenseReport(year);
 		ExpensesLine totals = getTotalLine(expenses);
 		
 		ExpensesLine totalOthers= getTotalLine(otherExpenses);
 		
+	
+		// ... other categories
+
+		model.addAttribute("spendingData", spendingData);
 		
 		model.addAttribute("selectedYear", year);
 		model.addAttribute("companyName", service.getProfile().getName());	

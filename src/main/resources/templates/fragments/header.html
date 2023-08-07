@@ -45,7 +45,7 @@
 			<!-- Implement navigation menu -->
 			<ul class="navbar-nav">
 
-				<li th:each="year : ${#numbers.sequence(2017, 2023)}"
+				<li th:each="year : ${#numbers.sequence(2016, 2023)}"
 					class="nav-item" th:classappend="${year == selectedYear} ? 'active'" >
 					<a class="nav-link" th:href="@{|${year}|}" th:text="${year}"></a>
 				</li>

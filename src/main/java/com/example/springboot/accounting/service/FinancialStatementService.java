@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
@@ -45,7 +46,10 @@ public class FinancialStatementService {
 	public List<ExpensesLine> getExpenses(Integer year) {
 		return incomeStatementService.getExpensesForFiscalYear(year);
 	}
-
+	public Map<String, Double> getExpenseReport(Integer year) {
+		return incomeStatementService.getExpenseReport(year);
+		
+	}
   
     public List<FinancialStatementLine> getBalanceSheet(Date date) {
         // a method that retrieves and sums transactions up to a given date
@@ -111,5 +115,7 @@ public class FinancialStatementService {
 	{
         return transactionService.getKnownDescriptions();
 	}
+
+
 	
 }
