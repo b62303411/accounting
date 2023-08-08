@@ -64,6 +64,7 @@
 					<th>Transaction Type</th>
 					<th>Action</th>
 					<th>Note</th>
+					<th>Attachments</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -92,10 +93,21 @@
 							</a>
 
 						</div>
+						<form action="/api/transaction/addAttachment" method="post" enctype="multipart/form-data">
+							<input type="hidden" name="id" th:value="${transaction.id}" />
+							<input type="file" name="file" required />
+							<button type="submit">Add Attachment</button>
+						</form>
 					</td>
 					<td>
 						<input th:id="${'note-input-' + transaction.id}" onchange="updateNote(this)" type="text"
 							th:value="${transaction.note}" name="note" />
+					</td>
+					<td>
+						<div th:each="attachment : ${transaction.attachments}">
+							<button class="btn btn-primary" th:onclick="'showPreview(' + ${attachment.id} + ')'">Preview
+								PDF</button>
+						</div>
 					</td>
 				</tr>
 			</tbody>
@@ -130,6 +142,22 @@
 
 	<div th:replace="fragments/addTransaction :: transactionModal"></div>
 	<div th:replace="fragments/footer :: footer"></div>
+	<!-- Modal -->
+	<div class="modal fade" id="previewModal" tabindex="-1" role="dialog">
+		<div class="modal-dialog modal-lg" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">PDF Preview</h5>
+
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+				</div>
+				<div class="modal-body">
+					<img id="previewImage" alt="PDF Preview" style="width: 100%;" />
+				</div>
+			</div>
+		</div>
+	</div>
 	<script src="/webjars/datatables/1.13.5/js/jquery.dataTables.min.js"></script>
 	<script src="/webjars/datatables-buttons/2.4.1/js/dataTables.buttons.min.js"></script>
 	<script src="/webjars/jszip/3.10.1/jszip.min.js"></script>
@@ -235,6 +263,17 @@
 					console.log('Failed to update note');
 				}
 			});
+		}
+		function showPreview(billId) {
+			fetch("/api/attachment/preview/" + billId) // Replace "/preview/1" with the correct URL for the preview
+				.then(response => response.text())
+				.then(data => {
+					document.getElementById("previewImage").src = "data:image/png;base64," + data;
+					var previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+					previewModal.show();
+				});
+
+
 		}
 	</script>
 </body>

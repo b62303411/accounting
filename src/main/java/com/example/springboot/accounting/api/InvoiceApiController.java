@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.springboot.accounting.model.FileType;
 import com.example.springboot.accounting.model.dto.InvoiceCreationRequest;
+import com.example.springboot.accounting.model.dto.InvoiceUpdateRequest;
 import com.example.springboot.accounting.model.entities.Attachment;
 import com.example.springboot.accounting.model.entities.Invoice;
 import com.example.springboot.accounting.repository.InvoiceRepository;

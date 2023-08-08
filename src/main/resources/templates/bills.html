@@ -123,7 +123,7 @@
 								<td>
 									<div th:each="attachment : ${bill.attachments}">
 										<button class="btn btn-primary"
-											th:onclick="'showPreview(' + ${bill.id} + ')'">Preview PDF</button>
+											th:onclick="'showPreview(' + ${attachment.id} + ')'">Preview PDF</button>
 									</div>
 								</td>
 								<td>

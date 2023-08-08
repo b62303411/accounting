@@ -245,6 +245,7 @@ public class IncomeStatementService {
 		double HonoraireProfessionel=0;
 		double FraisDeplacement=0;
 		double Fournitures=0;
+		double Licences=0;
 		for (Expense expense : list) {
 			switch(expense.getTypeStr()) 
 			{
@@ -260,12 +261,16 @@ public class IncomeStatementService {
 				case "Fournitures":
 					Fournitures += expense.getTransaction().getAmount();
 					break;
+				case "Licences":
+					Licences +=expense.getTransaction().getAmount();
+					break;
 			}
 		}
 		maps.put("FraisBancaires", FraisBancaires);
 		maps.put("HonoraireProfessionel", HonoraireProfessionel);
 		maps.put("FraisDeplacement", FraisDeplacement);
 		maps.put("Fournitures", Fournitures);
+		maps.put("Licences", Fournitures);
 		return maps;
 	
 	}

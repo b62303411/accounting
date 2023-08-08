@@ -1,4 +1,4 @@
-package com.example.springboot.accounting.api;
+package com.example.springboot.accounting.model.dto;
 
 import java.time.LocalDate;
 

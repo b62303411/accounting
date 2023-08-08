@@ -1,5 +1,7 @@
 package com.example.springboot.accounting.service;
 
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -15,46 +17,63 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.springboot.accounting.model.entities.Attachment;
 import com.example.springboot.accounting.model.entities.Invoice;
+import com.example.springboot.accounting.repository.AttachmentRepository;
 import com.example.springboot.accounting.repository.InvoiceRepository;
 
 @Service
 public class InvoiceService {
 
 	private InvoiceRepository invoiceRepository;
+	private AttachmentRepository attachmentRepository;
 
 	@Autowired
-	public InvoiceService(InvoiceRepository invoiceRepository) {
+	public InvoiceService(AttachmentRepository attachmentRepository, InvoiceRepository invoiceRepository) {
 		this.invoiceRepository = invoiceRepository;
+		this.attachmentRepository = attachmentRepository;
 	}
-	
-	/**
-	 * 
-	 * @param att
-	 * @return
-	 * @throws IOException 
-	 */
-	public byte[] createPreviewImageAsBytesForAttachment(Attachment att) throws IOException 
-	{
-		byte[] file = att.getFile();
-		BufferedImage preview = createPreviewImage(file);
-		byte[] imageBytes = createPreviewImageAsBytes(preview);
-		return imageBytes;		
-	}
-	
+
 	/**
 	 * 
 	 * @param id
 	 * @return
-	 * @throws IOException 
+	 * @throws IOException
+	 */
+	public byte[] createPreviewImageAsBytesForAttachment(Long id) throws IOException {
+
+		Optional<Attachment> att = attachmentRepository.findById(id);
+		return createPreviewImageAsBytesForAttachment(att.get());
+	}
+
+	/**
+	 * 
+	 * @param att
+	 * @return
+	 * @throws IOException
+	 */
+	public byte[] createPreviewImageAsBytesForAttachment(Attachment att) throws IOException {
+		byte[] file = att.getFile();
+		BufferedImage preview = createPreviewImage(file);
+	
+		int maxSize = 700; // Example target height
+		BufferedImage resizedPreview = resizeImage(preview, maxSize);
+
+		byte[] imageBytes = createPreviewImageAsBytes(resizedPreview);
+		return imageBytes;
+	}
+
+	/**
+	 * 
+	 * @param id
+	 * @return
+	 * @throws IOException
 	 */
 	public byte[] createPreviewImageAsBytesForInvoice(Long id) throws IOException {
 		Optional<Invoice> invoice = invoiceRepository.findById(id);
 		for (Attachment iterable_element : invoice.get().getAttachments()) {
 			return createPreviewImageAsBytesForAttachment(iterable_element);
-			//String base64Image = Base64.getEncoder().encodeToString(imageBytes);
+			// String base64Image = Base64.getEncoder().encodeToString(imageBytes);
 		}
 		return null;
-		
 
 	}
 
@@ -71,7 +90,7 @@ public class InvoiceService {
 		document.close();
 		return image;
 	}
-	
+
 	/**
 	 * 
 	 * @param preview
@@ -84,6 +103,7 @@ public class InvoiceService {
 		return baos.toByteArray();
 
 	}
+
 	public BufferedImage createPreviewImage(MultipartFile file) throws IOException {
 		PDDocument document = PDDocument.load(file.getInputStream());
 		PDFRenderer pdfRenderer = new PDFRenderer(document);
@@ -97,6 +117,30 @@ public class InvoiceService {
 		BufferedImage image = createPreviewImage(file);
 		return createPreviewImageAsBytes(image);
 	}
+
+	private BufferedImage resizeImage(BufferedImage originalImage, int maxSize) {
+		int originalWidth = originalImage.getWidth();
+	    int originalHeight = originalImage.getHeight();
+	    float aspectRatio = (float) originalWidth / originalHeight;
+
+	    int targetWidth, targetHeight;
+
+	    if (originalWidth > originalHeight) {
+	        targetWidth = maxSize;
+	        targetHeight = (int) (targetWidth / aspectRatio);
+	    } else {
+	        targetHeight = maxSize;
+	        targetWidth = (int) (targetHeight * aspectRatio);
+	    }
+		
+		Image tmp = originalImage.getScaledInstance(targetWidth, targetHeight, Image.SCALE_SMOOTH);
+		BufferedImage resizedImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g2d = resizedImage.createGraphics();
+		g2d.drawImage(tmp, 0, 0, null);
+		g2d.dispose();
+		return resizedImage;
+	}
+
 	/*
 	 * private byte[] createPreviewImageAsBytes(Long id) {
 	 * 

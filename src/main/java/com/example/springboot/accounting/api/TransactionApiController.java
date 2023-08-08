@@ -1,6 +1,7 @@
 package com.example.springboot.accounting.api;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.ParseException;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -31,9 +33,11 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.springboot.accounting.model.TransactionType;
 import com.example.springboot.accounting.model.dto.CreditCardActivity;
 import com.example.springboot.accounting.model.dto.ManualTransactionRequest;
+import com.example.springboot.accounting.model.dto.TransactionAddAttachmentRequest;
 import com.example.springboot.accounting.model.dto.TransactionDTO;
 import com.example.springboot.accounting.model.dto.TransactionRequest;
 import com.example.springboot.accounting.model.entities.Account;
+import com.example.springboot.accounting.model.entities.Attachment;
 import com.example.springboot.accounting.model.entities.BankReccord;
 import com.example.springboot.accounting.model.entities.BankStatement;
 import com.example.springboot.accounting.model.entities.Transaction;
@@ -407,6 +411,23 @@ public class TransactionApiController {
 		transaction.setNote(note);
 		transactionService.save(transaction);
 		return ResponseEntity.ok().build(); // Respond with 200 OK status
+	}
+	             //api/transaction/2657/addAttachment
+	@PostMapping("/api/transaction/addAttachment")
+	public ResponseEntity<Object> addAttachment(@ModelAttribute TransactionAddAttachmentRequest req)
+	{
+		Transaction transaction = transactionService.findById(req.getId());
+		Attachment att = new Attachment();
+		try {
+			att.setFile(req.getFile().getBytes());
+			transaction.addAttachment(att);
+			transactionService.save(transaction);
+		} catch (IOException e) {
+		
+			e.printStackTrace();
+		}
+	
+		return ResponseEntity.ok().build();
 	}
 
 }

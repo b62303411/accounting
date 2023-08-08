@@ -24,8 +24,8 @@ public class AttachmentApiController {
 	}
 
 	@GetMapping("/preview/{id}")
-	public ResponseEntity<String> previewBill(@PathVariable Long id) throws IOException {
-		byte[] imageBytes = service.createPreviewImageAsBytesForInvoice(id);
+	public ResponseEntity<String> preview(@PathVariable Long id) throws IOException {
+		byte[] imageBytes = service.createPreviewImageAsBytesForAttachment(id);
 		String base64Image = Base64.getEncoder().encodeToString(imageBytes);
 		return ResponseEntity.ok(base64Image);
 	}
