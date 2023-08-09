@@ -11,6 +11,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.example.springboot.accounting.model.MenuOptions;
+import com.example.springboot.accounting.model.dto.MenuOption;
 import com.example.springboot.accounting.model.entities.Account;
 import com.example.springboot.accounting.model.entities.CompanyProfile;
 import com.example.springboot.accounting.repository.AccountRepository;
@@ -38,6 +40,7 @@ public class AdministrationController {
 		model.addAttribute("companyProfile", profile);
 		model.addAttribute("selectedYear", currentYear);
 		model.addAttribute("year", currentYear);
+		insertOptions(model);
 		return "companyProfile";
 	}
 	
@@ -49,8 +52,13 @@ public class AdministrationController {
 		model.addAttribute("accounts", accounts);
 		model.addAttribute("selectedYear", currentYear);
 		model.addAttribute("year", currentYear);
+		insertOptions(model);
 		return "accounts";
 	}
 	
+	private void insertOptions(Model model) {
+		List<MenuOption> menuOptions = MenuOptions.getOptions();
+		model.addAttribute("menuOptions", menuOptions);
+	}
 	
 }

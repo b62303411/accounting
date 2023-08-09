@@ -68,84 +68,89 @@
 
 <body>
 	<header th:replace="fragments/header :: header"></header>
-		<div class="container-fluid">
+	<div class="container-fluid">
 		<!-- Left Side Menu -->
 		<div class="row">
 			<div th:replace="fragments/sidebar :: sidebar"></div>
 			<div class="col-md-10">
-		<div class="container shadow min-vh-100 py-2">
-			<h1>Assets</h1>
-			<div class="table-responsive">
+				<div th:replace="fragments/yearselect :: navbar"></div>
+				<div class="container shadow min-vh-100 py-2">
+					<h1>Assets</h1>
+					<div class="table-responsive">
 
-				<h3>Create New Bill</h3>
-				<form th:action="@{/api/invoice/create}" method="post" enctype="multipart/form-data">
-					<div class="form-group">
-						<label for="description">Description:</label>
-						<input type="text" id="description" name="description" class="form-control" required />
+						<h3>Create New Bill</h3>
+						<form th:action="@{/api/invoice/create}" method="post" enctype="multipart/form-data">
+							<div class="form-group">
+								<label for="description">Description:</label>
+								<input type="text" id="description" name="description" class="form-control" required />
+							</div>
+							<div class="form-group">
+								<label for="amount">Amount:</label>
+								<input type="number" id="amount" name="amount" class="form-control" required />
+							</div>
+							<div class="form-group">
+								<label for="date">Date:</label>
+								<input type="date" id="date" name="date" class="form-control" required />
+							</div>
+							<div class="form-group">
+								<label for="file">File (Bill):</label>
+								<input type="file" id="file" name="file" class="form-control-file" required />
+							</div>
+							<button type="submit" class="btn btn-primary">Create Bill</button>
+						</form>
+						<div class="container my-3">
+							<h1>Bills</h1>
+							<table class="table">
+								<thead>
+									<tr>
+										<th>ID</th>
+										<th>Description</th>
+										<th>Amount</th>
+										<th>Date</th>
+										<th>Attachments</th>
+										<th>Actions</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr th:each="bill : ${bills}">
+										<td th:text="${bill.id}"></td>
+										<td>
+											<span th:id="'description-'+${bill.id}" contenteditable="true"
+												th:text="${bill.description}"></span>
+										</td>
+										<td>
+											<span th:id="'amount-'+${bill.id}" contenteditable="true"
+												th:text="${bill.amount}"></span>
+										</td>
+										<td>
+											<input type="date" th:id="'date-'+${bill.id}"
+												th:value="${#dates.format(bill.date, 'yyyy-MM-dd')}" />
+										</td>
+										<td>
+											<div th:each="attachment : ${bill.attachments}">
+												<button class="btn btn-primary"
+													th:onclick="'showPreview(' + ${attachment.id} + ')'">Preview
+													PDF</button>
+											</div>
+										</td>
+										<td>
+											<form th:action="@{/bills/{id}/addAttachment(id=${bill.id})}" method="post"
+												enctype="multipart/form-data">
+												<input type="file" name="attachment" required />
+												<button type="submit">Add Attachment</button>
+											</form>
+										</td>
+										<td>
+											<button th:onclick="'editBill(' + ${bill.id} + ')'">Edit</button>
+											<button th:onclick="'saveBill(' + ${bill.id} + ')'">Save</button>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
 					</div>
-					<div class="form-group">
-						<label for="amount">Amount:</label>
-						<input type="number" id="amount" name="amount" class="form-control" required />
-					</div>
-					<div class="form-group">
-						<label for="date">Date:</label>
-						<input type="date" id="date" name="date" class="form-control" required />
-					</div>
-					<div class="form-group">
-						<label for="file">File (Bill):</label>
-						<input type="file" id="file" name="file" class="form-control-file" required />
-					</div>
-					<button type="submit" class="btn btn-primary">Create Bill</button>
-				</form>
-				<div class="container my-3">
-					<h1>Bills</h1>
-					<table class="table">
-						<thead>
-							<tr>
-								<th>ID</th>
-								<th>Description</th>
-								<th>Amount</th>
-								<th>Date</th>
-								<th>Attachments</th>
-								<th>Actions</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr th:each="bill : ${bills}">
-								<td th:text="${bill.id}"></td>
-								<td>
-									<span th:id="'description-'+${bill.id}" contenteditable="true"
-										th:text="${bill.description}"></span>
-								</td>
-								<td>
-									<span th:id="'amount-'+${bill.id}" contenteditable="true"
-										th:text="${bill.amount}"></span>
-								</td>
-								<td>
-									<input type="date" th:id="'date-'+${bill.id}" th:value="${#dates.format(bill.date, 'yyyy-MM-dd')}" />
-								</td>
-								<td>
-									<div th:each="attachment : ${bill.attachments}">
-										<button class="btn btn-primary"
-											th:onclick="'showPreview(' + ${attachment.id} + ')'">Preview PDF</button>
-									</div>
-								</td>
-								<td>
-									<form th:action="@{/bills/{id}/addAttachment(id=${bill.id})}" method="post"
-										enctype="multipart/form-data">
-										<input type="file" name="attachment" required />
-										<button type="submit">Add Attachment</button>
-									</form>
-								</td>
-								<td>
-									<button th:onclick="'editBill(' + ${bill.id} + ')'">Edit</button>
-									<button th:onclick="'saveBill(' + ${bill.id} + ')'">Save</button>
-								</td>
-							</tr>
-						</tbody>
-					</table>
 				</div>
-			</div></div></div>
+			</div>
 			<!-- Modal -->
 			<div class="modal fade" id="previewModal" tabindex="-1" role="dialog">
 				<div class="modal-dialog modal-lg" role="document">

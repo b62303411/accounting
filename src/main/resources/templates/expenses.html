@@ -21,6 +21,7 @@
 		<div class="row">
 			<div th:replace="fragments/sidebar :: sidebar"></div>
 			<div class="col-md-10">
+				<div th:replace="fragments/yearselect :: navbar"></div>
 				<h4>Expenses Statement for <span th:text="${companyName}">Company</span> for the year ended
 					<span th:text="${'AU ' + fiscal_end_day + ' ' + fiscal_end_month + ' ' + fiscal_end_year}"></span>
 				</h4>
@@ -32,18 +33,30 @@
 					<table class="table table-striped">
 						<thead>
 							<tr>
-								<th>Description</th>
-								<th>Type</th>
-								<th>Amount</th>
-								<th>Date</th>
+								<th>DATE</th>
+								<th>TYPE</th>
+								<th>NO.</th>
+								<th>PAYEE</th>
+								<th>CATEGORY</th>
+								<th>MEMO</th>
+								<th>TOTAL BEFORE SALES TAX</th>
+								<th>SALES TAX</th>
+								<th>TOTAL</th>
+								<th>ACTION</th>
 							</tr>
 						</thead>
 						<tbody>
 							<tr th:each="line : ${expenses}">
-								<td th:text="${line.description}"></td>
-								<td th:text="${line.expenseType}"></td>
-								<td th:text="${#numbers.formatDecimal(line.amount, 1, 'COMMA', 2, 'POINT')}+'$'"></td>
 								<td th:text="${line.date}"> </td>
+								<td th:text="${line.expenseType}"></td>
+								<td th:text="${line.id}"></td>
+								<td th:text="${line.payee}"></td>
+								<td th:text="${line.expenseType}"></td>
+								<td th:text="${line.description}"></td>
+								<td th:text="${line.tbst}"></td>
+								<td th:text="${line.st}"></td>
+								<td th:text="${#numbers.formatDecimal(line.amount, 1, 'COMMA', 2, 'POINT')}+'$'"></td>
+								
 							</tr>
 							<tr>
 								<td th:text="${totals.description}"></td>

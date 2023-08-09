@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.example.springboot.accounting.model.FiscalYearEnd;
+import com.example.springboot.accounting.model.MenuOptions;
 import com.example.springboot.accounting.model.TransactionType;
 import com.example.springboot.accounting.model.dto.AccountValidation;
 import com.example.springboot.accounting.model.dto.ExpensesLine;
@@ -46,20 +47,7 @@ public class FinanceThimeleafController {
 	private AssetRepository assetRepository;
 	private InvoiceRepository invoiceRepo;
 
-	public List<MenuOption> getOptions()
-	{
-		List<MenuOption> options =Arrays.asList(
-			    new MenuOption("Transaction", "view/transactions/" ),
-			    new MenuOption("Income Statement", "view/incomeStatement/" ),
-			    new MenuOption("Balance Sheet", "view/balance/"),
-			    new MenuOption("Revenues", "view/revenues/"),
-			    new MenuOption("Expenses", "view/expenses/"),
-			    new MenuOption("Bills", "view/bills/")
-			);
-
-		return options;
-		
-	}
+	
 	
 	@Autowired
 	public FinanceThimeleafController(AssetService assetService,
@@ -91,8 +79,7 @@ public class FinanceThimeleafController {
 		model.addAttribute("selectedYear", year);
 		model.addAttribute("companyName", service.getProfile().getName());	
 		
-		List<MenuOption> menuOptions = getOptions();
-		model.addAttribute("menuOptions", menuOptions);
+		insertOptions(model);
 		model.addAttribute("currentPage","Revenues");
 		
 		model.addAttribute("revenues", revenues);
@@ -110,10 +97,13 @@ public class FinanceThimeleafController {
 		List<Invoice> bills= new ArrayList<Invoice>();
 		bills = invoiceRepo.findAll();
 		model.addAttribute("bills", bills);
-		List<MenuOption> menuOptions = getOptions();
-		model.addAttribute("menuOptions", menuOptions);
+		insertOptions(model);
 		model.addAttribute("currentPage","Bills");
 		return "bills";
+	}
+	private void insertOptions(Model model) {
+		List<MenuOption> menuOptions = MenuOptions.getOptions();
+		model.addAttribute("menuOptions", menuOptions);
 	}
 	
 	@GetMapping("/expenses/{year}")
@@ -132,8 +122,7 @@ public class FinanceThimeleafController {
 		
 		model.addAttribute("selectedYear", year);
 		model.addAttribute("companyName", service.getProfile().getName());	
-		List<MenuOption> menuOptions = getOptions();
-		model.addAttribute("menuOptions", menuOptions);
+		insertOptions(model);
 		model.addAttribute("currentPage","Expenses");
 		
 		model.addAttribute("expenses", expenses);
@@ -172,8 +161,7 @@ public class FinanceThimeleafController {
 		
 		model.addAttribute("currentPage","Transaction");
 		
-		List<MenuOption> menuOptions = getOptions();
-		model.addAttribute("menuOptions", menuOptions);
+		insertOptions(model);
 		
 		List<Long> assetLessTransactions = new ArrayList<Long>();
 		for (Transaction transaction : transactions) {
@@ -240,8 +228,7 @@ public class FinanceThimeleafController {
 		List<FinancialStatementLine> assets = assetService.getAssetFinantialStatement();
 		model.addAttribute("assets",assets);
 		model.addAttribute("selectedYear", year);
-		List<MenuOption> menuOptions = getOptions();
-		model.addAttribute("menuOptions", menuOptions);
+		insertOptions(model);
 		model.addAttribute("currentPage","Balance Sheet");
 		return "BalanceSheet";
 	}
@@ -254,8 +241,7 @@ public class FinanceThimeleafController {
 		model.addAttribute("selected_report_type", "transactions");
 		model.addAttribute("companyName", service.getProfile().getName());
 		model.addAttribute("selectedYear", year);
-		List<MenuOption> menuOptions = getOptions();
-		model.addAttribute("menuOptions", menuOptions);
+		insertOptions(model);
 		model.addAttribute("currentPage","Income Statement");
 		
 		model.addAttribute("incomeStatement", lines);

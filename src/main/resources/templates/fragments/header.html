@@ -39,21 +39,7 @@
 					<button type="submit" class="btn btn-primary ml-2">Upload</button>
 				</form>
 			</div>
-		</nav>
-
-		<nav class="navbar navbar-expand-lg navbar-light bg-light">
-			<!-- Implement navigation menu -->
-			<ul class="navbar-nav">
-
-				<li th:each="year : ${#numbers.sequence(2016, 2023)}" 
-					class="nav-item" th:classappend="${year == selectedYear} ? 'active'"
-					th:style="${year == selectedYear} ? 'background-color: #f8f9fa; font-weight: bold;' : ''" >
-					<a class="nav-link" th:href="@{|${year}|}" th:text="${year}"></a>
-				</li>
-				</li>
-			</ul>
-        </nav>
-        
+		</nav>   
 	</div>
 </body>
 
