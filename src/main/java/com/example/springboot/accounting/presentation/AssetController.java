@@ -33,6 +33,11 @@ public class AssetController {
 	@GetMapping
 	public String assets(Model model) {
 		List<Asset> assets = assetService.findAll();
+		double total=0;
+		for (Asset asset : assets) {
+			total+=asset.getCurrentValue();
+		}
+		model.addAttribute("total", total);
 		model.addAttribute("assets", assets);
 		model.addAttribute("year", 2023);
 		return "assets";

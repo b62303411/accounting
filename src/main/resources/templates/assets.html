@@ -87,7 +87,7 @@
             <tbody>
 				<th:block th:each="asset, stat : ${assets}">
                 <tr data-bs-toggle="collapse" th:data-bs-target="'#r'+${stat.index}">
-                    <th scope="row">1 <i class="bi bi-chevron-down"></i></th>
+                    <th scope="row" th:text="*{asset.id}">1 <i class="bi bi-chevron-down"></i></th>
                   	<td th:text="*{asset.purchaceTransaction.description}"></td>
 					<td th:text="*{asset.purchaceTransaction.amount}+'$'"></td>
 					<td th:text="${#numbers.formatDecimal(asset.currentValue, 1, 'COMMA', 2, 'POINT')}+'$'"></td>
@@ -106,7 +106,11 @@
 						 </td>
                 </tr>
                 </th:block>
-                
+                <th>
+					<td>Total</td>
+					<td> - </td>
+					<td th:text="${#numbers.formatDecimal(total, 1, 'COMMA', 2, 'POINT')}+'$'"></td>
+				</th>
             </tbody>
         </table>
     </div>
