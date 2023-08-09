@@ -6,36 +6,47 @@
 
 <body>
 	<header th:replace="fragments/header :: header"></header>
-	<div class="container">
-		<h4>Revenue Statement for <span th:text="${companyName}">Company</span> for the year ended 
-	<span th:text="${'AU ' + fiscal_end_day + ' ' + fiscal_end_month + ' ' + fiscal_end_year}"></span></h4>
-		<table class="table table-striped">
-			<thead>
-				<tr>
-					<th>Description</th>
-					<th>Amount</th>
-					<th>Revenue</th>
-					<th>Tps/Tvq</th>
-					<th>Date</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr th:each="line : ${revenues}">
-					<td th:text="${line.description}"></td>
-					<td th:text="${#numbers.formatDecimal(line.amount, 1, 'COMMA', 2, 'POINT')}+'$'"></td>
-				    <td th:text="${#numbers.formatDecimal(line.revenue, 1, 'COMMA', 2, 'POINT')}+'$'"></td>
-				    <td th:text="${#numbers.formatDecimal(line.tpsTvq, 1, 'COMMA', 2, 'POINT')}+'$'"></td>
-					<td th:text="${line.date}"> </td>
-				</tr>
-				<tr>
-					<td th:text="${totals.description}"></td>
-					<td th:text="${#numbers.formatDecimal(totals.amount, 1, 'COMMA', 2, 'POINT')}+'$'"></td>
-				    <td th:text="${#numbers.formatDecimal(totals.revenue, 1, 'COMMA', 2, 'POINT')}+'$'"></td>
-				    <td th:text="${#numbers.formatDecimal(totals.tpsTvq, 1, 'COMMA', 2, 'POINT')}+'$'"></td>
-					<td> </td>
-				</tr>
-			</tbody>
-		</table>
+	<div class="container-fluid">
+		<!-- Left Side Menu -->
+		<div class="row">
+			<div th:replace="fragments/sidebar :: sidebar"></div>
+			<div class="col-md-10">
+				<div class="container shadow min-vh-100 py-2">
+					<h4>Revenue Statement for <span th:text="${companyName}">Company</span> for the year ended
+						<span
+							th:text="${'AU ' + fiscal_end_day + ' ' + fiscal_end_month + ' ' + fiscal_end_year}"></span>
+					</h4>
+					<table class="table table-striped">
+						<thead>
+							<tr>
+								<th>Description</th>
+								<th>Amount</th>
+								<th>Revenue</th>
+								<th>Tps/Tvq</th>
+								<th>Date</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="line : ${revenues}">
+								<td th:text="${line.description}"></td>
+								<td th:text="${#numbers.formatDecimal(line.amount, 1, 'COMMA', 2, 'POINT')}+'$'"></td>
+								<td th:text="${#numbers.formatDecimal(line.revenue, 1, 'COMMA', 2, 'POINT')}+'$'"></td>
+								<td th:text="${#numbers.formatDecimal(line.tpsTvq, 1, 'COMMA', 2, 'POINT')}+'$'"></td>
+								<td th:text="${line.date}"> </td>
+							</tr>
+							<tr>
+								<td th:text="${totals.description}"></td>
+								<td th:text="${#numbers.formatDecimal(totals.amount, 1, 'COMMA', 2, 'POINT')}+'$'"></td>
+								<td th:text="${#numbers.formatDecimal(totals.revenue, 1, 'COMMA', 2, 'POINT')}+'$'">
+								</td>
+								<td th:text="${#numbers.formatDecimal(totals.tpsTvq, 1, 'COMMA', 2, 'POINT')}+'$'"></td>
+								<td> </td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
 	</div>
 </body>
 

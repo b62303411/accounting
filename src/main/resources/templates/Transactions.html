@@ -28,95 +28,109 @@
 
 <body>
 	<div th:replace="fragments/header :: header"></div>
+	<div class="container-fluid">
+		<div class="row">
+			<!-- Left Side Menu -->
+			<div th:replace="fragments/sidebar :: sidebar"></div>
 
-	<div class="container">
-		<div>
-			<h4>Reports Availabilities</h4>
-			<table>
-				<thead>
-					<tr>
-						<th>Account </th>
-						<th th:each="month : ${months}"><span th:text="${month}"></span></th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr th:each="account : ${accounts}">
-						<td th:text="${account.number}"> </td>
-						<td th:each="report : ${account.availabilities}" th:text="${report.available}"
-							th:class="${report.available} ? 'month-available' : 'month-absent'"></td>
-					</tr>
-				</tbody>
-			</table>
+			<!-- Main Content -->
+			<div class="col-md-10">
+				<!-- Your main content here -->
+				<div class="card">
+					<div class="card-header">
+						<h4>Reports Availabilities</h4>
+					</div>
+					<div class="card-body">
+						<table>
+							<thead>
+								<tr>
+									<th>Account </th>
+									<th th:each="month : ${months}"><span th:text="${month}"></span></th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:each="account : ${accounts}">
+									<td th:text="${account.number}"> </td>
+									<td th:each="report : ${account.availabilities}" th:text="${report.available}"
+										th:class="${report.available} ? 'month-available' : 'month-absent'"></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<h2>Transactions</h2>
+				<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#transactionModal">
+					Enter New Transaction
+				</button>
+				<table id="transaction-table" class="table table-striped">
+					<thead>
+						<tr>
+							<th>#</th>
+							<th>Account</th>
+							<th scope="col">Description</th>
+							<th>Transaction Date</th>
+							<th>Transaction Amount</th>
+							<th>Type</th>
+							<th>Transaction Type</th>
+							<th>Action</th>
+							<th>Note</th>
+							<th>Attachments</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="transaction : ${transactions}">
+							<td th:text="${transaction.id}"></td>
+							<td th:text="${transaction.account}"></td>
+							<td class='transactionDescription' th:text="${transaction.description}"></td>
+							<td th:text="${transaction.date}"></td>
+							<td th:text="${transaction.amount}"></td>
+							<td th:text="${transaction.transactionNature}"></td>
+							<td th:text="${transaction.type}"></td>
+							<td>
+								<input type="hidden" th:value="${transaction.id}" name="id" />
+								<div class="form-group">
+									<select class="form-control transaction-row" th:id="${transaction.id}" name="type">
+										<option
+											th:each="type : ${T(com.example.springboot.accounting.model.TransactionType).values()}"
+											s th:value="${type}" th:selected="${transaction.type == type}">
+											[[${type}]]
+										</option>
+									</select>
+								</div>
+								<div th:if="${assetLessTransactions.contains(transaction.id)}">
+									<a th:href="@{'/view/assets/create/'+${transaction.id}}">
+										<button>Create Asset</button>
+									</a>
+
+								</div>
+								<form action="/api/transaction/addAttachment" method="post"
+									enctype="multipart/form-data">
+									<input type="hidden" name="id" th:value="${transaction.id}" />
+									<input type="file" name="file" required />
+									<button type="submit">Add Attachment</button>
+								</form>
+							</td>
+							<td>
+								<input th:id="${'note-input-' + transaction.id}" onchange="updateNote(this)" type="text"
+									th:value="${transaction.note}" name="note" />
+							</td>
+							<td>
+								<div th:each="attachment : ${transaction.attachments}">
+									<button class="btn btn-primary"
+										th:onclick="'showPreview(' + ${attachment.id} + ')'">Preview
+										PDF</button>
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#transactionModal">
+					Enter New Transaction
+				</button>
+
+			</div>
 		</div>
-		<h2>Transactions</h2>
-		<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#transactionModal">
-			Enter New Transaction
-		</button>
-		<table id="transaction-table" class="table table-striped">
-			<thead>
-				<tr>
-					<th>#</th>
-					<th>Account</th>
-					<th scope="col">Description</th>
-					<th>Transaction Date</th>
-					<th>Transaction Amount</th>
-					<th>Type</th>
-					<th>Transaction Type</th>
-					<th>Action</th>
-					<th>Note</th>
-					<th>Attachments</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr th:each="transaction : ${transactions}">
-					<td th:text="${transaction.id}"></td>
-					<td th:text="${transaction.account}"></td>
-					<td class='transactionDescription' th:text="${transaction.description}"></td>
-					<td th:text="${transaction.date}"></td>
-					<td th:text="${transaction.amount}"></td>
-					<td th:text="${transaction.transactionNature}"></td>
-					<td th:text="${transaction.type}"></td>
-					<td>
-						<input type="hidden" th:value="${transaction.id}" name="id" />
-						<div class="form-group">
-							<select class="form-control transaction-row" th:id="${transaction.id}" name="type">
-								<option
-									th:each="type : ${T(com.example.springboot.accounting.model.TransactionType).values()}"
-									s th:value="${type}" th:selected="${transaction.type == type}">
-									[[${type}]]
-								</option>
-							</select>
-						</div>
-						<div th:if="${assetLessTransactions.contains(transaction.id)}">
-							<a th:href="@{'/view/assets/create/'+${transaction.id}}">
-								<button>Create Asset</button>
-							</a>
-
-						</div>
-						<form action="/api/transaction/addAttachment" method="post" enctype="multipart/form-data">
-							<input type="hidden" name="id" th:value="${transaction.id}" />
-							<input type="file" name="file" required />
-							<button type="submit">Add Attachment</button>
-						</form>
-					</td>
-					<td>
-						<input th:id="${'note-input-' + transaction.id}" onchange="updateNote(this)" type="text"
-							th:value="${transaction.note}" name="note" />
-					</td>
-					<td>
-						<div th:each="attachment : ${transaction.attachments}">
-							<button class="btn btn-primary" th:onclick="'showPreview(' + ${attachment.id} + ')'">Preview
-								PDF</button>
-						</div>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-		<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#transactionModal">
-			Enter New Transaction
-		</button>
 	</div>
-
 	<div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
 		aria-hidden="true">
 		<div class="modal-dialog" role="document">

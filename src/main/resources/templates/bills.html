@@ -68,7 +68,11 @@
 
 <body>
 	<header th:replace="fragments/header :: header"></header>
-	<div class="table-responsive">
+		<div class="container-fluid">
+		<!-- Left Side Menu -->
+		<div class="row">
+			<div th:replace="fragments/sidebar :: sidebar"></div>
+			<div class="col-md-10">
 		<div class="container shadow min-vh-100 py-2">
 			<h1>Assets</h1>
 			<div class="table-responsive">
@@ -141,7 +145,7 @@
 						</tbody>
 					</table>
 				</div>
-			</div>
+			</div></div></div>
 			<!-- Modal -->
 			<div class="modal fade" id="previewModal" tabindex="-1" role="dialog">
 				<div class="modal-dialog modal-lg" role="document">

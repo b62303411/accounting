@@ -1,103 +1,116 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head><style>
-	.chart-container {
-  max-width: 400px; /* Set the maximum width of the chart */
-  width: 100%; /* Make the chart take up the full width of its container */
-  position: relative; /* Needed for responsiveness */
-}</style>
+<head>
+	<style>
+		.chart-container {
+			max-width: 400px;
+			/* Set the maximum width of the chart */
+			width: 100%;
+			/* Make the chart take up the full width of its container */
+			position: relative;
+			/* Needed for responsiveness */
+		}
+	</style>
 </head>
 
 <body>
 	<header th:replace="fragments/header :: header"></header>
-	<div class="container">
-		<h4>Expenses Statement for <span th:text="${companyName}">Company</span> for the year ended 
-	<span th:text="${'AU ' + fiscal_end_day + ' ' + fiscal_end_month + ' ' + fiscal_end_year}"></span></h4>
-		<div class="container shadow min-vh-100 py-2">
-			<h4>Operating Expenses</h4>
-			<div class="chart-container">
-			<canvas id="spendingChart" width="100" height="100"></canvas>
+	<div class="container-fluid">
+		<!-- Left Side Menu -->
+		<div class="row">
+			<div th:replace="fragments/sidebar :: sidebar"></div>
+			<div class="col-md-10">
+				<h4>Expenses Statement for <span th:text="${companyName}">Company</span> for the year ended
+					<span th:text="${'AU ' + fiscal_end_day + ' ' + fiscal_end_month + ' ' + fiscal_end_year}"></span>
+				</h4>
+				<div class="container shadow min-vh-100 py-2">
+					<h4>Operating Expenses</h4>
+					<div class="chart-container">
+						<canvas id="spendingChart" width="100" height="100"></canvas>
+					</div>
+					<table class="table table-striped">
+						<thead>
+							<tr>
+								<th>Description</th>
+								<th>Type</th>
+								<th>Amount</th>
+								<th>Date</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="line : ${expenses}">
+								<td th:text="${line.description}"></td>
+								<td th:text="${line.expenseType}"></td>
+								<td th:text="${#numbers.formatDecimal(line.amount, 1, 'COMMA', 2, 'POINT')}+'$'"></td>
+								<td th:text="${line.date}"> </td>
+							</tr>
+							<tr>
+								<td th:text="${totals.description}"></td>
+								<td th:text="${#numbers.formatDecimal(totals.amount, 1, 'COMMA', 2, 'POINT')}+'$'"></td>
+								<td> </td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<div class="container shadow min-vh-100 py-2">
+					<h4>Other Expenses</h4>
+					<table class="table table-striped">
+						<thead>
+							<tr>
+								<th>Description</th>
+
+								<th>Amount</th>
+								<th>Date</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="line : ${otherExpenses}">
+								<td th:text="${line.description}"></td>
+
+								<td th:text="${#numbers.formatDecimal(line.amount, 1, 'COMMA', 2, 'POINT')}+'$'"></td>
+								<td th:text="${line.date}"> </td>
+							</tr>
+							<tr>
+								<td th:text="${totalOthers.description}"></td>
+								<td th:text="${#numbers.formatDecimal(totalOthers.amount, 1, 'COMMA', 2, 'POINT')}+'$'">
+								</td>
+								<td> </td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
 			</div>
-		<table class="table table-striped">
-			<thead>
-				<tr>
-					<th>Description</th>
-						<th>Type</th>
-					<th>Amount</th>
-					<th>Date</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr th:each="line : ${expenses}">
-					<td th:text="${line.description}"></td>
-					<td th:text="${line.expenseType}"></td>
-					<td th:text="${#numbers.formatDecimal(line.amount, 1, 'COMMA', 2, 'POINT')}+'$'"></td>				    
-					<td th:text="${line.date}"> </td>
-				</tr>
-				<tr>
-					<td th:text="${totals.description}"></td>
-					<td th:text="${#numbers.formatDecimal(totals.amount, 1, 'COMMA', 2, 'POINT')}+'$'"></td>		
-					<td> </td>
-				</tr>
-			</tbody>
-		</table>
-		</div>
-		<div class="container shadow min-vh-100 py-2">
-			<h4>Other Expenses</h4>
-				<table class="table table-striped">
-			<thead>
-				<tr>
-					<th>Description</th>
-				
-					<th>Amount</th>
-					<th>Date</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr th:each="line : ${otherExpenses}">
-					<td th:text="${line.description}"></td>
-			
-					<td th:text="${#numbers.formatDecimal(line.amount, 1, 'COMMA', 2, 'POINT')}+'$'"></td>				    
-					<td th:text="${line.date}"> </td>
-				</tr>
-				<tr>
-					<td th:text="${totalOthers.description}"></td>
-					<td th:text="${#numbers.formatDecimal(totalOthers.amount, 1, 'COMMA', 2, 'POINT')}+'$'"></td>		
-					<td> </td>
-				</tr>
-			</tbody>
-		</table>
 		</div>
 	</div>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script th:inline="javascript">
-  // Get the spending data from the Thymeleaf model
-  var spendingData = /*[[${spendingData}]]*/ {};
+	// Get the spending data from the Thymeleaf model
+	var spendingData = /*[[${spendingData}]]*/ {};
 
-  // Prepare the labels and values for the pie chart
-  var labels = Object.keys(spendingData);
-  var values = Object.values(spendingData);
+	// Prepare the labels and values for the pie chart
+	var labels = Object.keys(spendingData);
+	var values = Object.values(spendingData);
 
-  // Get the canvas element
-  var ctx = document.getElementById('spendingChart').getContext('2d');
+	// Get the canvas element
+	var ctx = document.getElementById('spendingChart').getContext('2d');
 
-  // Create the pie chart
-  var myPieChart = new Chart(ctx, {
-    type: 'pie',
-    data: {
-      labels: labels,
-      datasets: [{
-        data: values,
-        backgroundColor: [
-          // You can define colors for each segment here
-          'red', 'blue', 'green', 'yellow', 'orange'// ...
-        ]
-      }]
-    }
-  });
+	// Create the pie chart
+	var myPieChart = new Chart(ctx, {
+		type: 'pie',
+		data: {
+			labels: labels,
+			datasets: [{
+				data: values,
+				backgroundColor: [
+					// You can define colors for each segment here
+					'red', 'blue', 'green', 'yellow', 'orange'// ...
+				]
+			}]
+		}
+	});
 </script>
 
 </html>

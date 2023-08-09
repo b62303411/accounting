@@ -45,36 +45,15 @@
 			<!-- Implement navigation menu -->
 			<ul class="navbar-nav">
 
-				<li th:each="year : ${#numbers.sequence(2016, 2023)}"
-					class="nav-item" th:classappend="${year == selectedYear} ? 'active'" >
+				<li th:each="year : ${#numbers.sequence(2016, 2023)}" 
+					class="nav-item" th:classappend="${year == selectedYear} ? 'active'"
+					th:style="${year == selectedYear} ? 'background-color: #f8f9fa; font-weight: bold;' : ''" >
 					<a class="nav-link" th:href="@{|${year}|}" th:text="${year}"></a>
 				</li>
 				</li>
 			</ul>
         </nav>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-			<ul class="navbar-nav">
-				<li  class="nav-item">
-					<a class="nav-link" href="#" th:href="@{|/${'view/transactions/'+year}}">Transaction</a>
-				</li>
-				<li  class="nav-item">
-					<a class="nav-link" href="#" th:href="@{|/${'view/incomeStatement/'+year}}">Income Statement</a>
-				</li>
-				<li  class="nav-item">
-					<a class="nav-link" href="#" th:href="@{|/${'view/balance/'+year}}">Balance Sheet</a>
-				</li>
-				<li  class="nav-item">
-					<a class="nav-link" href="#" th:href="@{|/${'view/revenues/'+year}}">Revenues</a>
-				</li>
-				<li  class="nav-item">
-					<a class="nav-link" href="#" th:href="@{|/${'view/expenses/'+year}}">Expenses</a>
-				</li>
-					<li  class="nav-item">
-					<a class="nav-link" href="#" th:href="@{|/${'view/bills/'+year}}">Bills</a>
-				</li>
-				
-			</ul>
-		</nav>
+        
 	</div>
 </body>
 
