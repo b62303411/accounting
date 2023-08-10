@@ -54,7 +54,7 @@ public class InvoiceService {
 		byte[] file = att.getFile();
 		BufferedImage preview = createPreviewImage(file);
 	
-		int maxSize = 700; // Example target height
+		int maxSize = 1000; // Example target height
 		BufferedImage resizedPreview = resizeImage(preview, maxSize);
 
 		byte[] imageBytes = createPreviewImageAsBytes(resizedPreview);

@@ -55,6 +55,9 @@ public class InvoiceApiController {
 		if (invoice.isPresent()) {
 			invoice.get().setAmount(request.getAmount());
 			invoice.get().setDescription(request.getDescription());
+			invoice.get().setRecipient(request.getRecipient());
+			invoice.get().setTps(request.getTps());
+			invoice.get().setTvq(request.getTvq());
 			java.sql.Date sqlDate = java.sql.Date.valueOf(request.getDate());
 
 			// Convert java.sql.Date to java.util.Date

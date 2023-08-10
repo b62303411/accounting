@@ -137,13 +137,19 @@ public class FinanceThimeleafController {
 	}
 	private ExpensesLine getTotalLine(List<ExpensesLine> expenses) {
 		double grossAmount=0;
+		double tbst=0;
+		double st = 0;
 		for (ExpensesLine revenueLine : expenses) {
 			grossAmount+=revenueLine.getAmount();
+			tbst+=revenueLine.tbst;
+			st += revenueLine.st;
 			//taxes+= revenueLine.getTpsTvq();
 			//revenue+=revenueLine.getRevenue();
 		}
 		ExpensesLine totals = new ExpensesLine();
 		totals.amount=grossAmount;
+		totals.tbst=tbst;
+		totals.st = st;
 		totals.description= "Total";
 		return totals;
 	}

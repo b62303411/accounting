@@ -60,7 +60,15 @@
 							</tr>
 							<tr>
 								<td th:text="${totals.description}"></td>
+								<td> </td>
+								<td> </td>
+								<td> </td>
+								<td> </td>
+								<td> </td>
+								<td th:text="${#numbers.formatDecimal(totals.tbst, 1, 'COMMA', 2, 'POINT')}+'$'"></td>
+								<td th:text="${#numbers.formatDecimal(totals.st, 1, 'COMMA', 2, 'POINT')}+'$'"></td>
 								<td th:text="${#numbers.formatDecimal(totals.amount, 1, 'COMMA', 2, 'POINT')}+'$'"></td>
+								
 								<td> </td>
 							</tr>
 						</tbody>
