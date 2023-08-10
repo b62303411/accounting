@@ -79,7 +79,7 @@
 					<div class="table-responsive">
 
 						<h3>Create New Bill</h3>
-						<form th:action="@{/api/invoice/create}" method="post" enctype="multipart/form-data">
+						<form id="createBillForm" th:action="@{/api/invoice/create}" method="post" enctype="multipart/form-data">
 							<div class="form-group">
 								<label for="description">Description:</label>
 								<input type="text" id="description" name="description" class="form-control" required />
@@ -141,7 +141,7 @@
 											<span th:id="'tvq-'+${bill.id}" contenteditable="true"
 												th:text="${bill.tvq}"></span>
 										</td>
-									    <td>
+										<td>
 											<span th:id="'recipient-'+${bill.id}" contenteditable="true"
 												th:text="${bill.recipient}"></span>
 										</td>
@@ -212,7 +212,7 @@
 					var description = document.getElementById("description-" + billId);
 					var amount = document.getElementById("amount-" + billId);
 					var date = document.getElementById("date-" + billId);
-                    var recipient = document.getElementById("recipient-" + billId);
+					var recipient = document.getElementById("recipient-" + billId);
 					var isEditable = description.isContentEditable;
 					description.contentEditable = !isEditable;
 					amount.contentEditable = !isEditable;
@@ -232,9 +232,9 @@
 					var description = document.getElementById("description-" + billId).innerText;
 					var amount = document.getElementById("amount-" + billId).innerText;
 					var date = document.getElementById("date-" + billId).value;
-                    var recipient = document.getElementById("recipient-" + billId).innerText;
-                    var tps = document.getElementById("tps-" + billId).innerText;
-                    var tvq = document.getElementById("tvq-" + billId).innerText;
+					var recipient = document.getElementById("recipient-" + billId).innerText;
+					var tps = document.getElementById("tps-" + billId).innerText;
+					var tvq = document.getElementById("tvq-" + billId).innerText;
 					// Create a data object to send to the server
 					var data = {
 						id: billId,
@@ -243,7 +243,7 @@
 						date: date,
 						recipient: recipient,
 						tps: tps,
-					    tvq: tvq
+						tvq: tvq
 						// Add other fields as needed
 					};
 
@@ -258,10 +258,10 @@
 						.then(response => response.json())
 						.then(data => {
 							// Handle the response, e.g., show a success message or update the UI
-						
-								alert("Bill updated successfully!");
-								// Optionally, update the UI or redirect the user
-						
+
+							alert("Bill updated successfully!");
+							// Optionally, update the UI or redirect the user
+
 						})
 						.catch(error => {
 							// Handle any errors that occur during the fetch
@@ -269,6 +269,27 @@
 						});
 				}
 
+				$("#createBillForm").submit(function (e) {
+					e.preventDefault(); // prevent the form from submitting in the normal way
+
+					var formData = new FormData(this); // create FormData object from the form
+
+					$.ajax({
+						url: $(this).attr("action"), // use the form's action attribute as the URL
+						type: "POST",
+						data: formData,
+						processData: false,
+						contentType: false,
+						success: function (response) {
+							// handle successful response here
+							alert("Bill created successfully!");
+						},
+						error: function (jqXHR, textStatus, errorThrown) {
+							// handle error response here
+							alert("An error occurred while creating the bill. Please try again.");
+						}
+					});
+				});
 
 			</script>
 </body>

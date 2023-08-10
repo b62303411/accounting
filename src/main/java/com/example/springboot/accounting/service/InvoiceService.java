@@ -5,6 +5,7 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 import javax.imageio.ImageIO;
@@ -16,20 +17,24 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.springboot.accounting.model.entities.Attachment;
+import com.example.springboot.accounting.model.entities.ExploitationExpense;
 import com.example.springboot.accounting.model.entities.Invoice;
 import com.example.springboot.accounting.repository.AttachmentRepository;
+import com.example.springboot.accounting.repository.ExploitationExpenseRepository;
 import com.example.springboot.accounting.repository.InvoiceRepository;
 
 @Service
 public class InvoiceService {
 
 	private InvoiceRepository invoiceRepository;
+	private ExploitationExpenseRepository expenseRepository;
 	private AttachmentRepository attachmentRepository;
 
 	@Autowired
-	public InvoiceService(AttachmentRepository attachmentRepository, InvoiceRepository invoiceRepository) {
+	public InvoiceService(ExploitationExpenseRepository expenseRepository,AttachmentRepository attachmentRepository, InvoiceRepository invoiceRepository) {
 		this.invoiceRepository = invoiceRepository;
 		this.attachmentRepository = attachmentRepository;
+		this.expenseRepository=expenseRepository;
 	}
 
 	/**
@@ -139,6 +144,12 @@ public class InvoiceService {
 		g2d.drawImage(tmp, 0, 0, null);
 		g2d.dispose();
 		return resizedImage;
+	}
+
+	public List<Invoice> findInvoicesByExpenseId(Long expenseId) {
+		Optional<ExploitationExpense> ex = expenseRepository.findById(expenseId);
+		List<Invoice> invoices = invoiceRepository.findByAmountWithinTolerance(ex.get().getTransaction().getAmount(),50.0);
+		return invoices;
 	}
 
 	/*

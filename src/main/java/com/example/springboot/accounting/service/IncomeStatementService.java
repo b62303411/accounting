@@ -32,13 +32,12 @@ public class IncomeStatementService {
 	private final AssetService assetServices;
 	private final FinancialStatementLineFactory fsf;
 	private final ExploitationExpenseRepository exploitationExpenseRepo;
+
 	@Autowired
-	public IncomeStatementService(
-			ExploitationExpenseRepository exploitationExpenseRepo,
-			CompanyProfileService profile, FinancialStatementLineFactory fsf,
-			TransactionRepository transactionRepository, TransactionService transactionService,
-			AssetService assetServices) {
-		this.exploitationExpenseRepo=exploitationExpenseRepo;
+	public IncomeStatementService(ExploitationExpenseRepository exploitationExpenseRepo, CompanyProfileService profile,
+			FinancialStatementLineFactory fsf, TransactionRepository transactionRepository,
+			TransactionService transactionService, AssetService assetServices) {
+		this.exploitationExpenseRepo = exploitationExpenseRepo;
 		this.transactionRepository = transactionRepository;
 		this.transactionService = transactionService;
 		this.fsf = fsf;
@@ -69,9 +68,7 @@ public class IncomeStatementService {
 			statement.setIncomeTax(incomeTax);
 			statement.setQuebecTax(operatingIncome * 3.2 / 100);
 			statement.setFederalTax(operatingIncome * 9 / 100);
-		}
-		else 
-		{
+		} else {
 			statement.setIncomeTax(0.0);
 			statement.setQuebecTax(0.0);
 			statement.setFederalTax(0.0);
@@ -232,38 +229,38 @@ public class IncomeStatementService {
 
 		return profile.getProfile().getFiscalYearEnd().getFiscalYear(tomorrow);
 	}
-	public  Map<String,Double> getExpenseReport(Integer year) {
+
+	public Map<String, Double> getExpenseReport(Integer year) {
 		Boundaries b = getBoundaries(year);
-		return getExpenseReport(b.date_start,b.date_end);
-		
+		return getExpenseReport(b.date_start, b.date_end);
+
 	}
-	public Map<String,Double> getExpenseReport(Date start,Date stop)
-	{
-		Map<String,Double> maps = new HashMap<String, Double>();
+
+	public Map<String, Double> getExpenseReport(Date start, Date stop) {
+		Map<String, Double> maps = new HashMap<String, Double>();
 		List<Expense> list = getExpensesBetween(start, stop);
-		double FraisBancaires=0;
-		double HonoraireProfessionel=0;
-		double FraisDeplacement=0;
-		double Fournitures=0;
-		double Licences=0;
+		double FraisBancaires = 0;
+		double HonoraireProfessionel = 0;
+		double FraisDeplacement = 0;
+		double Fournitures = 0;
+		double Licences = 0;
 		for (Expense expense : list) {
-			switch(expense.getTypeStr()) 
-			{
-				case "FraisBancaires":
-					FraisBancaires+=expense.getTransaction().getAmount();
-					break;
-				case "HonoraireProfessionel":
-					 HonoraireProfessionel += expense.getTransaction().getAmount();
-					 break;
-				case "FraisDeplacement":
-					FraisDeplacement += expense.getTransaction().getAmount();
-					break;
-				case "Fournitures":
-					Fournitures += expense.getTransaction().getAmount();
-					break;
-				case "Licences":
-					Licences +=expense.getTransaction().getAmount();
-					break;
+			switch (expense.getTypeStr()) {
+			case "FraisBancaires":
+				FraisBancaires += expense.getTransaction().getAmount();
+				break;
+			case "HonoraireProfessionel":
+				HonoraireProfessionel += expense.getTransaction().getAmount();
+				break;
+			case "FraisDeplacement":
+				FraisDeplacement += expense.getTransaction().getAmount();
+				break;
+			case "Fournitures":
+				Fournitures += expense.getTransaction().getAmount();
+				break;
+			case "Licences":
+				Licences += expense.getTransaction().getAmount();
+				break;
 			}
 		}
 		maps.put("FraisBancaires", FraisBancaires);
@@ -272,28 +269,25 @@ public class IncomeStatementService {
 		maps.put("Fournitures", Fournitures);
 		maps.put("Licences", Fournitures);
 		return maps;
-	
+
 	}
-	
-	public List<Expense> getExpensesBetween(Date start, Date stop) 
-	{
+
+	public List<Expense> getExpensesBetween(Date start, Date stop) {
 		List<Expense> expenses = new ArrayList<Expense>();
 		List<Transaction> value = transactionRepository.getExpensesTransactionsForFiscalYear(start, stop);
-		for (Transaction transaction : value) 
-		{
-			ExploitationExpense  ex =exploitationExpenseRepo.findByTransaction(transaction);
+		for (Transaction transaction : value) {
+			ExploitationExpense ex = exploitationExpenseRepo.findByTransaction(transaction);
 			expenses.add(ex);
 		}
 		return expenses;
 	}
-	
+
 	public List<ExpensesLine> getExpensesLinesBetween(Date start, Date stop) {
-		
+
 		List<Transaction> value = transactionRepository.getExpensesTransactionsForFiscalYear(start, stop);
 		for (Transaction transaction : value) {
-			ExploitationExpense  ex =exploitationExpenseRepo.findByTransaction(transaction);
-			if(null == ex) 
-			{
+			ExploitationExpense ex = exploitationExpenseRepo.findByTransaction(transaction);
+			if (null == ex) {
 				ex = new ExploitationExpense();
 				ex.setTransaction(transaction);
 				exploitationExpenseRepo.save(ex);
@@ -303,18 +297,17 @@ public class IncomeStatementService {
 		List<Asset> assetList = assetServices.findAll();
 		int fy = getFiscalYear(start);
 		for (Asset asset : assetList) {
-			for ( AmortisationLeg leg : asset.getDepreciationLegs()) {
-				
-				if(leg.getFiscalYear() == fy) 
-				{
+			for (AmortisationLeg leg : asset.getDepreciationLegs()) {
+
+				if (leg.getFiscalYear() == fy) {
 					ExpensesLine l = new ExpensesLine();
-					l.amount=-leg.getAmount();
-					l.description = "Depreciation "+asset.getPurchaceTransaction().getDescription();
-					l.date=l.date;
-					lines.add(l);				
+					l.amount = -leg.getAmount();
+					l.description = "Depreciation " + asset.getPurchaceTransaction().getDescription();
+					l.date = l.date;
+					lines.add(l);
 				}
 			}
-			
+
 		}
 		return lines;
 	}
@@ -340,10 +333,11 @@ public class IncomeStatementService {
 			default:
 				line.amount = transaction.getAmount();
 			}
-			ExploitationExpense  ex =exploitationExpenseRepo.findByTransaction(transaction);
-			line.expenseType=ex.getTypeStr();
+			ExploitationExpense ex = exploitationExpenseRepo.findByTransaction(transaction);
+			line.expenseType = ex.getTypeStr();
 			line.description = transaction.getDescription();
 			line.date = transaction.getDate();
+			line.id = ex.getId();
 			lines.add(line);
 		}
 		return lines;
@@ -389,9 +383,10 @@ public class IncomeStatementService {
 		FinancialStatementLine otherExpenses_line = makeFs(statement.otherExpenses, "Other Expenses");
 		FinancialStatementLine otherIncome_line = makeFs(statement.otherRevenue, "Other Revenue");
 		FinancialStatementLine pretaxIncome_line = makeFs(statement.getPretaxIncome(), "Pretax Income");
-		FinancialStatementLine incomeTax_line = makeFs(statement.incomeTax, "Income Tax Small-Business Tax Rate: 12.2%");
-		FinancialStatementLine federalIncomeTax_line = makeFs(statement.getFederalTax(),"9% (Federal portion)");
-		FinancialStatementLine provincialIncomeTax_line = makeFs(statement.getQuebecTax()," 3.2% (Quebec portion)");
+		FinancialStatementLine incomeTax_line = makeFs(statement.incomeTax,
+				"Income Tax Small-Business Tax Rate: 12.2%");
+		FinancialStatementLine federalIncomeTax_line = makeFs(statement.getFederalTax(), "9% (Federal portion)");
+		FinancialStatementLine provincialIncomeTax_line = makeFs(statement.getQuebecTax(), " 3.2% (Quebec portion)");
 		FinancialStatementLine netIncome_line = makeFs(statement.getNetIncome(), "Net Income");
 		lines.add(revenue_line);
 		lines.add(cogs_line);
@@ -404,7 +399,7 @@ public class IncomeStatementService {
 		lines.add(incomeTax_line);
 		lines.add(federalIncomeTax_line);
 		lines.add(provincialIncomeTax_line);
-		
+
 		lines.add(netIncome_line);
 		return lines;
 	}
@@ -476,7 +471,5 @@ public class IncomeStatementService {
 	public double getOtherExpensesIncome(Integer year) {
 		return transactionRepository.getOperatingExpensesForYear(year);
 	}
-
-	
 
 }
