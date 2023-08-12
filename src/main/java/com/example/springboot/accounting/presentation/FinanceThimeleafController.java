@@ -165,11 +165,11 @@ public class FinanceThimeleafController {
 		if (year == null) {
 			year = 2023;
 		}
-		model.addAttribute("companyName", service.getProfile().getName());
+		
 		model.addAttribute("date", Instant.now().toString());
 		List<FinancialStatementLine> assets = assetService.getAssetFinantialStatement();
 		model.addAttribute("assets", assets);
-		model.addAttribute("selectedYear", year);
+		navFixture.insertOptions(year, model);
 		model.addAttribute("currentPage", "Balance Sheet");
 		return "BalanceSheet";
 	}
@@ -181,7 +181,7 @@ public class FinanceThimeleafController {
 		}
 		List<FinancialStatementLine> lines = financeStatementService.getIncomeStatement(year);
 		model.addAttribute("selected_report_type", "transactions");
-		model.addAttribute("selectedYear", year);
+		navFixture.insertOptions(year, model);
 		model.addAttribute("currentPage", "Income Statement");
 
 		model.addAttribute("incomeStatement", lines);

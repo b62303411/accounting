@@ -30,8 +30,11 @@
 					</div>
 					<div class="form-group">
 						<label for="expenseType">Expense Type:</label>
-						<input type="text" id="expenseType" name="expenseType" th:value="${expense.expenseType}"
-							class="form-control" required />
+						<select id="expenseType" name="expenseType" class="form-control" required>
+							<option th:each="type : ${T(com.example.springboot.accounting.model.ExploitationExpenseType).values()}"
+								th:value="${type}" th:selected="${type == expense.expenseType}" th:text="${type}">
+							</option>
+						</select>
 					</div>
 					<div class="form-group">
 						<label for="id">ID:</label>
