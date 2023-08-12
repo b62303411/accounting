@@ -41,9 +41,8 @@
 			<div th:replace="fragments/sidebar :: sidebar"></div>
 			<div class="col-md-10">
 				<div th:replace="fragments/yearselect :: navbar"></div>
-				<h4>Expenses Statement for <span th:text="${companyName}">Company</span> for the year ended
-					<span th:text="${'AU ' + fiscal_end_day + ' ' + fiscal_end_month + ' ' + fiscal_end_year}"></span>
-				</h4>
+				<div th:replace="fragments/reportHeader :: reportHeader('Expenses Statement', ${companyName}, ${fiscal_end_day}, ${fiscal_end_month}, ${fiscal_end_year})"/>
+
 				<div class="container shadow min-vh-100 py-2">
 					<h4>Operating Expenses</h4>
 					<div class="chart-container">

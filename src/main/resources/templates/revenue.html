@@ -13,10 +13,7 @@
 			<div class="col-md-10">
 				<div th:replace="fragments/yearselect :: navbar"></div>
 				<div class="container shadow min-vh-100 py-2">
-					<h4>Revenue Statement for <span th:text="${companyName}">Company</span> for the year ended
-						<span
-							th:text="${'AU ' + fiscal_end_day + ' ' + fiscal_end_month + ' ' + fiscal_end_year}"></span>
-					</h4>
+					<div th:replace="fragments/reportHeader :: reportHeader('Revenue Statement', ${companyName}, ${fiscal_end_day}, ${fiscal_end_month}, ${fiscal_end_year})"/>
 					<table class="table table-striped">
 						<thead>
 							<tr>
