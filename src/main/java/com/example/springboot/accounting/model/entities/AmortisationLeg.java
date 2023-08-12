@@ -17,6 +17,8 @@ public class AmortisationLeg {
 	private int fiscalYear;
 	private Date date;
 	private Double amount;
+	@OneToOne
+	private Expense expense;
 	//@JoinColumn(@name = "amortisation_id")
 	@OneToOne
 	private Amortisation amortisation;
@@ -66,6 +68,12 @@ public class AmortisationLeg {
 	}
 	public void setRemainingValue(double remainingValue) {
 		this.remainingValue = remainingValue;
+	}
+	public Expense getExpense() {
+		return expense;
+	}
+	public void setExpense(Expense expense) {
+		this.expense = expense;
 	}
 	
 	

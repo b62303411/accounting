@@ -8,10 +8,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.springboot.accounting.model.SalesTaxeRates;
 import com.example.springboot.accounting.model.dto.ExpensesLine;
 import com.example.springboot.accounting.model.dto.FinancialStatementLine;
 import com.example.springboot.accounting.model.dto.RevenueLine;
@@ -236,6 +238,12 @@ public class IncomeStatementService {
 
 	}
 
+	/**
+	 * 
+	 * @param start
+	 * @param stop
+	 * @return
+	 */
 	public Map<String, Double> getExpenseReport(Date start, Date stop) {
 		Map<String, Double> maps = new HashMap<String, Double>();
 		List<Expense> list = getExpensesBetween(start, stop);
@@ -272,44 +280,128 @@ public class IncomeStatementService {
 
 	}
 
+	/**
+	 * 
+	 * @param start
+	 * @param stop
+	 * @return
+	 */
 	public List<Expense> getExpensesBetween(Date start, Date stop) {
-		List<Expense> expenses = new ArrayList<Expense>();
-		List<Transaction> value = transactionRepository.getExpensesTransactionsForFiscalYear(start, stop);
-		for (Transaction transaction : value) {
-			ExploitationExpense ex = exploitationExpenseRepo.findByTransaction(transaction);
-			expenses.add(ex);
-		}
+		List<ExploitationExpense> exploitationExpenses = exploitationExpenseRepo.findAllBetween(start, stop);
+		List<Expense> expenses = exploitationExpenses.stream().map(expense -> (Expense) expense)
+				.collect(Collectors.toList());
+
 		return expenses;
 	}
 
-	public List<ExpensesLine> getExpensesLinesBetween(Date start, Date stop) {
-
+	/**
+	 * 
+	 * @param start
+	 * @param stop
+	 */
+	public void inferExpensesFromTransactions(Date start, Date stop) {
+		
 		List<Transaction> value = transactionRepository.getExpensesTransactionsForFiscalYear(start, stop);
 		for (Transaction transaction : value) {
 			ExploitationExpense ex = exploitationExpenseRepo.findByTransaction(transaction);
 			if (null == ex) {
 				ex = new ExploitationExpense();
 				ex.setTransaction(transaction);
+				updateValueFromStransaction(transaction, ex);
+				exploitationExpenseRepo.save(ex);
+			}
+			else 
+			{
+				if(ex.getDate() == null) 
+				{
+					ex.setDate(transaction.getDate());
+				}
+				if(ex.getDescription()==null) 
+				{
+					ex.setDescription(transaction.getDescription());
+				}
+				if(ex.getTotalBeforeSalesTaxes()==0)
+					updateValueFromStransaction(transaction,ex);
 				exploitationExpenseRepo.save(ex);
 			}
 		}
-		List<ExpensesLine> lines = getLinesFromTransactions(value);
+
+	}
+
+	/**
+	 * 
+	 * @param start
+	 * @param stop
+	 * @return
+	 */
+	public List<ExpensesLine> getExpensesLinesBetween(Date start, Date stop) {
+
+		inferExpensesFromTransactions(start, stop);
+		inferExpensesFromAssetDepreciation(start);
+
+		List<Expense> expenses = getExpensesBetween(start, stop);
+		List<ExpensesLine> lines = getLines(expenses);
+
+		return lines;
+	}
+
+	private List<ExpensesLine> getLines(List<Expense> expenses) {
+		List<ExpensesLine> lines = new ArrayList<ExpensesLine>();
+		for (Expense expense : expenses) {
+			ExpensesLine line = new ExpensesLine();
+			line.amount = expense.getTotal();
+			line.date = expense.getDate();
+			line.st = expense.getSalesTaxes();
+			line.id = expense.getId();
+			line.tbst = expense.getTotalBeforeSalesTaxes();
+			line.description = expense.getDescription();
+			lines.add(line);
+		}
+		return lines;
+	}
+
+	private void inferExpensesFromAssetDepreciation(Date start) {
 		List<Asset> assetList = assetServices.findAll();
 		int fy = getFiscalYear(start);
 		for (Asset asset : assetList) {
 			for (AmortisationLeg leg : asset.getDepreciationLegs()) {
 
 				if (leg.getFiscalYear() == fy) {
-					ExpensesLine l = new ExpensesLine();
-					l.amount = -leg.getAmount();
-					l.description = "Depreciation " + asset.getPurchaceTransaction().getDescription();
-					l.date = l.date;
-					lines.add(l);
+					ExploitationExpense e = new ExploitationExpense();
+					e.setTotalBeforeSalesTaxes(-leg.getAmount());
+					e.setDescription("Depreciation " + asset.getPurchaceTransaction().getDescription());
+					e.setDate(leg.getDate());
+					exploitationExpenseRepo.save(e);
 				}
 			}
 
 		}
-		return lines;
+	}
+
+	private void updateValueFromStransaction(Transaction transaction, ExploitationExpense ex) {
+		double total;
+		switch (transaction.getTransactionNature()) {
+		case Credit:
+			total = Math.abs(transaction.getAmount());
+			break;
+		case Debit:
+			total = -Math.abs(transaction.getAmount());
+			break;
+		default:
+			total = transaction.getAmount();
+		}
+		double TPS_RATE = SalesTaxeRates.TPS_RATE;
+		double TVQ_RATE = SalesTaxeRates.TVQ_RATE;
+		double beforeTaxes = total / (1 + TPS_RATE + TPS_RATE * TVQ_RATE + TVQ_RATE);
+		// Calculate TPS and TVQ
+		double tps = beforeTaxes * TPS_RATE;
+		double tvq = (beforeTaxes + tps) * TVQ_RATE;
+		ex.setTps(tps);
+		ex.setTvq(tvq);
+		ex.setTotalBeforeSalesTaxes(beforeTaxes);
+		// ex.setExpenseType(transaction.getType());
+		ex.setDescription(transaction.getDescription());
+		ex.setDate(transaction.getDate());
 	}
 
 	public List<ExpensesLine> getOtherExpensesBetween(Date start, Date stop) {

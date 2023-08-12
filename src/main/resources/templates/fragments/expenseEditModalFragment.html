@@ -1,0 +1,32 @@
+<div th:fragment="editModal" id="editModal" class="modal fade" tabindex="-1" role="dialog"
+	aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+
+			<form id="editExpenseForm">
+				<label for="description">Description:</label>
+				<input type="text" id="description" name="description" required><br><br>
+				<!-- Add other fields as needed -->
+				<label for="invoices">Select Invoice:</label>
+				<select class="form-control" id="invoices" name="invoices">
+					<!-- Option values will be filled dynamically -->
+				</select>
+				<input type="submit" value="Save Changes">
+			</form>
+			<div th:if="${sampleTransaction != null}" class="container my-3">
+				<h2 class="text-center">Transaction Details</h2>
+				<div style="max-height: 200px; overflow-y: auto;"> <!-- Add scrollable div -->
+					<div th:insert="fragments/transactionFragment :: transactionDetails(${sampleTransaction})">
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</div>

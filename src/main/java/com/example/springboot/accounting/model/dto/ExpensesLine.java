@@ -10,6 +10,9 @@ public class ExpensesLine {
 	public String expenseType;
 	public String payee;
 	public double tbst;
+	/**
+	 * Sales Taxes
+	 */
 	public double st;
 	public Date date;
 	public double getAmount() {
