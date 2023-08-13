@@ -22,23 +22,7 @@
 			</div>
 			<button type="submit" class="btn btn-primary">Update Expenses</button>
 		</form>
-		<script>
-			document.getElementById("bulkActionForm").addEventListener("submit", function (event) {
-				event.preventDefault();
-
-				var formData = new FormData(this);
-
-				fetch("/expenses/bulkupdate", {
-					method: 'POST',
-					body: formData
-				})
-					.then(response => response.json())
-					.then(data => {
-						// Handle response here. e.g., show a success message or update the UI
-					})
-					.catch(error => console.error('There was an error!', error));
-			});
-		</script>
+		
 	</div>
 </body>
 
