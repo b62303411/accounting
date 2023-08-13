@@ -45,7 +45,7 @@ public abstract class Expense {
 		return tps;
 	}
 
-	public void setTps(double tps) {
+	public void setTps(Double tps) {
 		this.tps = tps;
 	}
 
@@ -53,7 +53,7 @@ public abstract class Expense {
 		return tvq;
 	}
 
-	public void setTvq(double tvq) {
+	public void setTvq(Double tvq) {
 		this.tvq = tvq;
 	}
 

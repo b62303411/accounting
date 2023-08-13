@@ -1,36 +1,39 @@
 package com.example.springboot.accounting.api;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.springboot.accounting.model.dto.AssetCreationRequest;
-import com.example.springboot.accounting.model.entities.Amortisation;
-import com.example.springboot.accounting.model.entities.Asset;
+import com.example.springboot.accounting.model.ExploitationExpenseType;
 import com.example.springboot.accounting.model.entities.ExploitationExpense;
-import com.example.springboot.accounting.model.entities.Transaction;
-import com.example.springboot.accounting.repository.AssetRepository;
 import com.example.springboot.accounting.repository.ExploitationExpenseRepository;
 import com.example.springboot.accounting.service.CompanyProfileService;
+import com.example.springboot.accounting.service.ExpensesService;
 import com.example.springboot.accounting.service.TransactionService;
 @RestController
 @RequestMapping("/api/expenses")
 public class ExpenseApiController {
+	private ExpensesService expensesService;
 	private ExploitationExpenseRepository expenseRepo;
 	private TransactionService transactionService;
 	private CompanyProfileService service;
 	
 	@Autowired
-	ExpenseApiController(CompanyProfileService service,ExploitationExpenseRepository expenseRepo,TransactionService transactionService)
+	ExpenseApiController(ExpensesService expensesService,CompanyProfileService service,ExploitationExpenseRepository expenseRepo,TransactionService transactionService)
 	{
 		this.expenseRepo = expenseRepo;
 		this.transactionService = transactionService;
 		this.service=service;
+		this.expensesService=expensesService;
 	}
 	
 	@GetMapping("/{id}")
@@ -41,5 +44,14 @@ public class ExpenseApiController {
 		return ResponseEntity.ok(e);
 	}
 	
-	
+	@PostMapping("/api/expenses/bulkupdate")
+	public ResponseEntity<Map<String, Object>> bulkUpdateExpenses(@RequestParam("description") String description,
+	                                    @RequestParam("newType") ExploitationExpenseType newType) {
+	    // code to find and update expenses matching the description
+		expensesService.fixExpense(description, newType);
+	    Map<String, Object> response = new HashMap<>();
+	    response.put("message", "Expenses updated successfully!");
+	    return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 }
