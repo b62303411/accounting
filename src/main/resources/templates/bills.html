@@ -82,39 +82,8 @@
 					<h1>Assets</h1>
 					<div class="table-responsive">
 
-						<h3>Create New Bill</h3>
-						<form id="createBillForm" th:action="@{/api/invoice/create}" method="post"
-							enctype="multipart/form-data">
-							<div class="form-group">
-								<label for="nofac">No Facture:</label>
-								<input type="number" id="nofac" name="nofac" class="form-control" optional />
-							</div>
-							<div class="form-group">
-								<label for="description">Description:</label>
-								<input type="text" id="description" name="description" class="form-control" required />
-							</div>
-							<div class="form-group">
-								<label for="amount">Total:</label>
-								<input type="number" id="amount" name="amount" class="form-control" required />
-							</div>
-							<div class="form-group">
-								<label for="amount">TPS:</label>
-								<input type="number" id="tps" name="tps" class="form-control" optional />
-							</div>
-							<div class="form-group">
-								<label for="amount">TVQ:</label>
-								<input type="number" id="tvq" name="tvq" class="form-control" optional />
-							</div>
-							<div class="form-group">
-								<label for="date">Date:</label>
-								<input type="date" id="date" name="date" class="form-control" required />
-							</div>
-							<div class="form-group">
-								<label for="file">File (Bill):</label>
-								<input type="file" id="file" name="file" class="form-control-file" required />
-							</div>
-							<button type="submit" class="btn btn-primary">Create Bill</button>
-						</form>
+						<div th:replace="~{fragments/create-bill-form::create-bill-form}"></div>
+
 						<div class="container my-3">
 							<h1>Bills</h1>
 							<table class="table">
@@ -306,6 +275,7 @@
 					$('#uploadModal').modal('show');
 				}
 			</script>
+			<script src="/js/createExpenseForm.js"></script>
 
 </body>
 

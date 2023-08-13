@@ -52,6 +52,10 @@ dependencies {
     implementation group: 'org.webjars', name: 'font-awesome', version: '4.7.0'
     
     implementation group: 'org.webjars', name: 'chartjs', version: '4.1.2'
+    
+    implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '2.0.29'
+    
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
 
 }
 

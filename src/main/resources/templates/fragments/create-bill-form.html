@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Fragment: Bulk Update</title>
+</head>
+
+<body>
+	<div th:fragment="create-bill-form">
+		<h3>Create New Bill</h3>
+		<form id="createBillForm" th:action="@{/api/invoice/create}" method="post" enctype="multipart/form-data">
+			<div class="form-group">
+				<label for="nofac">No Facture:</label>
+				<input type="number" id="nofac" name="noFacture" class="form-control" optional />
+			</div>
+			<div class="form-group">
+				<label for="recipient">Origine:</label>
+				<input type="text" id="origine" name="origine" class="form-control" optional />
+			</div>
+			<div class="form-group">
+				<label for="recipient">Recipient:</label>
+				<input type="text" id="recipient" name="recipient" class="form-control" optional />
+			</div>
+			<div class="form-group">
+				<label for="description">Description:</label>
+				<textarea  id="description" name="description" class="form-control" required>
+				</textarea>
+			</div>
+			<div class="form-group">
+				<label for="amount">Total:</label>
+				<input type="number" id="amount" name="amount" class="form-control" step="0.01" required />
+			</div>
+			<div class="form-group">
+				<label for="tps">TPS:</label>
+				<input type="number" id="tps" name="tps" class="form-control" step="0.01" optional />
+			</div>
+			<div class="form-group">
+				<label for="tvq">TVQ:</label>
+				<input type="number" id="tvq" name="tvq" class="form-control" step="0.01" optional />
+			</div>
+			<div class="form-group">
+				<label for="date">Date:</label>
+				<input type="date" id="date" name="date" class="form-control" required />
+			</div>
+			<div class="form-group">
+				<label for="file">File (Bill):</label>
+				<input type="file" id="file" name="file" class="form-control-file" required />
+			</div>
+			<button type="submit" class="btn btn-primary">Create Bill</button>
+			<button type="button" id="parseFile" class="btn btn-secondary">Parse File</button>
+		</form>
+	</div>
+</body>
+
+</html>
