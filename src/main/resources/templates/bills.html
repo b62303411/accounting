@@ -63,6 +63,10 @@
 		.accordion-toggle.collapsed .expand-button:after {
 			content: '+';
 		}
+
+		.table th {
+			font-size: 10px;
+		}
 	</style>
 </head>
 
@@ -79,7 +83,8 @@
 					<div class="table-responsive">
 
 						<h3>Create New Bill</h3>
-						<form id="createBillForm" th:action="@{/api/invoice/create}" method="post" enctype="multipart/form-data">
+						<form id="createBillForm" th:action="@{/api/invoice/create}" method="post"
+							enctype="multipart/form-data">
 							<div class="form-group">
 								<label for="description">Description:</label>
 								<input type="text" id="description" name="description" class="form-control" required />
@@ -126,8 +131,8 @@
 									<tr th:each="bill : ${bills}">
 										<td th:text="${bill.id}"></td>
 										<td>
-											<span th:id="'description-'+${bill.id}" contenteditable="true"
-												th:text="${bill.description}"></span>
+											<textarea th:id="'description-'+${bill.id}" contenteditable="true"
+												th:text="${bill.description}"></textarea>
 										</td>
 										<td>
 											<span th:id="'amount-'+${bill.id}" contenteditable="true"
@@ -157,11 +162,10 @@
 											</div>
 										</td>
 										<td>
-											<form th:action="@{/bills/{id}/addAttachment(id=${bill.id})}" method="post"
-												enctype="multipart/form-data">
-												<input type="file" name="attachment" required />
-												<button type="submit">Add Attachment</button>
-											</form>
+											<button type="button" class="btn btn-link" data-toggle="modal"
+												data-target="#uploadModal" th:onclick="'openModal(' + ${bill.id} + ')'">
+												<i class="fa fa-upload"></i> <!-- Icon for uploading -->
+											</button>
 										</td>
 										<td>
 											<button th:onclick="'editBill(' + ${bill.id} + ')'">Edit</button>
@@ -190,6 +194,8 @@
 					</div>
 				</div>
 			</div>
+			<!-- Include the modal fragment -->
+			<div th:replace="fragments/upload-modal-fragment::uploadModal"></div>
 			<script src="/webjars/jquery/3.6.4/jquery.min.js"></script>
 			<script src="/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 			<script src="/webjars/popper.js/2.11.7/umd/popper.min.js"></script>
@@ -292,6 +298,16 @@
 				});
 
 			</script>
+			<script>
+				function openModal(billId) {
+					// Set the action URL based on the billId
+					document.getElementById('uploadForm').action = '/bills/' + billId + '/addAttachment';
+
+					// Open the modal
+					$('#uploadModal').modal('show');
+				}
+			</script>
+
 </body>
 
 </html>
