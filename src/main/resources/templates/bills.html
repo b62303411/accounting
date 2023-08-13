@@ -179,21 +179,8 @@
 				</div>
 			</div>
 			<!-- Modal -->
-			<div class="modal fade" id="previewModal" tabindex="-1" role="dialog">
-				<div class="modal-dialog modal-lg" role="document">
-					<div class="modal-content">
-						<div class="modal-header">
-							<h5 class="modal-title">PDF Preview</h5>
+			<div th:replace="~{fragments/modal-preview-pdf-fragments::previewModal}"></div>
 
-							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-
-						</div>
-						<div class="modal-body">
-							<img id="previewImage" alt="PDF Preview" style="width: 100%;" />
-						</div>
-					</div>
-				</div>
-			</div>
 			<!-- Include the modal fragment -->
 			<div th:replace="fragments/upload-modal-fragment::uploadModal"></div>
 			<script src="/webjars/jquery/3.6.4/jquery.min.js"></script>
