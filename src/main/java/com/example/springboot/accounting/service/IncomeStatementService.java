@@ -251,38 +251,48 @@ public class IncomeStatementService {
 	 * @return
 	 */
 	public Map<String, Double> getExpenseReport(Date start, Date stop) {
-		Map<String, Double> maps = new HashMap<String, Double>();
+		Map<String, Double> maps = new HashMap<>();
 		List<Expense> list = getExpensesBetween(start, stop);
-		double FraisBancaires = 0;
-		double HonoraireProfessionel = 0;
-		double FraisDeplacement = 0;
-		double Fournitures = 0;
-		double Licences = 0;
+
 		for (Expense expense : list) {
-			switch (expense.getTypeStr()) {
-			case "FraisBancaires":
-				FraisBancaires += expense.getTransaction().getAmount();
-				break;
-			case "HonoraireProfessionel":
-				HonoraireProfessionel += expense.getTransaction().getAmount();
-				break;
-			case "FraisDeplacement":
-				FraisDeplacement += expense.getTransaction().getAmount();
-				break;
-			case "Fournitures":
-				Fournitures += expense.getTransaction().getAmount();
-				break;
-			case "Licences":
-				Licences += expense.getTransaction().getAmount();
-				break;
-			}
+			String type = expense.getTypeStr();
+			double amount = expense.getTotalBeforeSalesTaxes();
+			maps.put(type, maps.getOrDefault(type, 0.0) + amount); // Sum amounts by type
 		}
-		maps.put("FraisBancaires", FraisBancaires);
-		maps.put("HonoraireProfessionel", HonoraireProfessionel);
-		maps.put("FraisDeplacement", FraisDeplacement);
-		maps.put("Fournitures", Fournitures);
-		maps.put("Licences", Fournitures);
+
 		return maps;
+//		Map<String, Double> maps = new HashMap<String, Double>();
+//		List<Expense> list = getExpensesBetween(start, stop);
+//		double FraisBancaires = 0;
+//		double HonoraireProfessionel = 0;
+//		double FraisDeplacement = 0;
+//		double Fournitures = 0;
+//		double Licences = 0;
+//		for (Expense expense : list) {
+//			switch (expense.getTypeStr()) {
+//			case "FraisBancaires":
+//				FraisBancaires += expense.getTransaction().getAmount();
+//				break;
+//			case "HonoraireProfessionel":
+//				HonoraireProfessionel += expense.getTransaction().getAmount();
+//				break;
+//			case "FraisDeplacement":
+//				FraisDeplacement += expense.getTransaction().getAmount();
+//				break;
+//			case "Fournitures":
+//				Fournitures += expense.getTransaction().getAmount();
+//				break;
+//			case "Licences":
+//				Licences += expense.getTransaction().getAmount();
+//				break;
+//			}
+//		}
+//		maps.put("FraisBancaires", FraisBancaires);
+//		maps.put("HonoraireProfessionel", HonoraireProfessionel);
+//		maps.put("FraisDeplacement", FraisDeplacement);
+//		maps.put("Fournitures", Fournitures);
+//		maps.put("Licences", Fournitures);
+//		return maps;
 
 	}
 

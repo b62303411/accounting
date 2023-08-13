@@ -60,6 +60,7 @@ public class InvoiceApiController {
 		in.setAmount(request.getAmount().doubleValue());
 		in.setTps(request.getTps());
 		in.setTvq(request.getTvq());
+		in.setNoFacture(request.getNoFacture());
 		java.sql.Date sqlDate = java.sql.Date.valueOf(request.getDate());
 		Date utilDate = new Date(sqlDate.getTime());
 		in.setDate(utilDate);

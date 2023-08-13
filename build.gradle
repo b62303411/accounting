@@ -50,6 +50,8 @@ dependencies {
     implementation group: 'org.webjars.bower', name: 'datatables.net-buttons', version: '1.5.3'
     
     implementation group: 'org.webjars', name: 'font-awesome', version: '4.7.0'
+    
+    implementation group: 'org.webjars', name: 'chartjs', version: '4.1.2'
 
 }
 

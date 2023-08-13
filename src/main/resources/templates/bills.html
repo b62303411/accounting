@@ -86,6 +86,10 @@
 						<form id="createBillForm" th:action="@{/api/invoice/create}" method="post"
 							enctype="multipart/form-data">
 							<div class="form-group">
+								<label for="nofac">No Facture:</label>
+								<input type="number" id="nofac" name="nofac" class="form-control" optional />
+							</div>
+							<div class="form-group">
 								<label for="description">Description:</label>
 								<input type="text" id="description" name="description" class="form-control" required />
 							</div>
@@ -117,6 +121,7 @@
 								<thead>
 									<tr>
 										<th>ID</th>
+										<th>No Facture</th>
 										<th>Description</th>
 										<th>Total</th>
 										<th>Tps</th>
@@ -130,6 +135,10 @@
 								<tbody>
 									<tr th:each="bill : ${bills}">
 										<td th:text="${bill.id}"></td>
+										<td>
+											<span th:id="'nofac-'+${bill.id}" contenteditable="true"
+												th:text="${bill.noFacture}"></span>
+										</td>
 										<td>
 											<textarea th:id="'description-'+${bill.id}" contenteditable="true"
 												th:text="${bill.description}"></textarea>
@@ -207,6 +216,7 @@
 					var date = document.getElementById("date-" + billId);
 					var recipient = document.getElementById("recipient-" + billId);
 					var isEditable = description.isContentEditable;
+					var noFacture = document.getElementById("nofac-" + billId);
 					description.contentEditable = !isEditable;
 					amount.contentEditable = !isEditable;
 					date.disabled = isEditable; // Enable or disable the date input field
@@ -228,6 +238,7 @@
 					var recipient = document.getElementById("recipient-" + billId).innerText;
 					var tps = document.getElementById("tps-" + billId).innerText;
 					var tvq = document.getElementById("tvq-" + billId).innerText;
+					var noFacture = document.getElementById("nofac-" + billId).innerText;
 					// Create a data object to send to the server
 					var data = {
 						id: billId,
@@ -236,7 +247,8 @@
 						date: date,
 						recipient: recipient,
 						tps: tps,
-						tvq: tvq
+						tvq: tvq,
+						noFacture: noFacture
 						// Add other fields as needed
 					};
 

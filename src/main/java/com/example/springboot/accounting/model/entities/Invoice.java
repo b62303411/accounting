@@ -18,6 +18,8 @@ public class Invoice {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 	
+	private Integer noFacture;
+	
 	private Double amount;
 	
 	private Double tps;
@@ -130,5 +132,18 @@ public class Invoice {
 	public void setAttachments(List<Attachment> attachments) {
 		this.attachments = attachments;
 	}
+
+
+
+	public Integer getNoFacture() {
+		return noFacture;
+	}
+
+
+
+	public void setNoFacture(Integer noFacture) {
+		this.noFacture = noFacture;
+	}
+	
 	
 }
