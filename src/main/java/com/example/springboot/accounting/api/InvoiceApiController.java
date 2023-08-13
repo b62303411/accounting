@@ -29,6 +29,7 @@ import com.example.springboot.accounting.model.dto.InvoiceUpdateRequest;
 import com.example.springboot.accounting.model.entities.Attachment;
 import com.example.springboot.accounting.model.entities.Invoice;
 import com.example.springboot.accounting.repository.InvoiceRepository;
+import com.example.springboot.accounting.service.AttachmentService;
 import com.example.springboot.accounting.service.InvoiceService;
 import com.example.springboot.accounting.service.OpenAiRequestService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -38,111 +39,115 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @RequestMapping("/api/invoice")
 public class InvoiceApiController {
 
+	private AttachmentService attachmentService;
 	private InvoiceRepository invoiceRepo;
 	private InvoiceService invoiceService;
 	private OpenAiRequestService service;
+
 	@Autowired
-	public InvoiceApiController(InvoiceRepository invoiceRepo,InvoiceService invoiceService,OpenAiRequestService service) {
+	public InvoiceApiController(AttachmentService attachmentService, InvoiceRepository invoiceRepo,
+			InvoiceService invoiceService, OpenAiRequestService service) {
 		this.invoiceRepo = invoiceRepo;
 		this.invoiceService = invoiceService;
-		this.service=service;
+		this.service = service;
+		this.attachmentService = attachmentService;
 	}
 
 	@PostMapping("/parse")
-	ResponseEntity<Invoice> parse(@RequestParam("file") MultipartFile file)
-	{
+	ResponseEntity<Invoice> parse(@RequestParam("file") MultipartFile file) {
 		Invoice in = new Invoice();
 		try {
 			String text = extractTextFromPDF(file);
 			String responseString = service.submitInvoiceQuery(text);
 			ObjectMapper mapper = new ObjectMapper();
-            JsonNode responseJson = mapper.readTree(responseString);
+			JsonNode responseJson = mapper.readTree(responseString);
 
-            // Check for errors
-            if (responseJson.has("error")) {
-                String errorMessage = responseJson.get("error").get("message").asText();
-                System.out.println("Error from OpenAI: " + errorMessage);
-                return null;
-            }
+			// Check for errors
+			if (responseJson.has("error")) {
+				String errorMessage = responseJson.get("error").get("message").asText();
+				System.out.println("Error from OpenAI: " + errorMessage);
+				return null;
+			}
 
-            // Extract the text from the response
-            String extractedText = responseJson.get("choices").get(0).get("message").asText();
+			// Extract the text from the response
+			String extractedText = responseJson.get("choices").get(0).get("message").asText();
 
-         // Get the assistant's message content
-            String assistantContent = responseJson.path("choices").get(0).path("message").path("content").asText();
-            // Process the extracted text as needed
-            // For example, you may want to convert it to a JSON object if it's in JSON format
-            JsonNode extractedData = mapper.readTree(assistantContent);
-            JsonNode detail =  extractedData.get("Details");
-            in.setNoFacture(extractedData.get("noFacture").asInt());
-            in.setAmount(extractedData.get("amount").asDouble());
-            in.setTps(extractedData.get("tps").asDouble());
-            in.setTvq(extractedData.get("tvq").asDouble());
-            in.setRecipient(extractedData.get("recipient").asText());
-            in.setOrigine(extractedData.get("origine").asText());
-            JsonNode description = extractedData.get("description");
-            StringBuilder combinedString = new StringBuilder();
-            
-         
-            for (JsonNode element : description) {
-                // Append the string value of the element, followed by a newline
-                combinedString.append(element.asText()).append("\n");
-            }
-            in.setDescription(combinedString.toString());
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-            String dateStr = extractedData.get("date").asText();
-            try {
+			// Get the assistant's message content
+			String assistantContent = responseJson.path("choices").get(0).path("message").path("content").asText();
+			// Process the extracted text as needed
+			// For example, you may want to convert it to a JSON object if it's in JSON
+			// format
+			JsonNode extractedData = mapper.readTree(assistantContent);
+			JsonNode detail = extractedData.get("Details");
+			in.setNoFacture(extractedData.get("noFacture").asInt());
+			in.setAmount(extractedData.get("amount").asDouble());
+			in.setTps(extractedData.get("tps").asDouble());
+			in.setTvq(extractedData.get("tvq").asDouble());
+			in.setRecipient(extractedData.get("recipient").asText());
+			in.setOrigine(extractedData.get("origine").asText());
+			JsonNode description = extractedData.get("description");
+			StringBuilder combinedString = new StringBuilder();
+
+			for (JsonNode element : description) {
+				// Append the string value of the element, followed by a newline
+				combinedString.append(element.asText()).append("\n");
+			}
+			in.setDescription(combinedString.toString());
+			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+			String dateStr = extractedData.get("date").asText();
+			try {
 				in.setDate(formatter.parse(dateStr));
 			} catch (ParseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-            
+
 			System.out.println(extractedData);
 		} catch (IOException e) {
-			
+
 			e.printStackTrace();
 		}
 
 		return ResponseEntity.ok(in);
 	}
-	
+
 	public String extractTextFromPDF(MultipartFile file) throws IOException {
-	    // Convert the MultipartFile to an InputStream
-	    try (InputStream inputStream = file.getInputStream()) {
-	        // Load the PDF document
-	        PDDocument document = PDDocument.load(inputStream);
+		// Convert the MultipartFile to an InputStream
+		try (InputStream inputStream = file.getInputStream()) {
+			// Load the PDF document
+			PDDocument document = PDDocument.load(inputStream);
 
-	        // Create a PDFTextStripper to extract the text
-	        PDFTextStripper pdfStripper = new PDFTextStripper();
+			// Create a PDFTextStripper to extract the text
+			PDFTextStripper pdfStripper = new PDFTextStripper();
 
-	        // Get the text from the document
-	        String text = pdfStripper.getText(document);
+			// Get the text from the document
+			String text = pdfStripper.getText(document);
 
-	        // Close the document
-	        document.close();
+			// Close the document
+			document.close();
 
-	        // Do something with the text, e.g., parse the invoice details
-	        // ...
+			// Do something with the text, e.g., parse the invoice details
+			// ...
 
-	        return text;
-	    }
+			return text;
+		}
 	}
-	
+
 	@PostMapping("/create")
 	ResponseEntity<Invoice> create(InvoiceCreationRequest request) {
 		Invoice in = new Invoice();
 		fill(request, in);
-		Attachment att = new Attachment();
+		
+		Attachment att=null;
 		try {
-			att.setFile(request.getFile().getBytes());
-			String type = request.getFile().getContentType();
-			if (type.equals("application/pdf"))
-				att.setType(FileType.PDF);
+			byte[] bytes = request.getFile().getBytes();
+			String contentType = request.getFile().getContentType();
+			att = attachmentService.createAttachment(bytes,contentType);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 
 		in.addAttachment(att);
 		in = invoiceRepo.save(in);
@@ -156,18 +161,18 @@ public class InvoiceApiController {
 		in.setNoFacture(request.getNoFacture());
 		in.setDescription(request.getDescription());
 		in.setRecipient(request.getRecipient());
-		//in.setOrigine(request.g);
+		in.setOrigine(request.getOrigine());
 		java.sql.Date sqlDate = java.sql.Date.valueOf(request.getDate());
 		Date utilDate = new Date(sqlDate.getTime());
 		in.setDate(utilDate);
-	
+
 	}
 
 	@PostMapping("/updateBill")
 	public ResponseEntity<Invoice> updateBill(@RequestBody InvoiceUpdateRequest request) {
 		Optional<Invoice> invoice = invoiceRepo.findById(request.getId());
 		if (invoice.isPresent()) {
-			fill(request,invoice.get());
+			fill(request, invoice.get());
 			invoiceRepo.save(invoice.get());
 		}
 
@@ -176,8 +181,7 @@ public class InvoiceApiController {
 		System.out.println();
 		return ResponseEntity.ok(invoice.get());
 	}
-	
-	
+
 	@GetMapping("/findByExpenseId")
 	public ResponseEntity<List<Invoice>> getInvoicesByExpenseId(@RequestParam Long expenseId) {
 		// Find the invoices that match the given expense ID

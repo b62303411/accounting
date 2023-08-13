@@ -11,7 +11,7 @@ public class InvoiceDto {
 	private Double tvq;
 	private LocalDate date;
 	private String recipient;
-	private String origin;
+	private String origine;
 
 	public InvoiceDto() {
 		super();
@@ -73,12 +73,13 @@ public class InvoiceDto {
 		this.noFacture = noFacture;
 	}
 
-	public String getOrigin() {
-		return origin;
+	public String getOrigine() {
+		return origine;
 	}
 
-	public void setOrigin(String origin) {
-		this.origin = origin;
+	public void setOrigine(String origine) {
+		this.origine = origine;
 	}
+
 
 }

@@ -6,4 +6,6 @@ import com.example.springboot.accounting.model.entities.Attachment;
 
 public interface AttachmentRepository extends JpaRepository<Attachment, Long>{
 
+	Attachment findBySha256Hash(String hash);
+
 }

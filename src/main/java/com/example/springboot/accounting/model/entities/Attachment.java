@@ -17,6 +17,9 @@ public class Attachment {
 	@Enumerated(EnumType.STRING)
 	private FileType type;
 	private byte[] file;
+	
+	private String sha256Hash;
+	
 	public Long getId() {
 		return id;
 	}
@@ -34,6 +37,12 @@ public class Attachment {
 	}
 	public void setFile(byte[] file) {
 		this.file = file;
+	}
+	public String getSha256Hash() {
+		return sha256Hash;
+	}
+	public void setSha256Hash(String sha256Hash) {
+		this.sha256Hash = sha256Hash;
 	}
 	
 	

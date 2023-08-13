@@ -95,6 +95,7 @@
 										<th>Total</th>
 										<th>Tps</th>
 										<th>Tvq</th>
+										<th>Origin</th>
 										<th>Recipient</th>
 										<th>Date</th>
 										<th>Attachments</th>
@@ -107,7 +108,7 @@
 										<td>
 											<span th:id="'nofac-'+${bill.id}" contenteditable="true"
 												th:text="${bill.noFacture}"></span>
-										</td>
+										</td>								
 										<td>
 											<textarea th:id="'description-'+${bill.id}" contenteditable="true"
 												th:text="${bill.description}"></textarea>
@@ -123,6 +124,10 @@
 										<td>
 											<span th:id="'tvq-'+${bill.id}" contenteditable="true"
 												th:text="${bill.tvq}"></span>
+										</td>
+										<td>
+											<span th:id="'origin-'+${bill.id}" contenteditable="true"
+												th:text="${bill.origine}"></span>
 										</td>
 										<td>
 											<span th:id="'recipient-'+${bill.id}" contenteditable="true"
