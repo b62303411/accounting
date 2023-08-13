@@ -126,7 +126,7 @@
 						</div>
 						<div class="tab-pane fade" id="bulkUpdate" role="tabpanel" aria-labelledby="bulkUpdate-tab">
 							<!-- Include Thymeleaf Fragment for Bulk Update -->
-							<div th:replace="fragments/bulk-update-fragment::bulkUpdateForm"></div>
+							<div th:replace="~{fragments/bulk-update-fragment::bulkUpdateForm}"></div>
 						</div>
 					</div>
 				</div>
@@ -162,7 +162,7 @@
 			</div>
 		</div>
 	</div>
-	<div th:insert="{fragments/expenseEditModalFragment :: editModal}"></div>
+	<div th:insert="fragments/expenseEditModalFragment :: editModal"></div>
 
 </body>
 <script src="/webjars/jquery/3.6.4/jquery.min.js"></script>

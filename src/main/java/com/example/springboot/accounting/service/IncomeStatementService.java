@@ -38,18 +38,19 @@ public class IncomeStatementService {
 	private final FinancialStatementLineFactory fsf;
 	private final ExploitationExpenseRepository exploitationExpenseRepo;
 	private final AmortisationLegRepository legRepository;
-	
+
 	@Autowired
-	public IncomeStatementService(AmortisationLegRepository legRepository,ExploitationExpenseRepository exploitationExpenseRepo, CompanyProfileService profile,
+	public IncomeStatementService(AmortisationLegRepository legRepository,
+			ExploitationExpenseRepository exploitationExpenseRepo, CompanyProfileService profile,
 			FinancialStatementLineFactory fsf, TransactionRepository transactionRepository,
 			TransactionService transactionService, AssetService assetServices) {
 		this.exploitationExpenseRepo = exploitationExpenseRepo;
 		this.transactionRepository = transactionRepository;
-	
+
 		this.fsf = fsf;
 		this.profile = profile;
 		this.assetServices = assetServices;
-		this.legRepository=legRepository;
+		this.legRepository = legRepository;
 
 	}
 
@@ -305,9 +306,9 @@ public class IncomeStatementService {
 	 * @param stop
 	 */
 	public void inferExpensesFromTransactions(Date start, Date stop) {
-		
-		//fixExpense();
-		
+
+		// fixExpense();
+
 		List<Transaction> value = transactionRepository.getExpensesTransactionsForFiscalYear(start, stop);
 		for (Transaction transaction : value) {
 			ExploitationExpense ex = exploitationExpenseRepo.findByTransaction(transaction);
@@ -316,19 +317,15 @@ public class IncomeStatementService {
 				ex.setTransaction(transaction);
 				updateValueFromStransaction(transaction, ex);
 				exploitationExpenseRepo.save(ex);
-			}
-			else 
-			{
-				if(ex.getDate() == null) 
-				{
+			} else {
+				if (ex.getDate() == null) {
 					ex.setDate(transaction.getDate());
 				}
-				if(ex.getDescription()==null) 
-				{
+				if (ex.getDescription() == null) {
 					ex.setDescription(transaction.getDescription());
 				}
-				if(ex.getTotalBeforeSalesTaxes()==0)
-					updateValueFromStransaction(transaction,ex);
+				if (ex.getTotalBeforeSalesTaxes() == 0)
+					updateValueFromStransaction(transaction, ex);
 				exploitationExpenseRepo.save(ex);
 			}
 		}
@@ -339,25 +336,23 @@ public class IncomeStatementService {
 		List<ExploitationExpense> expenses = exploitationExpenseRepo.findAllLikeDescription("Depreciation ");
 		boolean changed = false;
 		for (ExploitationExpense exploitationExpense : expenses) {
-			if(exploitationExpense.getExpenseType() == null) 
-			{
+			if (exploitationExpense.getExpenseType() == null) {
 				exploitationExpense.setExpenseType(ExploitationExpenseType.Amortisation);
 				changed = true;
 			}
-		
+
 		}
-		if(changed)
+		if (changed)
 			exploitationExpenseRepo.saveAll(expenses);
 	}
 
 	private boolean fixTpsTvq(boolean changed, ExploitationExpense exploitationExpense) {
-		if(exploitationExpense.getTps()!= null) 
-		{
+		if (exploitationExpense.getTps() != null) {
 			Double value = null;
 			exploitationExpense.setTps(value);
 			exploitationExpense.setTvq(value);
 			exploitationExpense.setTotalBeforeSalesTaxes(exploitationExpense.getTransaction().getAmount());
-			
+
 			changed = true;
 		}
 		return changed;
@@ -402,23 +397,22 @@ public class IncomeStatementService {
 		for (Asset asset : assetList) {
 			for (AmortisationLeg leg : asset.getDepreciationLegs()) {
 
-				if (leg.getFiscalYear() == fy && (leg.getExpense()== null||leg.getDate() == null)) {
-					
+				if (leg.getFiscalYear() == fy && (leg.getExpense() == null || leg.getDate() == null)) {
+
 					ExploitationExpense e = new ExploitationExpense();
 					e.setTotalBeforeSalesTaxes(-leg.getAmount());
 					e.setExpenseType(ExploitationExpenseType.Amortisation);
 					e.setDescription("Depreciation " + asset.getPurchaceTransaction().getDescription());
-					if(leg.getDate() == null) 
-					{
+					if (leg.getDate() == null) {
 						FiscalYearEnd fye = profile.getProfile().getFiscalYearEnd();
-						Date date  = fye.getLastDayDate(fy);
+						Date date = fye.getLastDayDate(fy);
 						leg.setDate(date);
 					}
 					e.setDate(leg.getDate());
 					e = exploitationExpenseRepo.save(e);
 					leg.setExpense(e);
 					legRepository.save(leg);
-					
+
 				}
 			}
 
@@ -437,32 +431,40 @@ public class IncomeStatementService {
 		default:
 			total = transaction.getAmount();
 		}
-		switch(ex.getExpenseType()) 
-		{
-		case Interets:
-		case FraisBancaires:
-		case Amortisation:
-		case Immobilisation:
-		case Taxes:
-			ex.setTotalBeforeSalesTaxes(total);
-			break;
-			
-		default:
-			double TPS_RATE = SalesTaxeRates.TPS_RATE;
-			double TVQ_RATE = SalesTaxeRates.TVQ_RATE;
-			double beforeTaxes = total / (1 + TPS_RATE + TPS_RATE * TVQ_RATE + TVQ_RATE);
-			// Calculate TPS and TVQ
-			double tps = beforeTaxes * TPS_RATE;
-			double tvq = (beforeTaxes + tps) * TVQ_RATE;
-			ex.setTps(tps);
-			ex.setTvq(tvq);
-			ex.setTotalBeforeSalesTaxes(beforeTaxes);
-		
+		if (ex.getExpenseType() == null) {
+			invertTpsTvq(ex, total);
+			ex.setExpenseType(ExploitationExpenseType.Unknown);
+		} else {
+			switch (ex.getExpenseType()) {
+			case Interets:
+			case FraisBancaires:
+			case Amortisation:
+			case Immobilisation:
+			case Taxes:
+				ex.setTotalBeforeSalesTaxes(total);
+				break;
+
+			default:
+				invertTpsTvq(ex, total);
+
+			}
 		}
 
 		// ex.setExpenseType(transaction.getType());
 		ex.setDescription(transaction.getDescription());
 		ex.setDate(transaction.getDate());
+	}
+
+	private void invertTpsTvq(ExploitationExpense ex, double total) {
+		double TPS_RATE = SalesTaxeRates.TPS_RATE;
+		double TVQ_RATE = SalesTaxeRates.TVQ_RATE;
+		double beforeTaxes = total / (1 + TPS_RATE + TPS_RATE * TVQ_RATE + TVQ_RATE);
+		// Calculate TPS and TVQ
+		double tps = beforeTaxes * TPS_RATE;
+		double tvq = (beforeTaxes + tps) * TVQ_RATE;
+		ex.setTps(tps);
+		ex.setTvq(tvq);
+		ex.setTotalBeforeSalesTaxes(beforeTaxes);
 	}
 
 	public List<ExpensesLine> getOtherExpensesBetween(Date start, Date stop) {
