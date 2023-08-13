@@ -34,15 +34,15 @@
 </head>
 
 <body>
-	<header th:replace="fragments/header :: header"></header>
+	<header th:replace="~{fragments/header :: header}"></header>
 	<div class="container-fluid">
 		<!-- Left Side Menu -->
 		<div class="row">
-			<div th:replace="fragments/sidebar :: sidebar"></div>
+			<div th:replace="~{fragments/sidebar :: sidebar}"></div>
 			<div class="col-md-10">
-				<div th:replace="fragments/yearselect :: navbar"></div>
+				<div th:replace="~{fragments/yearselect :: navbar}"></div>
 				<div
-					th:replace="fragments/reportHeader :: reportHeader('Expenses Statement', ${companyName}, ${fiscal_end_day}, ${fiscal_end_month}, ${fiscal_end_year})" />
+					th:replace="~{fragments/reportHeader :: reportHeader('Expenses Statement', ${companyName}, ${fiscal_end_day}, ${fiscal_end_month}, ${fiscal_end_year})}" />
 				<div class="container">
 					<ul class="nav nav-tabs" id="expenseTabs">
 						<li class="nav-item">
@@ -88,12 +88,12 @@
 												<td th:text="${line.expenseType}"></td>
 												<td th:text="${line.description}"></td>
 												<td
-													th:insert="fragments/formatCurrency::formattedCurrency(${line.tbst})">
+													th:insert="~{fragments/formatCurrency::formattedCurrency(${line.tbst})}">
 												</td>
-												<td th:insert="fragments/formatCurrency::formattedCurrency(${line.st})">
+												<td th:insert="~{fragments/formatCurrency::formattedCurrency(${line.st})}">
 												</td>
 												<td
-													th:insert="fragments/formatCurrency::formattedCurrency(${line.amount})">
+													th:insert="~{fragments/formatCurrency::formattedCurrency(${line.amount})}">
 												</td>
 												</td>
 												<td>
@@ -110,13 +110,13 @@
 												<td> </td>
 												<td> </td>
 												<td
-													th:insert="fragments/formatCurrency::formattedCurrency(${totals.tbst})">
+													th:insert="~{fragments/formatCurrency::formattedCurrency(${totals.tbst})}">
 												</td>
 												<td
-													th:insert="fragments/formatCurrency::formattedCurrency(${totals.st})">
+													th:insert="~{fragments/formatCurrency::formattedCurrency(${totals.st})}">
 												</td>
 												<td
-													th:insert="fragments/formatCurrency::formattedCurrency(${totals.amount})">
+													th:insert="~{fragments/formatCurrency::formattedCurrency(${totals.amount})}">
 												</td>
 											</tr>
 										</tbody>
@@ -126,7 +126,7 @@
 						</div>
 						<div class="tab-pane fade" id="bulkUpdate" role="tabpanel" aria-labelledby="bulkUpdate-tab">
 							<!-- Include Thymeleaf Fragment for Bulk Update -->
-							<div th:replace="fragments/bulk-update-fragment :: bulkUpdateForm"></div>
+							<div th:replace="fragments/bulk-update-fragment::bulkUpdateForm"></div>
 						</div>
 					</div>
 				</div>
@@ -162,7 +162,7 @@
 			</div>
 		</div>
 	</div>
-	<div th:insert="fragments/expenseEditModalFragment :: editModal"></div>
+	<div th:insert="{fragments/expenseEditModalFragment :: editModal}"></div>
 
 </body>
 <script src="/webjars/jquery/3.6.4/jquery.min.js"></script>

@@ -32,7 +32,7 @@ import com.example.springboot.accounting.repository.TransactionRepository;
 public class IncomeStatementService {
 
 	private final CompanyProfileService profile;
-	private final TransactionService transactionService;
+
 	private final TransactionRepository transactionRepository;
 	private final AssetService assetServices;
 	private final FinancialStatementLineFactory fsf;
@@ -45,7 +45,7 @@ public class IncomeStatementService {
 			TransactionService transactionService, AssetService assetServices) {
 		this.exploitationExpenseRepo = exploitationExpenseRepo;
 		this.transactionRepository = transactionRepository;
-		this.transactionService = transactionService;
+	
 		this.fsf = fsf;
 		this.profile = profile;
 		this.assetServices = assetServices;
@@ -306,7 +306,7 @@ public class IncomeStatementService {
 	 */
 	public void inferExpensesFromTransactions(Date start, Date stop) {
 		
-		fixExpense();
+		//fixExpense();
 		
 		List<Transaction> value = transactionRepository.getExpensesTransactionsForFiscalYear(start, stop);
 		for (Transaction transaction : value) {
