@@ -19,7 +19,7 @@ public class Invoice {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 	
-	private Integer noFacture;
+	private String noFacture;
 	
 	private Double amount;
 	
@@ -138,13 +138,13 @@ public class Invoice {
 
 
 
-	public Integer getNoFacture() {
+	public String getNoFacture() {
 		return noFacture;
 	}
 
 
 
-	public void setNoFacture(Integer noFacture) {
+	public void setNoFacture(String noFacture) {
 		this.noFacture = noFacture;
 	}
 

@@ -108,7 +108,7 @@
 										<td>
 											<span th:id="'nofac-'+${bill.id}" contenteditable="true"
 												th:text="${bill.noFacture}"></span>
-										</td>								
+										</td>
 										<td>
 											<textarea th:id="'description-'+${bill.id}" contenteditable="true"
 												th:text="${bill.description}"></textarea>
@@ -153,6 +153,8 @@
 										<td>
 											<button th:onclick="'editBill(' + ${bill.id} + ')'">Edit</button>
 											<button th:onclick="'saveBill(' + ${bill.id} + ')'">Save</button>
+											<button th:onclick="'deleteBill(' + ${bill.id} + ')'"><i
+													class="fa fa-trash"></i></button>
 										</td>
 									</tr>
 								</tbody>
@@ -182,7 +184,22 @@
 
 
 				}
-
+				
+				function deleteBill(invoiceId) {
+					$.ajax({
+						url: "/api/invoice/" + invoiceId,
+						type: "DELETE",
+						success: function (result) {
+							// You can do something here on success, like removing the invoice from the page
+							alert("Invoice deleted successfully!");
+						},
+						error: function (xhr, status, error) {
+							// You can handle errors here if something goes wrong
+							alert("Failed to delete invoice: " + error);
+						}
+					});
+				}
+				
 				function editBill(billId) {
 					// Toggle contenteditable attribute for the specific bill
 					var description = document.getElementById("description-" + billId);

@@ -5,7 +5,7 @@ import java.time.LocalDate;
 public class InvoiceDto {
 
 	private String description;
-	private int noFacture;
+	private String noFacture;
 	private Double amount;
 	private Double tps;
 	private Double tvq;
@@ -65,11 +65,11 @@ public class InvoiceDto {
 		this.tvq = tvq;
 	}
 
-	public int getNoFacture() {
+	public String getNoFacture() {
 		return noFacture;
 	}
 
-	public void setNoFacture(int noFacture) {
+	public void setNoFacture(String noFacture) {
 		this.noFacture = noFacture;
 	}
 

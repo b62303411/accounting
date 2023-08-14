@@ -152,6 +152,11 @@ public class InvoiceService {
 		return invoices;
 	}
 
+	public void deleteInvoice(Long id) {
+		invoiceRepository.deleteById(id);
+		
+	}
+
 	/*
 	 * private byte[] createPreviewImageAsBytes(Long id) {
 	 * 
