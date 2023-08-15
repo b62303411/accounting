@@ -81,6 +81,9 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 	@Query("SELECT t FROM Transaction t WHERE t.type IN ('OperatingExpenses', 'Depreciation', 'AccruedExpenses') AND t.date BETWEEN :startDate AND :endDate")
 	public List<Transaction> getExpensesTransactionsForFiscalYear(@Param("startDate")Date startDate,@Param("endDate") Date endDate);
 
+	@Query("SELECT t FROM Transaction t WHERE t.type IN ('OperatingExpenses', 'Depreciation', 'AccruedExpenses')")
+	public List<Transaction> findAllExpensesTransactions();
+	
 	@Query("SELECT t FROM Transaction t WHERE t.type IN ('UnrealizedGainsLosses', 'LoanProceeds') AND t.date BETWEEN :startDate AND :endDate")
 	public List<Transaction> getOtherExpensesTransactionsBetween(@Param("startDate")Date startDate,@Param("endDate") Date endDate);
 	

@@ -5,8 +5,10 @@
 	<link rel="stylesheet" type="text/css" href="/css/accounting-table.css" />
 	<style>
 		.chart-container {
-			width: 250px; /* or whatever size you want */
-   			height: 250px; /* or whatever size you want */
+			width: 250px;
+			/* or whatever size you want */
+			height: 250px;
+			/* or whatever size you want */
 			max-width: 300px;
 			/* Set the maximum width of the chart */
 			width: 100%;
@@ -212,16 +214,16 @@
 			}]
 		},
 		options: {
-        legend: {
-            display: true,
-            position: 'right',
-            align: 'start',
-            labels: {
-                boxWidth: 50, // Customize the width of the legend box
-                padding: 10 // Add padding between legend items
-            }
-        }
-    }
+			legend: {
+				display: true,
+				position: 'right',
+				align: 'start',
+				labels: {
+					boxWidth: 50, // Customize the width of the legend box
+					padding: 10 // Add padding between legend items
+				}
+			}
+		}
 	});
 </script>
 <script th:inline="javascript">
@@ -294,6 +296,38 @@
 				// Handle response here. e.g., show a success message or update the UI
 			})
 			.catch(error => console.error('There was an error!', error));
+	});
+
+	$(document).ready(function () {
+		// Handle click for "Infer Expenses by Transactions" button
+		$("#btnInferTransactions").click(function () {
+			$("#progressBar").stop().css({width: '0%'});
+			$("#progressBar").animate({width: '100%'}, 15000);
+			$.ajax({
+				url: '/api/expenses/inferFromTransaction',
+				type: 'PUT',
+				success: function (response) {
+					$("#progressBar").stop().css({width: '100%'});
+					$("#report").text(response.message + " " + response.affectedRows + " rows affected.");
+					alert('Expenses inferred from transactions successfully.');
+				},
+				error: function (error) {
+					 $("#progressBar").stop().css({width: '0%'});
+					alert('Error inferring expenses from transactions.');
+				}
+			});
+		});
+
+		// Similarly, handle clicks for other buttons with their IDs
+		$("#btnInferAssetLegs").click(function () {
+			// Replace this with the correct endpoint
+			// $.ajax(...);
+		});
+
+		$("#btnInferInvoices").click(function () {
+			// Replace this with the correct endpoint
+			// $.ajax(...);
+		});
 	});
 
 </script>

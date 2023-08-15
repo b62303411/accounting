@@ -66,5 +66,17 @@ public class ExpenseApiController {
 		response.put("message", "Expenses updated successfully");
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
+	
+	@PutMapping("/inferFromTransaction")
+	public  ResponseEntity<Map<String, Object>> updateInferExpensesFromTransactions() {
+		expensesService.removeExpenseTransactions();
+		int affectedRows = expensesService.inferFromTransactions();
+	    Map<String, Object> response = new HashMap<>();
+	   
+		response.put("affectedRows", affectedRows);
+	    response.put("message", "Expenses inferred from transactions successfully.");
+	    return ResponseEntity.ok(response);
+	    
+	}
 
 }
