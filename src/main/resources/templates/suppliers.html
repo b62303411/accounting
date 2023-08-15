@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Supplier Management</title>
+	<!-- Include Bootstrap CSS -->
+	<link rel="stylesheet" href="/webjars/bootstrap/5.3.0/css/bootstrap.min.css" />
+	<header th:replace="fragments/header :: header"></header>
+</head>
+
+<body>
+	<div class="container mt-4">
+		<h1>Supplier Management</h1>
+
+		<!-- Create supplier Form -->
+		<form id="createSupplierForm" th:action="@{/create}" method="post">
+			<h3>Create Supplier</h3>
+			<div class="mb-3">
+				<input id="name" type="text" name="name" class="form-control" placeholder="Name" required />
+			</div>
+			<!-- Other input fields for creating supplier -->
+			<!-- ... -->
+			<button type="submit" class="btn btn-primary">Create Supplier</button>
+		</form>
+
+		<!-- List of suppliers -->
+		<h3 class="mt-4">Suppliers</h3>
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Address</th>
+					<th>Email</th>
+					<th>Phone</th>
+					<th>No Tps</th>
+					<th>No Tvq</th>
+
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="supplier : ${suppliers}">
+					<td><input type="text" th:id="'name-' + ${supplier.id}" th:value="${supplier.name}" /></td>
+					<td><input type="text" th:id="'address-' + ${supplier.id}" th:value="${supplier.address}" /></td>
+					<td><input type="email" th:id="'contactEmail-' + ${supplier.id}"
+							th:value="${supplier.contactEmail}" /></td>
+					<td><input type="text" th:id="'contactPhone-' + ${supplier.id}"
+							th:value="${supplier.contactPhone}" /></td>
+					<td><input type="text" th:id="'noTps-' + ${supplier.id}" th:value="${supplier.noTps}" /></td>
+					<td><input type="text" th:id="'noTvq-' + ${supplier.id}" th:value="${supplier.noTvq}" /></td>
+					<td>
+						<button th:onclick="'saveSupplier(' + ${supplier.id} + ')'"
+							class="btn btn-success">Save</button>
+						<button th:onclick="'deleteSupplier(' + ${supplier.id} + ')'"
+							class="btn btn-danger">Delete</button>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<script src="/webjars/jquery/3.6.4/jquery.min.js"></script>
+	<script src="/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+	<script src="/webjars/popper.js/2.11.7/umd/popper.min.js"></script>
+	<script>
+		// GET all contacts
+		function getAllSuppliers() {
+			$.get("/api/suppliers", function (data) {
+				// Populate the table with the data
+			});
+		}
+
+		// POST a new contact
+		function createSupplier(contact) {
+			$.ajax({
+				url: "/api/suppliers",
+				method: "POST",
+				contentType: "application/json",
+				data: JSON.stringify(contact),
+				success: function (data) {
+					// Handle successful creation
+					getAllContacts();
+				},
+				error: function (error) {
+					// Optionally handle error response
+					console.error('There was an error!', error);
+				}
+			});
+		}
+
+		// Create Contact
+		$("#createSupplierForm").submit(function (e) {
+			e.preventDefault();
+			// Collect form data
+			var contactData = {
+				name: $("#name").val(),
+				// Other fields
+			};
+			createSupplier(contactData);
+		});
+
+		$("#createSupplierForm").submit(function (e) {
+			e.preventDefault();
+			// Collect form data
+			var contactData = {
+				name: $("#name").val(),
+				// Other fields
+			};
+			createSupplier(contactData);
+		});
+		function saveSupplier(supplierId) {
+			var supplier = {
+				name: document.getElementById('name-' + supplierId).value,
+				address: document.getElementById('address-' + supplierId).value,
+				contactEmail: document.getElementById('contactEmail-' + supplierId).value,
+				contactPhone: document.getElementById('contactPhone-' + supplierId).value,
+				noTps: document.getElementById('noTps-' + supplierId).value,
+				noTvq: document.getElementById('noTvq-' + supplierId).value
+			};
+			
+			updateSupplier(supplierId,supplier);
+		}
+		// PUT to update a contact
+		function updateSupplier(id, contact) {
+
+			$.ajax({
+				url: "/api/suppliers/" + id,
+				type: "PUT",
+				contentType: "application/json",
+				data: JSON.stringify(contact),
+				success: function (data) {
+					// Handle successful update
+				}
+			});
+		}
+
+		// DELETE a contact
+		function deleteSupplier(supplierId) {
+			if (confirm('Are you sure you want to delete this supplier?')) {
+				$.ajax({
+					url: '/api/suppliers/' + supplierId,
+					type: 'DELETE',
+					success: function (result) {
+						// Handle successful deletion, such as reloading the list of suppliers
+						getAllSuppliers(); // Assuming this is a function to reload the suppliers
+					},
+					error: function (error) {
+						// Handle error if deletion fails
+						alert('An error occurred while deleting the supplier.');
+					}
+				});
+			}
+		}
+
+		// Call the functions as needed, e.g., getAllContacts on page load
+		$(document).ready(function () {
+			getAllSuppliers();
+		});
+	</script>
+	<!-- Include Bootstrap JS -->
+	<script src="/webjars/jquery/3.6.4/jquery.min.js"></script>
+	<script src="/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
