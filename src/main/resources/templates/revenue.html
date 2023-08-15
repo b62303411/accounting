@@ -27,9 +27,9 @@
 						<tbody>
 							<tr th:each="line : ${revenues}">
 								<td th:text="${line.description}"></td>
-								<td th:insert="fragments/formatCurrency::formattedCurrency(${line.amount})"></td>
-								<td th:insert="fragments/formatCurrency::formattedCurrency(${line.revenue})"></td>
-								<td th:insert="fragments/formatCurrency::formattedCurrency(${line.tpsTvq})"></td>
+								<td th:insert="fragments/formatCurrency::formattedSpanCurrency(${line.amount})"></td>
+								<td th:insert="fragments/formatCurrency::formattedSpanCurrency(${line.revenue})"></td>
+								<td th:insert="fragments/formatCurrency::formattedSpanCurrency(${line.tpsTvq})"></td>
 								<td th:text="${line.date}"> </td>
 							</tr>
 							<tr>

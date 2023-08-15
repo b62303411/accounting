@@ -77,13 +77,13 @@
 												<td th:text="${line.expenseType}"></td>
 												<td th:text="${line.description}"></td>
 												<td
-													th:insert="~{fragments/formatCurrency::formattedCurrency(${line.tbst})}">
+													th:insert="~{fragments/formatCurrency::formattedSpanCurrency(${line.tbst})}">
 												</td>
 												<td
-													th:insert="~{fragments/formatCurrency::formattedCurrency(${line.st})}">
+													th:insert="~{fragments/formatCurrency::formattedSpanCurrency(${line.st})}">
 												</td>
 												<td
-													th:insert="~{fragments/formatCurrency::formattedCurrency(${line.amount})}">
+													th:insert="~{fragments/formatCurrency::formattedSpanCurrency(${line.amount})}">
 												</td>
 												</td>
 												<td>
@@ -100,13 +100,13 @@
 												<td> </td>
 												<td> </td>
 												<td
-													th:insert="~{fragments/formatCurrency::formattedCurrency(${totals.tbst})}">
+													th:insert="~{fragments/formatCurrency::formattedSpanCurrency(${totals.tbst})}">
 												</td>
 												<td
-													th:insert="~{fragments/formatCurrency::formattedCurrency(${totals.st})}">
+													th:insert="~{fragments/formatCurrency::formattedSpanCurrency(${totals.st})}">
 												</td>
 												<td
-													th:insert="~{fragments/formatCurrency::formattedCurrency(${totals.amount})}">
+													th:insert="~{fragments/formatCurrency::formattedSpanCurrency(${totals.amount})}">
 												</td>
 											</tr>
 										</tbody>
