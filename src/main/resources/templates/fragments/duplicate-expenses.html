@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Duplicate Expenses</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+
+<body>
+
+	<div th:fragment="duplicate-expenses" class="container mt-5">
+		<h2 class="text-center">Duplicate Expenses</h2>
+		<div th:each="group, groupStat : ${duplicates}" class="mb-4">
+			<h4 class="text-center mb-3">Group #[[( ${groupStat.index} + 1 )]]</h4>
+			<p><strong>Key Information:</strong></p>
+			<ul>
+				<li>Total: [[${group.key.transactionAmount}]]</li>
+				<li>Date: [[${#dates.format(group.key.date, 'MM/dd/yyyy')}]]</li>
+				<li>Payee: [[${group.key.payee}]]</li>
+			</ul>
+			<table class="table table-bordered">
+				<thead>
+					<tr>
+						<th>Id</th>
+						<th>Date</th>
+						<th>Expense Type</th>
+						<th>Payee</th>
+						<th>MEMO</th>
+						<th>TOTAL BEFORE SALES TAX</th>
+						<th>SALES TAX</th>
+						<th>TOTAL</th>
+						<!-- You can add more columns if needed -->
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="expense : ${group.expenses}">
+						<td th:text="${expense.id}"></td>
+						<td th:text="${expense.date}"> </td>
+						<td th:text="${expense.expenseType}"></td>
+						<td th:text="${expense.payee}"></td>
+						<td th:text="${expense.description}"></td>
+						<td
+							th:insert="~{fragments/formatCurrency::formattedSpanCurrency(${expense.totalBeforeSalesTaxes})}">
+						</td>
+						<td th:insert="~{fragments/formatCurrency::formattedSpanCurrency(${expense.tps+expense.tvq})}">
+						</td>
+						<td
+							th:insert="~{fragments/formatCurrency::formattedSpanCurrency(${expense.tps+expense.tvq+expense.totalBeforeSalesTaxes})}">
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<button class="btn btn-warning merge-button" th:data-ids="${group.joinedIds}">Merge</button>
+		</div>
+		<button class="btn btn-danger" id="mergeAllButton">Merge All</button>
+	</div>
+
+</body>
+
+</html>

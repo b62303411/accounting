@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.springboot.accounting.model.dto.BulkUpdateExpenseDTO;
 import com.example.springboot.accounting.model.dto.ExpenseUpdateDto;
+import com.example.springboot.accounting.model.dto.MergeRequest;
 import com.example.springboot.accounting.model.entities.ExploitationExpense;
 import com.example.springboot.accounting.repository.ExploitationExpenseRepository;
 import com.example.springboot.accounting.service.CompanyProfileService;
@@ -66,17 +67,39 @@ public class ExpenseApiController {
 		response.put("message", "Expenses updated successfully");
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-	
+
 	@PutMapping("/inferFromTransaction")
-	public  ResponseEntity<Map<String, Object>> updateInferExpensesFromTransactions() {
+	public ResponseEntity<Map<String, Object>> updateInferExpensesFromTransactions() {
 		expensesService.removeExpenseTransactions();
 		int affectedRows = expensesService.inferFromTransactions();
-	    Map<String, Object> response = new HashMap<>();
-	   
+		Map<String, Object> response = new HashMap<>();
+
 		response.put("affectedRows", affectedRows);
-	    response.put("message", "Expenses inferred from transactions successfully.");
-	    return ResponseEntity.ok(response);
-	    
+		response.put("message", "Expenses inferred from transactions successfully.");
+		return ResponseEntity.ok(response);
+
+	}
+
+	@PutMapping("/inferFromAssetLegs")
+	public ResponseEntity<Map<String, Object>> inferFromAssetLegs() {
+
+		int affectedRows = expensesService.inferFromAssetLegs();
+		Map<String, Object> response = new HashMap<>();
+
+		response.put("affectedRows", affectedRows);
+		response.put("message", "Expenses inferred from Asset Legs successfully.");
+		return ResponseEntity.ok(response);
+
+	}
+
+	@PostMapping("/merge")
+	public ResponseEntity<?> mergeExpenses(@RequestBody MergeRequest mergeRequest) {
+		try {
+			expensesService.mergeExpenses(mergeRequest.getIds());
+			return new ResponseEntity<>(HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
 	}
 
 }

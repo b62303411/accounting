@@ -356,6 +356,7 @@ public class IncomeStatementService {
 			line.tbst = expense.getTotalBeforeSalesTaxes();
 			line.description = expense.getDescription();
 			line.expenseType = expense.getTypeStr();
+			line.payee = expense.getPayee();
 			lines.add(line);
 		}
 		return lines;

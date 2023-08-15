@@ -28,6 +28,11 @@ public abstract class Expense {
 	private Double tvq;
 
 	private String description;
+	
+	/**
+	 * The person or entity to whom the payment was made.
+	 */
+	private String payee;
 
 	private Date date;
 
@@ -118,6 +123,18 @@ public abstract class Expense {
 		if (null != tps && null != tvq)
 			value = tps + tvq;
 		return value;
+	}
+
+	public String getPayee() {
+		return payee;
+	}
+
+	public void setPayee(String payee) {
+		this.payee = payee;
+	}
+
+	public void setTotalBeforeSalesTaxes(Double totalBeforeSalesTaxes) {
+		this.totalBeforeSalesTaxes = totalBeforeSalesTaxes;
 	}
 
 }

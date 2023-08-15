@@ -2,15 +2,20 @@ package com.example.springboot.accounting.service;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.springboot.accounting.model.ExpenseKey;
 import com.example.springboot.accounting.model.ExploitationExpenseType;
 import com.example.springboot.accounting.model.FiscalYearEnd;
 import com.example.springboot.accounting.model.SalesTaxeRates;
+import com.example.springboot.accounting.model.dto.ExpenseDuplicateGroup;
 import com.example.springboot.accounting.model.dto.ExpenseUpdateDto;
 import com.example.springboot.accounting.model.entities.AmortisationLeg;
 import com.example.springboot.accounting.model.entities.Asset;
@@ -63,48 +68,44 @@ public class ExpensesService {
 		List<Transaction> value = transactionRepository.findAllExpensesTransactions();
 		return inferExpensesFromTransactions(value);
 	}
-	
+
 	public int removeExpenseTransactions() {
 		int row = 0;
 		List<Transaction> value = transactionRepository.findAll();
 		for (Transaction transaction : value) {
-			if(null == transaction.getType())
-			{
+			if (null == transaction.getType()) {
 				ExploitationExpense ex = repo.findByTransaction(transaction);
-				if(null != ex) 
-				{
+				if (null != ex) {
 					deleteExploitationExpense(ex);
 				}
-			}
-			else {
-			switch(transaction.getType()) 
-			{
-			case OperatingExpenses:
-			case Depreciation:
-			case AccruedExpenses:
-				break;
+			} else {
+				switch (transaction.getType()) {
+				case OperatingExpenses:
+				case Depreciation:
+				case AccruedExpenses:
+					break;
 				default:
 					ExploitationExpense ex = repo.findByTransaction(transaction);
-					if(null != ex) 
-					{
+					if (null != ex) {
 						deleteExploitationExpense(ex);
 					}
-					
-			}}
-		
+
+				}
+			}
+
 		}
 		return row;
-		
+
 	}
 
 	private void deleteExploitationExpense(ExploitationExpense ex) {
 		repo.delete(ex);
-		
+
 	}
 
 	public int inferExpensesFromTransactions(List<Transaction> transactions) {
 
-		int rowAffected=0;
+		int rowAffected = 0;
 		for (Transaction transaction : transactions) {
 			boolean valueChanged = false;
 			ExploitationExpense ex = repo.findByTransaction(transaction);
@@ -115,11 +116,11 @@ public class ExpensesService {
 				repo.save(ex);
 				rowAffected++;
 			} else {
-				if (ex.getDate() == null && transaction.getDate() !=null) {
+				if (ex.getDate() == null && transaction.getDate() != null) {
 					valueChanged = true;
 					ex.setDate(transaction.getDate());
 				}
-				if (ex.getDescription() == null && transaction.getDescription()!=null) {
+				if (ex.getDescription() == null && transaction.getDescription() != null) {
 					valueChanged = true;
 					ex.setDescription(transaction.getDescription());
 				}
@@ -127,12 +128,11 @@ public class ExpensesService {
 					valueChanged = true;
 					updateValueFromStransaction(transaction, ex);
 				}
-				if(valueChanged) 
-				{
+				if (valueChanged) {
 					repo.save(ex);
 					rowAffected++;
 				}
-				
+
 			}
 		}
 		return rowAffected;
@@ -191,6 +191,21 @@ public class ExpensesService {
 		ex.setTotalBeforeSalesTaxes(beforeTaxes);
 	}
 
+	public int inferFromAssetLegs() {
+		int row = 0;
+		List<Asset> assetList = assetService.findAll();
+		for (Asset asset : assetList) {
+			for (AmortisationLeg leg : asset.getDepreciationLegs()) {
+				if ((leg.getExpense() == null || leg.getDate() == null) && leg.isRealized()) {
+					int fy = leg.getFiscalYear();
+					inferFromLeg(fy, asset, leg);
+					row++;
+				}
+			}
+		}
+		return row;
+	}
+
 	private void inferExpensesFromAssetDepreciation(Date start) {
 		List<Asset> assetList = assetService.findAll();
 		int fy = getFiscalYear(start);
@@ -199,25 +214,29 @@ public class ExpensesService {
 
 				if (leg.getFiscalYear() == fy && (leg.getExpense() == null || leg.getDate() == null)) {
 
-					ExploitationExpense e = new ExploitationExpense();
-					e.setTotalBeforeSalesTaxes(-leg.getAmount());
-					e.setExpenseType(ExploitationExpenseType.Amortisation);
-					e.setDescription("Depreciation " + asset.getPurchaceTransaction().getDescription());
-					if (leg.getDate() == null) {
-						FiscalYearEnd fye = profile.getProfile().getFiscalYearEnd();
-						Date date = fye.getLastDayDate(fy);
-						leg.setDate(date);
-					}
-					e.setDate(leg.getDate());
-					e = repo.save(e);
-					leg.setExpense(e);
-					legRepository.save(leg);
+					inferFromLeg(fy, asset, leg);
 
 				}
 			}
 
 		}
 
+	}
+
+	private void inferFromLeg(int fy, Asset asset, AmortisationLeg leg) {
+		ExploitationExpense e = new ExploitationExpense();
+		e.setTotalBeforeSalesTaxes(-leg.getAmount());
+		e.setExpenseType(ExploitationExpenseType.Amortisation);
+		e.setDescription("Depreciation " + asset.getPurchaceTransaction().getDescription());
+		if (leg.getDate() == null) {
+			FiscalYearEnd fye = profile.getProfile().getFiscalYearEnd();
+			Date date = fye.getLastDayDate(fy);
+			leg.setDate(date);
+		}
+		e.setDate(leg.getDate());
+		e = repo.save(e);
+		leg.setExpense(e);
+		legRepository.save(leg);
 	}
 
 	private void fixExpense() {
@@ -247,4 +266,76 @@ public class ExpensesService {
 
 		return profile.getProfile().getFiscalYearEnd().getFiscalYear(tomorrow);
 	}
+
+	public List<ExpenseDuplicateGroup> getDuplicates() {
+		List<ExploitationExpense> allExpenses = repo.findAll(); // Fetch or initialize your list of expenses
+
+		// Step 1: Group the expenses by ExpenseKey
+		Map<ExpenseKey, List<ExploitationExpense>> groupedByExpenseKey = allExpenses.stream()
+				.collect(Collectors.groupingBy(
+						expense -> new ExpenseKey(expense.getTotal(), expense.getDate(), expense.getPayee()),
+						LinkedHashMap::new, Collectors.toList()));
+
+		// Step 2: Transform the grouped data into ExpenseDuplicateGroup objects
+		List<ExpenseDuplicateGroup> groupedExpenses = groupedByExpenseKey.entrySet().stream().map(entry -> {
+			ExpenseDuplicateGroup group = new ExpenseDuplicateGroup();
+			group.setExpenses(entry.getValue());
+			group.setKey(entry.getKey());
+			return group;
+		}).collect(Collectors.toList());
+
+		// Step 3: Filter out groups that don't have duplicates
+		List<ExpenseDuplicateGroup> duplicates = groupedExpenses.stream()
+				.filter(group -> group.getExpenses().size() > 1).collect(Collectors.toList());
+
+		return duplicates;
+	}
+
+	public void mergeExpenses(List<Long> ids) {
+		// Logic to merge expenses
+		// 1. Fetch all expenses with those IDs
+		// 2. Determine which one to keep and which ones to delete
+		// 3. If there are related transactions, handle them as well
+		// 4. Persist any changes
+
+		List<ExploitationExpense> expenses = repo.findAllById(ids);
+
+		boolean allSameTransactions = validateExpensesHaveSameTransactions(expenses);
+		if(allSameTransactions) 
+		{
+			
+		}
+		else 
+		{
+			
+			System.err.println();
+		}
+		// Your merge logic here. For simplicity, we'll just remove all but the first:
+		ExploitationExpense retainedExpense = expenses.get(0);
+
+		for (int i = 1; i < expenses.size(); i++) {
+			// Handle related transactions if any, then
+			repo.delete(expenses.get(i));
+			Transaction t = expenses.get(i).getTransaction();
+			transactionRepository.delete(t);
+		}
+
+		// Update retainedExpense if needed, then save
+		// expenseRepository.save(retainedExpense);
+	}
+
+	private boolean validateExpensesHaveSameTransactions(List<ExploitationExpense> expenses) {
+		if (expenses == null || expenses.isEmpty())
+			return false;
+
+		Transaction firstExpenseTransactions = expenses.get(0).getTransaction();
+		for (int i = 1; i < expenses.size(); i++) {
+			Transaction currentExpenseTransactions = expenses.get(i).getTransaction();
+			if(!firstExpenseTransactions.equals(currentExpenseTransactions))
+				return false;
+			
+		}
+		return true;
+	}
+
 }

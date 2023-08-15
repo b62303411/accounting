@@ -44,6 +44,10 @@
 							<a class="nav-link" id="bulkUpdate-tab" data-bs-toggle="tab" href="#bulkUpdate">Bulk
 								Update</a>
 						</li>
+						<li class="nav-item">
+							<a class="nav-link" id="duplicate-tab" data-bs-toggle="tab" href="#duplicate">Duplicates
+							</a>
+						</li>
 					</ul>
 					<div class="tab-content" id="expenseTabsContent">
 						<div class="tab-pane fade show active" id="expenses" role="tabpanel"
@@ -119,6 +123,10 @@
 						<div class="tab-pane fade" id="bulkUpdate" role="tabpanel" aria-labelledby="bulkUpdate-tab">
 							<!-- Include Thymeleaf Fragment for Bulk Update -->
 							<div th:replace="~{fragments/bulk-update-fragment::bulkUpdateForm}"></div>
+						</div>
+						<div class="tab-pane fade" id="duplicate" role="tabpanel" aria-labelledby="duplicate-tab">
+							<!-- Include Thymeleaf Fragment for Bulk Update -->
+							<div th:replace="~{fragments/duplicate-expenses::duplicate-expenses}"></div>
 						</div>
 					</div>
 				</div>
@@ -298,38 +306,85 @@
 			.catch(error => console.error('There was an error!', error));
 	});
 
+	function peformeBulkAction(url) {
+		$("#progressBar").stop().css({width: '0%'});
+		$("#progressBar").animate({width: '100%'}, 15000);
+		$.ajax({
+			url: url,
+			type: 'PUT',
+			success: function (response) {
+				$("#progressBar").stop().css({width: '100%'});
+				$("#report").text(response.message + " " + response.affectedRows + " rows affected.");
+				alert('Expenses inferred from transactions successfully.');
+			},
+			error: function (error) {
+				$("#progressBar").stop().css({width: '0%'});
+				$("#report").text(response.message + " " + response.affectedRows + " rows affected.");
+			}
+		});
+	}
+
 	$(document).ready(function () {
 		// Handle click for "Infer Expenses by Transactions" button
 		$("#btnInferTransactions").click(function () {
-			$("#progressBar").stop().css({width: '0%'});
-			$("#progressBar").animate({width: '100%'}, 15000);
-			$.ajax({
-				url: '/api/expenses/inferFromTransaction',
-				type: 'PUT',
-				success: function (response) {
-					$("#progressBar").stop().css({width: '100%'});
-					$("#report").text(response.message + " " + response.affectedRows + " rows affected.");
-					alert('Expenses inferred from transactions successfully.');
-				},
-				error: function (error) {
-					 $("#progressBar").stop().css({width: '0%'});
-					alert('Error inferring expenses from transactions.');
-				}
-			});
+			peformeBulkAction('/api/expenses/inferFromTransaction');
 		});
 
 		// Similarly, handle clicks for other buttons with their IDs
 		$("#btnInferAssetLegs").click(function () {
 			// Replace this with the correct endpoint
-			// $.ajax(...);
+			peformeBulkAction('/api/expenses/inferFromAssetLegs');
 		});
 
 		$("#btnInferInvoices").click(function () {
 			// Replace this with the correct endpoint
-			// $.ajax(...);
+			peformeBulkAction('/api/expenses/inferFromTransaction');
 		});
 	});
 
+	function merge(ids) {
+		// Example: Console output to verify
+		console.log(ids);
+
+		// TODO: Your logic here, e.g., an AJAX call to merge those IDs
+		// For this example, I'll just alert the IDs
+		alert(`Merging IDs: ${ids}`);
+
+	var formData = {
+			ids: ids
+			
+		};
+
+
+		$.ajax({
+			type: 'POST',
+			url: '/api/expenses/merge',
+			contentType: 'application/json',
+			data: JSON.stringify(formData),
+			success: function (response) {
+				alert("Expenses merged successfully!");
+				location.reload(); // Reload the page or you can update the UI in another manner
+			},
+			error: function (error) {
+				alert("Failed to merge expenses. " + error.responseText);
+			}
+		});
+	}
+
+	$(document).ready(function () {
+		$('.merge-button').on('click', function () {
+			// Fetch the data-ids attribute
+			let ids = $(this).data('ids').split(',').map(Number);
+			merge(ids);
+
+
+		});
+
+
+		$("#mergeAllButton").click(function () {
+			// Collect all the IDs and send a request to the backend
+		});
+	});
 </script>
 
 </html>

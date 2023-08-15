@@ -11,15 +11,18 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.example.springboot.accounting.model.dto.ExpenseDuplicateGroup;
 import com.example.springboot.accounting.model.dto.ExpensesLine;
 import com.example.springboot.accounting.model.entities.ExploitationExpense;
 import com.example.springboot.accounting.model.entities.Transaction;
 import com.example.springboot.accounting.repository.ExploitationExpenseRepository;
+import com.example.springboot.accounting.service.ExpensesService;
 import com.example.springboot.accounting.service.FinancialStatementService;
 
 @Controller
 @RequestMapping("/view/expenses")
 public class ExpensesController {
+	private final ExpensesService es;
 	private final FinancialStatementService financeStatementService;
 	private ExploitationExpenseRepository repo;
 	private NavigationFixture navFixture;
@@ -27,9 +30,11 @@ public class ExpensesController {
 	public ExpensesController(
 			NavigationFixture navFixture,
 			ExploitationExpenseRepository repo,
-			FinancialStatementService financeStatementService) 
+			FinancialStatementService financeStatementService,
+			ExpensesService es) 
 	{
 		this.repo=repo;
+		this.es=es;
 		this.navFixture=navFixture;
 		this.financeStatementService=financeStatementService;
 	}
@@ -66,6 +71,8 @@ public class ExpensesController {
 		model.addAttribute("totalOthers", totalOthers);
 		
 		model.addAttribute("sampleTransaction", new Transaction());
+		List<ExpenseDuplicateGroup> duplicates = es.getDuplicates();
+		model.addAttribute("duplicates",duplicates);
 		
 		return "expenses";
 	}
