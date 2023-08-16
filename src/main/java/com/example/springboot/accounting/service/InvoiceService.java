@@ -158,8 +158,17 @@ public class InvoiceService {
 	}
 
 	public List<Invoice> findAllByOrigin(String name) {
-		// TODO Auto-generated method stub
+
 		return invoiceRepository.findAllByOrigine(name);
+	}
+
+	public Invoice findById(Long id) {
+		return invoiceRepository.findById(id).get();
+	}
+
+	public Invoice save(Invoice invoice) {
+		return invoiceRepository.save(invoice);
+		
 	}
 
 	/*

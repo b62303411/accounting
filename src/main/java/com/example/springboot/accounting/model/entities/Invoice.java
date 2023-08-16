@@ -32,6 +32,8 @@ public class Invoice {
 	private String origine;
 	
 	
+	
+	
     @Column(length = 1000)
 	private String description;
 	
@@ -141,8 +143,6 @@ public class Invoice {
 	public String getNoFacture() {
 		return noFacture;
 	}
-
-
 
 	public void setNoFacture(String noFacture) {
 		this.noFacture = noFacture;

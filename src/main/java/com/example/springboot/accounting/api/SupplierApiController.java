@@ -20,12 +20,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.springboot.accounting.model.TransactionType;
 import com.example.springboot.accounting.model.dto.Answer;
 import com.example.springboot.accounting.model.dto.FinanceEntry;
+import com.example.springboot.accounting.model.dto.SelectedRowDTO;
+import com.example.springboot.accounting.model.entities.Consolidation;
 import com.example.springboot.accounting.model.entities.ExploitationExpense;
 import com.example.springboot.accounting.model.entities.Invoice;
 import com.example.springboot.accounting.model.entities.Supplier;
 import com.example.springboot.accounting.model.entities.Transaction;
+import com.example.springboot.accounting.repository.ConsolidationRepository;
 import com.example.springboot.accounting.service.ExpensesService;
 import com.example.springboot.accounting.service.InvoiceService;
 import com.example.springboot.accounting.service.OpenAiRequestService;
@@ -39,6 +43,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @RestController
 @RequestMapping("/api/suppliers")
 public class SupplierApiController {
+
+	@Autowired
+	private ConsolidationRepository consolidations;
 
 	@Autowired
 	private TransactionService transactionService;
@@ -58,6 +65,68 @@ public class SupplierApiController {
 	@GetMapping
 	public ResponseEntity<List<Supplier>> getAllContacts() {
 		return ResponseEntity.ok(contactService.getAllSuppliers());
+	}
+
+	@PostMapping("/reconcile")
+	public void reconcile(@RequestBody List<SelectedRowDTO> selectedRows) {
+
+		Transaction transaction = null;
+		Invoice invoice = null;
+		ExploitationExpense expense = null;
+		Consolidation c = null;
+		for (SelectedRowDTO selectedRowDTO : selectedRows) {
+			switch (selectedRowDTO.getType()) {
+			case "Transaction":
+				transaction = transactionService.findById(selectedRowDTO.getId());
+
+				break;
+			case "Invoice":
+				invoice = invoiceService.findById(selectedRowDTO.getId());
+				break;
+			case "Expense":
+				expense = expenseService.findById(selectedRowDTO.getId());
+				break;
+			}
+
+			System.out.println();
+		}
+		if (null == expense && null != invoice && null != transaction) {
+			c = consolidations.findByTransactionId(transaction.getId());
+			if (null == c) {
+				c = new Consolidation();
+			}
+			c.setInvoice(invoice);
+			c.setTransaction(transaction);
+			c.setSupplier(invoice.getOrigine());
+			if(transaction.getType()==TransactionType.OperatingExpenses) 
+			{
+				expense = expenseService.findByTransaction(transaction);
+				expense.setInvoice(invoice);
+				expense.setPayee(invoice.getOrigine());
+				expense.setTransaction(transaction);
+				c.setEpense(expense);			
+				expenseService.save(expense);
+			
+			}
+			// 
+			// 
+			// 
+
+			consolidations.save(c);
+		}
+		if (null != invoice && null != expense) {
+			c = consolidations.findByInvoiceId(invoice.getId());
+			if (null == c) {
+				c = new Consolidation();
+			}
+			c.setInvoice(invoice);
+			c.setEpense(expense);
+			c.setSupplier(invoice.getOrigine());
+			consolidations.save(c);
+			expense.setInvoice(invoice);
+
+			expenseService.save(expense);
+		}
 	}
 
 	@PostMapping
@@ -85,30 +154,52 @@ public class SupplierApiController {
 		return ResponseEntity.noContent().build();
 	}
 
+	public boolean isConsolidated(Transaction transaction) {
+		Consolidation t = consolidations.findByTransactionId(transaction.getId());
+		return (null != t);
+	}
 
+	public boolean isConsolidated(ExploitationExpense e) {
+		Consolidation t = consolidations.findByEpenseId(e.getId());
+		return (null != t);
+	}
+
+	public boolean isConsolidated(Invoice e) {
+		Consolidation t = consolidations.findByInvoiceId(e.getId());
+		return (null != t);
+	}
+	@GetMapping("/{id}/consolidated")
+	public List<Consolidation> getSupplierConsolidatedEntry(@PathVariable Long id) 
+	{
+		Supplier supplier = contactService.findById(id);
+		return consolidations.findAllBySupplier(supplier.getName());
+	}
+	
 	@GetMapping("/{id}/entries")
 	public List<FinanceEntry> getSupplierEntry(@PathVariable Long id) {
 
 		List<ExploitationExpense> allEx = expenseService.findAll();
 		List<Supplier> suppliers = contactService.getAllSuppliers();
-		Map<String,String> names = new HashMap();
+		Map<String, String> names = new HashMap();
 		for (Supplier s : suppliers) {
-			names.put(s.getName(),s.getServiceType());
+			names.put(s.getName(), s.getServiceType());
 		}
+
 		for (ExploitationExpense exploitationExpense : allEx) {
 			if (exploitationExpense.getPayee() != null) {
 				if (!names.keySet().contains(exploitationExpense.getPayee())) {
 					String approx = ai.guessSupplier(names, exploitationExpense.getPayee());
 					System.out.println(approx);
 					for (Supplier sup : suppliers) {
+						if (!isConsolidated(exploitationExpense)) {
+							int distance = StringUtils.getLevenshteinDistance(sup.getName().toUpperCase(),
+									exploitationExpense.getPayee().toUpperCase());
+							if (distance < 10 && !exploitationExpense.getPayee().equals(sup.getName())) {
 
-						int distance = StringUtils.getLevenshteinDistance(sup.getName().toUpperCase(),
-								exploitationExpense.getPayee().toUpperCase());
-						if (distance < 10 && !exploitationExpense.getPayee().equals(sup.getName())) {
-
-							System.out.println(sup.getName() + " VS " + exploitationExpense.getPayee());
+								System.out.println(sup.getName() + " VS " + exploitationExpense.getPayee());
+							}
+							System.out.println("Levenshtein Distance: " + distance);
 						}
-						System.out.println("Levenshtein Distance: " + distance);
 					}
 				}
 
@@ -118,64 +209,25 @@ public class SupplierApiController {
 		List<FinanceEntry> fin = new ArrayList<FinanceEntry>();
 		Supplier supplier = contactService.findById(id);
 		List<ExploitationExpense> ex = expenseService.findAllByPayee(supplier.getName());
+		List<Consolidation> consolidation = consolidations.findAllBySupplier(supplier.getName());
 		for (ExploitationExpense exploitationExpense : ex) {
-			FinanceEntry entry = new FinanceEntry();
-			entry.setDate(exploitationExpense.getDate());
-			entry.setType("Expense");
-			entry.setAmount(""+exploitationExpense.getTotal());
-			if (exploitationExpense.getDate() == null) {
-				System.err.println();
-			} else {
-				ObjectMapper objectMapper = new ObjectMapper();
-				try {
-					String jsonString = objectMapper.writeValueAsString(exploitationExpense);
-					entry.setContent(jsonString);
-					fin.add(entry);
-				} catch (JsonProcessingException e) {
-					e.printStackTrace();
-				}
-			}
+			if(!isConsolidated(exploitationExpense))
+				createEntry(fin, exploitationExpense);
 
 		}
 
 		List<Invoice> invoices = invoiceService.findAllByOrigin(supplier.getName());
 		for (Invoice invoice : invoices) {
-			FinanceEntry entry = new FinanceEntry();
-			entry.setDate(invoice.getDate());
-			entry.setType("Invoice");
-			entry.setAmount(""+invoice.getAmount());
-			if (entry.getDate() == null) {
-				System.err.println();
-			}
-			ObjectMapper objectMapper = new ObjectMapper();
-			try {
-				String jsonString = objectMapper.writeValueAsString(invoice);
-				entry.setContent(jsonString);
-				fin.add(entry);
-			} catch (JsonProcessingException e) {
-				e.printStackTrace();
-			}
+			if(!isConsolidated(invoice))
+				createEntry(fin, invoice);
 		}
 
 		List<Transaction> transactions = transactionService.findAllByPayee(supplier.getName());
 		for (Transaction transaction : transactions) {
-			FinanceEntry entry = new FinanceEntry();
-			entry.setDate(transaction.getDate());
-			entry.setType("Transaction");
-			entry.setAmount(""+transaction.getAmount());
-			if (entry.getDate() == null) {
-				System.err.println();
-			}
-			ObjectMapper objectMapper = new ObjectMapper();
-			try {
-				String jsonString = objectMapper.writeValueAsString(transaction);
-				entry.setContent(jsonString);
-				fin.add(entry);
-			} catch (JsonProcessingException e) {
-				e.printStackTrace();
-			}
+			if(!isConsolidated(transaction))
+				createEntry(fin, transaction);
 		}
-		
+
 		Collections.sort(fin, new Comparator<FinanceEntry>() {
 			public int compare(FinanceEntry p1, FinanceEntry p2) {
 				return p1.getDate().compareTo(p2.getDate());
@@ -183,12 +235,70 @@ public class SupplierApiController {
 		});
 		return fin;
 	}
-	
-	public String generateFrom(Map<String,String> names) 
-	{
+
+	private void createEntry(List<FinanceEntry> fin, Transaction transaction) {
+		FinanceEntry entry = new FinanceEntry();
+		entry.setDate(transaction.getDate());
+		entry.setType("Transaction");
+		entry.setId(transaction.getId().toString());
+		entry.setAmount("" + transaction.getAmount());
+		if (entry.getDate() == null) {
+			System.err.println();
+		}
+		ObjectMapper objectMapper = new ObjectMapper();
+		try {
+			String jsonString = objectMapper.writeValueAsString(transaction);
+			entry.setContent(jsonString);
+			fin.add(entry);
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void createEntry(List<FinanceEntry> fin, Invoice invoice) {
+		FinanceEntry entry = new FinanceEntry();
+		entry.setDate(invoice.getDate());
+		entry.setType("Invoice");
+		entry.setId(invoice.getId().toString());
+		entry.setAmount("" + invoice.getAmount());
+		if (entry.getDate() == null) {
+			System.err.println();
+		}
+		ObjectMapper objectMapper = new ObjectMapper();
+		try {
+			String jsonString = objectMapper.writeValueAsString(invoice);
+			entry.setContent(jsonString);
+			fin.add(entry);
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void createEntry(List<FinanceEntry> fin, ExploitationExpense exploitationExpense) {
+		FinanceEntry entry = new FinanceEntry();
+		entry.setDate(exploitationExpense.getDate());
+		entry.setType("Expense");
+		entry.setId(exploitationExpense.getId().toString());
+		entry.setAmount("" + exploitationExpense.getTotal());
+		if (exploitationExpense.getDate() == null) {
+			System.err.println();
+		} else {
+			ObjectMapper objectMapper = new ObjectMapper();
+			try {
+				String jsonString = objectMapper.writeValueAsString(exploitationExpense);
+				entry.setContent(jsonString);
+				fin.add(entry);
+			} catch (JsonProcessingException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public String generateFrom(Map<String, String> names) {
 		List<Transaction> list = transactionService.findAllNullPayee();
 		for (Transaction transaction : list) {
-			String responseString = ai.guessSupplier(names, transaction.getNote() + "," + transaction.getDescription()+","+transaction.getTransactionNature()+","+transaction.getType());
+			String responseString = ai.guessSupplier(names, transaction.getNote() + "," + transaction.getDescription()
+					+ "," + transaction.getTransactionNature() + "," + transaction.getType());
 			System.out.println(responseString);
 			ObjectMapper mapper = new ObjectMapper();
 			JsonNode responseJson;

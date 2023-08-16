@@ -19,6 +19,7 @@ import com.example.springboot.accounting.model.dto.ExpenseDuplicateGroup;
 import com.example.springboot.accounting.model.dto.ExpenseUpdateDto;
 import com.example.springboot.accounting.model.entities.AmortisationLeg;
 import com.example.springboot.accounting.model.entities.Asset;
+import com.example.springboot.accounting.model.entities.Expense;
 import com.example.springboot.accounting.model.entities.ExploitationExpense;
 import com.example.springboot.accounting.model.entities.Transaction;
 import com.example.springboot.accounting.repository.AmortisationLegRepository;
@@ -346,6 +347,19 @@ public class ExpensesService {
 	public List<ExploitationExpense> findAll() {
 		return repo.findAll();
 		
+	}
+
+	public ExploitationExpense findById(Long id) {
+		return repo.findById(id).get();
+	}
+
+	public ExploitationExpense save(ExploitationExpense expense) {
+		return repo.save(expense);
+		
+	}
+
+	public ExploitationExpense findByTransaction(Transaction transaction) {
+		return repo.findByTransaction(transaction);
 	}
 
 }

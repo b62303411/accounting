@@ -5,7 +5,21 @@
 	<title>Supplier Management</title>
 	<!-- Include Bootstrap CSS -->
 	<link rel="stylesheet" href="/webjars/bootstrap/5.3.0/css/bootstrap.min.css" />
+	<style>
+		.selected {
+			background-color: #f2f2f2 !important;
+			;
+			/* Change this to your desired highlight color */
+		}
+
+		#consolidation_table_body tr.selected {
+			background-color: #f2f2f2 !important;
+			;
+			/* Change this to your desired highlight color */
+		}
+	</style>
 	<header th:replace="fragments/header :: header"></header>
+
 </head>
 
 <body>
@@ -184,14 +198,134 @@
 
 
 	<script>
+		function simplifyDate(dateString) {
+			return new Date(dateString).toLocaleDateString();
+		}
+		function updateConsolidatedTable(entries) {
+			//var tbody = $('#consolidation_table_body');
+			//tbody.empty(); // Clear current entries
+			const great = document.getElementById('consolidated');
+
+			$.each(entries, function (index, entry) {
+				var card = document.createElement('div');
+				card.classList.add('card');
+				var div = document.createElement('div');
+				card.appendChild(div);
+				div.classList.add('card-body');
+				var table = document.createElement('table');
+				div.appendChild(table);
+				great.appendChild(card);
+				tbody = document.createElement('tbody');
+				table.appendChild(tbody);
+				if (entry.transaction) {
+					var tr_transaction = document.createElement('tr');
+					var date_td = document.createElement('td');
+					var type_td = document.createElement('td');
+					var id_td = document.createElement('td');
+					var content_td = document.createElement('td');
+					var amount_td = document.createElement('td');
+
+					date_td.textContent = simplifyDate(entry.transaction.date);
+					type_td.textContent = 'Transaction';
+					id_td.textContent = entry.transaction.id;
+					content_td.textContent = entry.transaction.description;
+					amount_td.textContent = entry.transaction.amount;
+
+					tr_transaction.appendChild(date_td);
+					tr_transaction.appendChild(id_td);
+					tr_transaction.appendChild(type_td);
+					tr_transaction.appendChild(amount_td);
+					tr_transaction.appendChild(content_td);
+
+					tbody.appendChild(tr_transaction);
+
+				}
+				if (entry.invoice) {
+					var tr_invoice = document.createElement('tr');
+					var date_td = document.createElement('td');
+					var type_td = document.createElement('td');
+					var id_td = document.createElement('td');
+					var content_td = document.createElement('td');
+					var amount_td = document.createElement('td');
+
+					date_td.textContent = simplifyDate(entry.invoice.date);
+					type_td.textContent = 'Invoice';
+					id_td.textContent = entry.invoice.id;
+					content_td.textContent = entry.invoice.description;
+					amount_td.textContent = entry.invoice.amount;
+
+					tr_invoice.appendChild(date_td);
+					tr_invoice.appendChild(id_td);
+					tr_invoice.appendChild(type_td);
+					tr_invoice.appendChild(amount_td);
+					tr_invoice.appendChild(content_td);
+
+					tbody.appendChild(tr_invoice);
+				}
+
+				if (entry.epense) {
+					var tr_epense = document.createElement('tr');
+					var date_td = document.createElement('td');
+					var type_td = document.createElement('td');
+					var id_td = document.createElement('td');
+					var content_td = document.createElement('td');
+					var amount_td = document.createElement('td');
+
+					date_td.textContent = simplifyDate(entry.epense.date);
+					type_td.textContent = 'Expense';
+					id_td.textContent = entry.epense.id;
+					content_td.textContent = entry.epense.description;
+					amount_td.textContent = entry.epense.total;
+
+					tr_epense.appendChild(date_td);
+					tr_epense.appendChild(id_td);
+					tr_epense.appendChild(type_td);
+					tr_epense.appendChild(amount_td);
+					tr_epense.appendChild(content_td);
+
+					tbody.appendChild(tr_epense);
+				}
+
+
+			});
+		}
+		function fillWithSuplier(supplierId) {
+			if (supplierId) {
+				$.ajax({
+					url: `/api/suppliers/${supplierId}/entries`,
+					method: 'GET',
+					dataType: 'json',
+					success: function (data) {
+						updateTable(data);
+					},
+					error: function (error) {
+						console.log("Error fetching data:", error);
+					}
+				});
+
+				$.ajax({
+					url: `/api/suppliers/${supplierId}/consolidated`,
+					method: 'GET',
+					dataType: 'json',
+					success: function (data) {
+						updateConsolidatedTable(data);
+					},
+					error: function (error) {
+						console.log("Error fetching data:", error);
+					}
+				});
+			}
+		}
+
 		function updateTable(entries) {
-			var tbody = $('#consolidation_table');
+			var tbody = $('#consolidation_table_body');
 			tbody.empty(); // Clear current entries
 
 			$.each(entries, function (index, entry) {
 				tbody.append(
-					'<tr>' +
+					'<tr data-entry-id=' + index + ' id=' + index + '>' +
 					'<td>' + entry.date + '</td>' +
+					'<td>' + entry.id + '</td>' +
 					'<td>' + entry.type + '</td>' +
 					'<td>' + entry.amount + '</td>' +
 					'<td>' + entry.content + '</td>' +
@@ -199,28 +333,108 @@
 					'</tr>'
 				);
 			});
+
+			$("#reconcileButton").click(function () {
+				// Send AJAX request to your REST API
+				$.ajax({
+					type: "POST",
+					url: "/api/reconcile",
+					data: JSON.stringify(selectedRows),
+					contentType: "application/json",
+					success: function (response) {
+						// Handle success response
+						console.log("Reconciliation successful:", response);
+						selectedRows = []; // Clear selected rows after reconciliation
+						updateReconcileButtonState();
+						$(".selected").removeClass("selected");
+					},
+					error: function (xhr, status, error) {
+						// Handle error response
+						console.error("Reconciliation error:", error);
+					}
+				});
+			});
 		}
 
 		$(document).ready(function () {
 			$('#supplierDropdown').change(function () {
 				var supplierId = $(this).val();
-				if (supplierId) {
-					$.ajax({
-						url: `/api/suppliers/${supplierId}/entries`,
-						method: 'GET',
-						dataType: 'json',
-						success: function (data) {
-							updateTable(data);
-						},
-						error: function (error) {
-							console.log("Error fetching data:", error);
-						}
-					});
-				}
+				fillWithSuplier(supplierId);
 			});
 		});
 
 
+	</script>
+	<script>
+		var selectedRows = [];
+
+		function reconciliateSelected() {
+			var selectedData = [];
+			selectedRows.forEach(function (index) {
+				var tr = $("#" + index);
+				// Assuming the id is the ID of the <tr> element
+				var id = tr.find("td:nth-child(2)").text();
+				var type = tr.find("td:nth-child(3)").text(); // Get the type from the 3rd column
+
+				var rowData = {
+					id: id,
+					type: type
+				};
+
+				selectedData.push(rowData);
+			});
+
+
+			$.ajax({
+				type: "POST",
+				url: "/api/suppliers/reconcile",
+				data: JSON.stringify(selectedData),
+				contentType: "application/json",
+				success: function (response) {
+					// Handle success response
+					console.log("Reconciliation successful:", response);
+					selectedRows = []; // Clear selected rows after reconciliation
+					updateReconcileButtonState();
+					$(".selected").removeClass("selected");
+				},
+				error: function (xhr, status, error) {
+					// Handle error response
+					console.error("Reconciliation error:", error);
+				}
+			});
+		}
+
+		// Update the state of the Reconcile button
+		function updateReconcileButtonState() {
+			if (selectedRows.length >= 2) {
+				$("#reconcileButton").prop("disabled", false);
+			} else {
+				$("#reconcileButton").prop("disabled", true);
+			}
+
+		}
+
+		$(document).ready(function () {
+
+
+			// Handle row selection
+			$("#consolidation_table").on("click", "tr", function () {
+				var rowId = $(this).attr("data-entry-id");
+				if (selectedRows.includes(rowId)) {
+					selectedRows = selectedRows.filter(id => id !== rowId);
+					$(this).removeClass("selected");
+					$(this).removeClass("table-primary");
+				} else {
+					if (selectedRows.length < 3) {
+						selectedRows.push(rowId);
+						$(this).addClass("selected, table-primary");
+						$(this).attr("style", "background-color: #f2f2f2 !important;");
+					}
+				}
+				updateReconcileButtonState();
+			});
+
+		});
 	</script>
 </body>
 

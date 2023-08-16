@@ -3,6 +3,7 @@
 
 <head>
 	<title>Fragment: Bulk Update</title>
+
 </head>
 
 <body>
@@ -11,20 +12,24 @@
 			<option value="" disabled selected>Select a supplier</option>
 			<option th:each="supplier : ${suppliers}" th:value="${supplier.id}" th:text="${supplier.name}"></option>
 		</select>
+		<h1>Consolidated Entries</h1>
+	    <div id="consolidated" name="consolidated"></div>
 		<h1>Entries</h1>
-		<table class="table">
+		<table id="consolidation_table" class="table">
 			<thead>
 				<tr>
 					<th>Date</th>
+					<th>Id</th>
 					<th>Type</th>
 					<th>Amount</th>
 					<th>Entry</th>
 					<th>Action</th>
 				</tr>
 			</thead>
-			<tbody id="consolidation_table">
+			<tbody id="consolidation_table_body">
 				<tr th:each="entry : ${consolidations}">
 					<td th:text="${entry.date}"></td>
+					<td th:text="${entry.id}"></td>
 					<td th:text="${entry.type}"></td>
 					<td th:text="${entry.amount}"></td>
 					<td th:text="${entry.content}"></td>
@@ -34,6 +39,10 @@
 				</tr>
 			</tbody>
 		</table>
+		<button id="reconcileButton" class="btn btn-primary" disabled>Reconcile</button>
+		<script src="/webjars/jquery/3.6.4/jquery.min.js"></script>
+		<script>	// Handle Reconcile button click
+	    </script>
 	</div>
 </body>
 
