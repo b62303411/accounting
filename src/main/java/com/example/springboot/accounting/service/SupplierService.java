@@ -67,4 +67,8 @@ public class SupplierService {
 		
 	}
 
+	public Supplier findById(Long id) {
+		return supplierRepository.findById(id).get();
+	}
+
 }

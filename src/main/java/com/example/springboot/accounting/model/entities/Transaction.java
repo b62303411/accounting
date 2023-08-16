@@ -41,7 +41,7 @@ public class Transaction {
     private TransactionNature transactionNature;
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Attachment> attachments;
-
+    private String payee;
     
     
     /**
@@ -128,6 +128,12 @@ public class Transaction {
 	}
 	public void addAttachment(Attachment att) {
 		attachments.add(att);
+	}
+	public String getPayee() {
+		return payee;
+	}
+	public void setPayee(String payee) {
+		this.payee = payee;
 	}
 	
 	

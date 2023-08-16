@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Fragment: Bulk Update</title>
+</head>
+
+<body>
+	<div th:fragment="supplier-balence" class="container my-3">
+		<select id="supplierDropdown">
+			<option value="" disabled selected>Select a supplier</option>
+			<option th:each="supplier : ${suppliers}" th:value="${supplier.id}" th:text="${supplier.name}"></option>
+		</select>
+		<h1>Entries</h1>
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Date</th>
+					<th>Type</th>
+					<th>Amount</th>
+					<th>Entry</th>
+					<th>Action</th>
+				</tr>
+			</thead>
+			<tbody id="consolidation_table">
+				<tr th:each="entry : ${consolidations}">
+					<td th:text="${entry.date}"></td>
+					<td th:text="${entry.type}"></td>
+					<td th:text="${entry.amount}"></td>
+					<td th:text="${entry.content}"></td>
+					<td>
+
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</body>
+
+</html>

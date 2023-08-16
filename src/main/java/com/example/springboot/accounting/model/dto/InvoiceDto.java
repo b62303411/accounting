@@ -9,7 +9,7 @@ public class InvoiceDto {
 	private Double amount;
 	private Double tps;
 	private Double tvq;
-	private LocalDate date;
+	private String date;
 	private String recipient;
 	private String origine;
 
@@ -33,11 +33,11 @@ public class InvoiceDto {
 		this.amount = amount;
 	}
 
-	public LocalDate getDate() {
+	public String getDate() {
 		return date;
 	}
 
-	public void setDate(LocalDate date) {
+	public void setDate(String date) {
 		this.date = date;
 	}
 

@@ -157,6 +157,11 @@ public class InvoiceService {
 		
 	}
 
+	public List<Invoice> findAllByOrigin(String name) {
+		// TODO Auto-generated method stub
+		return invoiceRepository.findAllByOrigine(name);
+	}
+
 	/*
 	 * private byte[] createPreviewImageAsBytes(Long id) {
 	 * 

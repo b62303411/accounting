@@ -15,5 +15,11 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>{
 	@Query("SELECT i FROM Invoice i WHERE ABS(ABS(i.amount) - ABS(:amount)) <= :epsilon")
 	List<Invoice> findByAmountWithinTolerance(@Param("amount") Double amount, @Param("epsilon") Double epsilon);
 
+	List<Invoice> findAllByOrigine(String name);
+
+	Invoice findByNoFacture(String noFacture);
+	
+	List<Invoice> findAllByNoFacture(String noFacture);
+
 
 }

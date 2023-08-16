@@ -338,4 +338,14 @@ public class ExpensesService {
 		return true;
 	}
 
+	public List<ExploitationExpense> findAllByPayee(String name) {
+		return repo.findAllByPayee(name);
+		
+	}
+
+	public List<ExploitationExpense> findAll() {
+		return repo.findAll();
+		
+	}
+
 }

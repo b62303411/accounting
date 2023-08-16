@@ -58,8 +58,8 @@ public class AttachmentService {
 			hash = getSHA256Hash(fileBytes);		
 		att.setSha256Hash(hash);
 		Attachment existingAtt =  attachmentRepository.findBySha256Hash(hash);
-		if(null != existingAtt)
-			return existingAtt;
+//		if(null != existingAtt)
+//			return existingAtt;
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

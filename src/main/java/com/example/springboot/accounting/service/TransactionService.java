@@ -52,5 +52,14 @@ public class TransactionService {
 		transactionRepository.saveAll(transactions);
 		
 	}
+
+	public List<Transaction> findAllNullPayee() {
+		return transactionRepository.findByPayeeIsNull();
+	}
+
+	public List<Transaction> findAllByPayee(String name) {
+		return transactionRepository.findAllByPayee(name);
+		
+	}
 	 
 }

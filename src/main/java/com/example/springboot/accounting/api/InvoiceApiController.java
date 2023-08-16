@@ -2,9 +2,15 @@ package com.example.springboot.accounting.api;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -14,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.springboot.accounting.model.AiFileResult;
 import com.example.springboot.accounting.model.dto.InvoiceCreationRequest;
 import com.example.springboot.accounting.model.dto.InvoiceDto;
 import com.example.springboot.accounting.model.dto.InvoiceUpdateRequest;
@@ -48,145 +56,158 @@ public class InvoiceApiController {
 	private InvoiceService invoiceService;
 	private OpenAiRequestService service;
 	private DateParser dateParser;
+	private HashMap<String, AiFileResult> aiResults;
 
 	@Autowired
-	public InvoiceApiController(DateParser dateParser,AttachmentService attachmentService, InvoiceRepository invoiceRepo,
-			InvoiceService invoiceService, OpenAiRequestService service) {
+	public InvoiceApiController(DateParser dateParser, AttachmentService attachmentService,
+			InvoiceRepository invoiceRepo, InvoiceService invoiceService, OpenAiRequestService service) {
 		this.invoiceRepo = invoiceRepo;
 		this.invoiceService = invoiceService;
 		this.service = service;
 		this.attachmentService = attachmentService;
-		this.dateParser=dateParser;
+		this.dateParser = dateParser;
+		aiResults = new HashMap<String, AiFileResult>();
 	}
 
-	boolean isComplete(Invoice in) 
-	{
-		return (in.getNoFacture() != null && in.getOrigine() !=null && in.getAmount()!=null && in.getRecipient()!=null && in.getDescription()!=null);
+	boolean isComplete(Invoice in) {
+		return (in.getNoFacture() != null && in.getOrigine() != null && in.getAmount() != null
+				&& in.getRecipient() != null && in.getDescription() != null);
 	}
-	
-	
+
 	@PostMapping("/parse")
-	ResponseEntity<Invoice> parse(@RequestParam("file") MultipartFile file) {
+	ResponseEntity<Map<String, Object>> parse(@RequestParam("file") MultipartFile file) {
 		Invoice invoice = new Invoice();
-		String context="";
-		for(int i = 0; i<5;i++) 
-		{
+		String context = "";
+		Map<String, Object> results = new HashMap<String, Object>();
+		for (int i = 0; i < 5; i++) {
 			Invoice in = new Invoice();
 			try {
-				populateInvoice(file, in,context);
-				if(null==invoice.getNoFacture() && null != in.getNoFacture()) 
-				{
-					invoice.setNoFacture(in.getNoFacture());					
-				}
-				
-				if(null != in.getOrigine() && !in.getOrigine().isBlank() && !in.getOrigine().isEmpty())
-				{
-					invoice.setOrigine(in.getOrigine());
-				}
-				
-				if(null != in.getRecipient() && !in.getRecipient().isBlank()) 
-				{
-					invoice.setRecipient(in.getRecipient());
-				}
-				
-				if(null != in.getAmount())
-				{
-					invoice.setAmount(in.getAmount());
-				}
-				
-				if(null != in.getTps()) 
-				{
-					invoice.setTps(in.getTps());
-				}
-				
-				if(null != in.getTvq()) 
-				{
-					invoice.setTvq(in.getTvq());
-				}
-				
-				if(invoice.getDate() ==null && null != in.getDate()) 
-				{
-					invoice.setDate(in.getDate());
-				}
-				
-				if(null != in.getDescription() && !in.getDescription().isEmpty()) 
-				{
-					invoice.setDescription(in.getDescription());
-				}
-				
-				if(isComplete(invoice))
-					return ResponseEntity.ok(invoice);
-				  // Create a new ObjectMapper
-	            ObjectMapper objectMapper = new ObjectMapper();
 
-	            // Convert the object to a JSON string
-	            String jsonString = objectMapper.writeValueAsString(invoice);
-	            
-				context = "The values that are not null are valid:" + jsonString;
+				String hash = attachmentService.getSHA256Hash(file.getBytes());
+				AiFileResult result = null;
+				if (results.containsKey(hash)) {
+					result = aiResults.get(hash);
+				} else {
+					result = populateInvoice(file, in, context);
+					if (result.finalResult != null)
+						aiResults.put(hash, result);
+				}
 
-				
+				if (result.finalResult != null) {
+
+					List<Invoice> list = invoiceRepo.findAllByNoFacture(in.getNoFacture());
+					if (list.size() > 1)
+						resolveDuplicate(list);
+					Invoice existing = invoiceRepo.findByNoFacture(in.getNoFacture());
+					results.put("factureNo", in.getNoFacture());
+					results.put("meta1", result.firstMetaData.answer.toPrettyString());
+					results.put("meta2", result.finalResult.answer.toPrettyString());
+					if (null != existing) {
+						results.put("invoiceExist", existing);
+					}
+
+					if (null == invoice.getNoFacture() && null != in.getNoFacture()) {
+						invoice.setNoFacture(in.getNoFacture());
+					}
+
+					if (null != in.getOrigine() && !in.getOrigine().isBlank() && !in.getOrigine().isEmpty()) {
+						invoice.setOrigine(in.getOrigine());
+					}
+
+					if (null != in.getRecipient() && !in.getRecipient().isBlank()) {
+						invoice.setRecipient(in.getRecipient());
+					}
+
+					if (null != in.getAmount()) {
+						invoice.setAmount(in.getAmount());
+					}
+
+					if (null != in.getTps()) {
+						invoice.setTps(in.getTps());
+					}
+
+					if (null != in.getTvq()) {
+						invoice.setTvq(in.getTvq());
+					}
+
+					if (invoice.getDate() == null && null != in.getDate()) {
+						invoice.setDate(in.getDate());
+					}
+
+					if (null != in.getDescription() && !in.getDescription().isEmpty()) {
+						invoice.setDescription(in.getDescription());
+					}
+
+					results.put("Invoice", invoice);
+
+					if (isComplete(invoice))
+						return ResponseEntity.ok(results);
+					// Create a new ObjectMapper
+					ObjectMapper objectMapper = new ObjectMapper();
+
+					// Convert the object to a JSON string
+					String jsonString = objectMapper.writeValueAsString(invoice);
+
+					context = "The values that are not null are valid:" + jsonString;
+				}
+
 			} catch (IOException e) {
 
 				e.printStackTrace();
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
-		
 
-		return ResponseEntity.ok(invoice);
+		return ResponseEntity.ok(results);
 	}
 
-	private JsonNode populateInvoice(MultipartFile file, Invoice in,String extraContext)
+	private void resolveDuplicate(List<Invoice> list) {
+		for (Invoice invoice : list) {
+			System.err.println(invoice.getId());
+		}
+		invoiceRepo.delete(list.get(0));
+
+	}
+
+	private AiFileResult populateInvoice(MultipartFile file, Invoice in, String extraContext)
 			throws IOException, JsonProcessingException, JsonMappingException {
 		String text = extractTextFromPDF(file);
-		
-		String responseString = service.submitInvoiceQuery(text,extraContext);
-		ObjectMapper mapper = new ObjectMapper();
-		JsonNode responseJson = mapper.readTree(responseString);
 
-		// Check for errors
-		if (responseJson.has("error")) {
-			String errorMessage = responseJson.get("error").get("message").asText();
-			System.out.println("Error from OpenAI: " + errorMessage);
-			return null;
-		}
-		// Get the assistant's message content
-		String assistantContent = responseJson.path("choices").get(0).path("message").path("content").asText();
-		// Process the extracted text as needed
-		// For example, you may want to convert it to a JSON object if it's in JSON
-		// format
-		JsonNode extractedData = mapper.readTree(assistantContent);
-		
+		AiFileResult response = service.submitInvoiceQuery(text, extraContext);
+		if (null == response || response.finalResult == null)
+			return response;
+		JsonNode extractedData = response.finalResult.answer;
+
 		if (extractedData.has("noFacture") && !extractedData.get("noFacture").isNull()) {
-		    in.setNoFacture(extractedData.get("noFacture").asText());
+			in.setNoFacture(extractedData.get("noFacture").asText());
 		}
 
 		if (extractedData.has("amount") && !extractedData.get("amount").isNull()) {
-		    in.setAmount(extractedData.get("amount").asDouble());
+			in.setAmount(extractedData.get("amount").asDouble());
 		}
 
 		if (extractedData.has("tps") && !extractedData.get("tps").isNull()) {
-		    in.setTps(extractedData.get("tps").asDouble());
+			in.setTps(extractedData.get("tps").asDouble());
 		}
 
 		if (extractedData.has("tvq") && !extractedData.get("tvq").isNull()) {
-		    in.setTvq(extractedData.get("tvq").asDouble());
+			in.setTvq(extractedData.get("tvq").asDouble());
 		}
 
 		if (extractedData.has("recipient") && !extractedData.get("recipient").isNull()) {
-		    in.setRecipient(extractedData.get("recipient").asText());
+			in.setRecipient(extractedData.get("recipient").asText());
 		}
 
 		if (extractedData.has("origine") && !extractedData.get("origine").isNull()) {
-		    in.setOrigine(extractedData.get("origine").asText());
+			in.setOrigine(extractedData.get("origine").asText());
 		}
 		JsonNode descriptionNode = extractedData.get("description");
-		
+
 		if (descriptionNode != null && !descriptionNode.isArray()) {
-		    String description = descriptionNode.asText(); // or other appropriate type
-		    in.setDescription(description);
-		}
-		else if(descriptionNode != null && descriptionNode.isArray()) 
-		{
+			String description = descriptionNode.asText(); // or other appropriate type
+			in.setDescription(description);
+		} else if (descriptionNode != null && descriptionNode.isArray()) {
 			StringBuilder combinedString = new StringBuilder();
 			for (JsonNode element : descriptionNode) {
 				// Append the string value of the element, followed by a newline
@@ -199,11 +220,9 @@ public class InvoiceApiController {
 		String dateStr = extractedData.get("date").asText();
 		Date date = dateParser.parseDate(dateStr);
 		in.setDate(date);
-		
-			
-		
+
 		System.out.println(extractedData);
-		return extractedData;
+		return response;
 	}
 
 	public String extractTextFromPDF(MultipartFile file) throws IOException {
@@ -229,10 +248,12 @@ public class InvoiceApiController {
 	}
 
 	@PostMapping("/create")
-	ResponseEntity<Invoice> create(InvoiceCreationRequest request) {
+	ResponseEntity<Invoice> create(@ModelAttribute InvoiceCreationRequest request) {
 		Invoice in = new Invoice();
 		fill(request, in);
-
+		Invoice invoice = invoiceRepo.findByNoFacture(in.getNoFacture());
+		if (null != invoice)
+			return ResponseEntity.badRequest().build();
 		Attachment att = null;
 		try {
 			byte[] bytes = request.getFile().getBytes();
@@ -256,9 +277,19 @@ public class InvoiceApiController {
 		in.setDescription(request.getDescription());
 		in.setRecipient(request.getRecipient());
 		in.setOrigine(request.getOrigine());
-		java.sql.Date sqlDate = java.sql.Date.valueOf(request.getDate());
-		Date utilDate = new Date(sqlDate.getTime());
-		in.setDate(utilDate);
+		String dateString = request.getDate();
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        try {
+            Date date = format.parse(dateString);
+            System.out.println("Parsed Date: " + date);
+            in.setDate(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+//		java.sql.Date sqlDate = java.sql.Date.valueOf(request.getDate());
+//		Date utilDate = new Date(sqlDate.getTime());
+		
 
 	}
 

@@ -114,5 +114,9 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 	public List<Transaction> findAllTransactionsByYear(@Param("year") Integer year);
 
 	public List<Transaction> findAllByDescription(String description);
+	
+	public List<Transaction> findByPayeeIsNull();
+
+	public List<Transaction> findAllByPayee(String name);
 
 }

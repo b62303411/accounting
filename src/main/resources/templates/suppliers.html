@@ -11,53 +11,77 @@
 <body>
 	<div class="container mt-4">
 		<h1>Supplier Management</h1>
+		<div class="container">
+			<ul class="nav nav-tabs" id="expenseTabs">
+				<li class="nav-item">
+					<a class="nav-link active" id="expenses-tab" data-bs-toggle="tab" href="#suppliers">Supliers</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" id="bulkUpdate-tab" data-bs-toggle="tab" href="#balence">Balence</a>
+				</li>
 
-		<!-- Create supplier Form -->
-		<form id="createSupplierForm" th:action="@{/create}" method="post">
-			<h3>Create Supplier</h3>
-			<div class="mb-3">
-				<input id="name" type="text" name="name" class="form-control" placeholder="Name" required />
+			</ul>
+			<div class="tab-content" id="suppliersTabsContent">
+				<div class="tab-pane fade show active" id="suppliers" role="tabpanel" aria-labelledby="suppliers-tab">
+					<!-- Create supplier Form -->
+					<form id="createSupplierForm" th:action="@{/create}" method="post">
+						<h3>Create Supplier</h3>
+						<div class="mb-3">
+							<input id="name" type="text" name="name" class="form-control" placeholder="Name" required />
+						</div>
+						<!-- Other input fields for creating supplier -->
+						<!-- ... -->
+						<button type="submit" class="btn btn-primary">Create Supplier</button>
+					</form>
+
+					<!-- List of suppliers -->
+					<h3 class="mt-4">Suppliers</h3>
+					<div class="responsive-table-wrapper">
+						<table class="table table-striped">
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Address</th>
+									<th>Email</th>
+									<th>Phone</th>
+									<th>No Tps</th>
+									<th>No Tvq</th>
+
+									<th>Actions</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:each="supplier : ${suppliers}">
+									<td><input type="text" th:id="'name-' + ${supplier.id}"
+											th:value="${supplier.name}" /></td>
+									<td><input type="text" th:id="'address-' + ${supplier.id}"
+											th:value="${supplier.address}" /></td>
+									<td><input type="email" th:id="'contactEmail-' + ${supplier.id}"
+											th:value="${supplier.contactEmail}" /></td>
+									<td><input type="text" th:id="'contactPhone-' + ${supplier.id}"
+											th:value="${supplier.contactPhone}" /></td>
+									<td><input type="text" th:id="'noTps-' + ${supplier.id}"
+											th:value="${supplier.noTps}" /></td>
+									<td><input type="text" th:id="'noTvq-' + ${supplier.id}"
+											th:value="${supplier.noTvq}" /></td>
+									<td>
+										<button th:onclick="'saveSupplier(' + ${supplier.id} + ')'"
+											class="btn btn-success">Save</button>
+										<button th:onclick="'deleteSupplier(' + ${supplier.id} + ')'"
+											class="btn btn-danger">Delete</button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="tab-pane fade show active" id="balence" role="tabpanel" aria-labelledby="balence-tab">
+					<div th:replace="fragments/supplier-balence :: supplier-balence"></div>
+				</div>
 			</div>
-			<!-- Other input fields for creating supplier -->
-			<!-- ... -->
-			<button type="submit" class="btn btn-primary">Create Supplier</button>
-		</form>
-
-		<!-- List of suppliers -->
-		<h3 class="mt-4">Suppliers</h3>
-		<table class="table table-striped">
-			<thead>
-				<tr>
-					<th>Name</th>
-					<th>Address</th>
-					<th>Email</th>
-					<th>Phone</th>
-					<th>No Tps</th>
-					<th>No Tvq</th>
-
-					<th>Actions</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr th:each="supplier : ${suppliers}">
-					<td><input type="text" th:id="'name-' + ${supplier.id}" th:value="${supplier.name}" /></td>
-					<td><input type="text" th:id="'address-' + ${supplier.id}" th:value="${supplier.address}" /></td>
-					<td><input type="email" th:id="'contactEmail-' + ${supplier.id}"
-							th:value="${supplier.contactEmail}" /></td>
-					<td><input type="text" th:id="'contactPhone-' + ${supplier.id}"
-							th:value="${supplier.contactPhone}" /></td>
-					<td><input type="text" th:id="'noTps-' + ${supplier.id}" th:value="${supplier.noTps}" /></td>
-					<td><input type="text" th:id="'noTvq-' + ${supplier.id}" th:value="${supplier.noTvq}" /></td>
-					<td>
-						<button th:onclick="'saveSupplier(' + ${supplier.id} + ')'"
-							class="btn btn-success">Save</button>
-						<button th:onclick="'deleteSupplier(' + ${supplier.id} + ')'"
-							class="btn btn-danger">Delete</button>
-					</td>
-				</tr>
-			</tbody>
-		</table>
+		</div>
 	</div>
+	<!-- Include Bootstrap JS -->
 	<script src="/webjars/jquery/3.6.4/jquery.min.js"></script>
 	<script src="/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 	<script src="/webjars/popper.js/2.11.7/umd/popper.min.js"></script>
@@ -116,8 +140,8 @@
 				noTps: document.getElementById('noTps-' + supplierId).value,
 				noTvq: document.getElementById('noTvq-' + supplierId).value
 			};
-			
-			updateSupplier(supplierId,supplier);
+
+			updateSupplier(supplierId, supplier);
 		}
 		// PUT to update a contact
 		function updateSupplier(id, contact) {
@@ -156,9 +180,48 @@
 			getAllSuppliers();
 		});
 	</script>
-	<!-- Include Bootstrap JS -->
-	<script src="/webjars/jquery/3.6.4/jquery.min.js"></script>
-	<script src="/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+
+
+	<script>
+		function updateTable(entries) {
+			var tbody = $('#consolidation_table');
+			tbody.empty(); // Clear current entries
+
+			$.each(entries, function (index, entry) {
+				tbody.append(
+					'<tr>' +
+					'<td>' + entry.date + '</td>' +
+					'<td>' + entry.type + '</td>' +
+					'<td>' + entry.amount + '</td>' +
+					'<td>' + entry.content + '</td>' +
+					'<td></td>' + // Empty action column
+					'</tr>'
+				);
+			});
+		}
+
+		$(document).ready(function () {
+			$('#supplierDropdown').change(function () {
+				var supplierId = $(this).val();
+				if (supplierId) {
+					$.ajax({
+						url: `/api/suppliers/${supplierId}/entries`,
+						method: 'GET',
+						dataType: 'json',
+						success: function (data) {
+							updateTable(data);
+						},
+						error: function (error) {
+							console.log("Error fetching data:", error);
+						}
+					});
+				}
+			});
+		});
+
+
+	</script>
 </body>
 
 </html>

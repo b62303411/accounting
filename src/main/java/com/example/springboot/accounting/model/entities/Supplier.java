@@ -16,6 +16,8 @@ public class Supplier {
 	private String contactPhone;
 	private String noTps;
 	private String noTvq;
+	private String fullName;
+	private String serviceType;
 	
 	public Long getId() {
 		return id;
@@ -58,6 +60,18 @@ public class Supplier {
 	}
 	public void setNoTvq(String noTvq) {
 		this.noTvq = noTvq;
+	}
+	public String getFullName() {
+		return fullName;
+	}
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
+	}
+	public String getServiceType() {
+		return serviceType;
+	}
+	public void setServiceType(String serviceType) {
+		this.serviceType = serviceType;
 	}
 	
 	

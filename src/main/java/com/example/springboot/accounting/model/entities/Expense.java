@@ -137,4 +137,5 @@ public abstract class Expense {
 		this.totalBeforeSalesTaxes = totalBeforeSalesTaxes;
 	}
 
+
 }
