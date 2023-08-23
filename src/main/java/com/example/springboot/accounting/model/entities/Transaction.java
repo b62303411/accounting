@@ -7,6 +7,7 @@ import org.hibernate.annotations.Formula;
 
 import com.example.springboot.accounting.model.TransactionNature;
 import com.example.springboot.accounting.model.TransactionType;
+import com.example.springboot.accounting.model.entities.qb.TransactionEntry;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -134,6 +135,10 @@ public class Transaction {
 	}
 	public void setPayee(String payee) {
 		this.payee = payee;
+	}
+	public TransactionEntry[] getEntries() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	

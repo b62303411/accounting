@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.example.springboot.accounting.model.dto.FinancialStatementLine;
 import com.example.springboot.accounting.model.entities.AmortisationLeg;
 import com.example.springboot.accounting.model.entities.Asset;
+import com.example.springboot.accounting.model.entities.Transaction;
 import com.example.springboot.accounting.repository.AmortisationLegRepository;
 import com.example.springboot.accounting.repository.AssetRepository;
 
@@ -57,6 +58,11 @@ public class AssetService {
 
 	public void save(AmortisationLeg leg) {
 		amortisationLegRepository.save(leg);
+	}
+
+	public Asset findByTransaction(Transaction transaction) {
+		return assetRepository.findByPurchaceTransaction(transaction);
+		
 	}
 
 }

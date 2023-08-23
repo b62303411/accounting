@@ -19,7 +19,9 @@ public class Consolidation {
 	@OneToOne
 	private Expense epense;
 	@OneToOne
-	private Invoice invoice;
+	private Invoice invoice;	
+	@OneToOne
+	private Asset asset;
 	
 	public boolean isComplete() 
 	{
@@ -64,6 +66,14 @@ public class Consolidation {
 
 	public void setSupplier(String supplier) {
 		this.supplier = supplier;
+	}
+
+	public Asset getAsset() {
+		return asset;
+	}
+
+	public void setAsset(Asset asset) {
+		this.asset = asset;
 	}
 	
 	

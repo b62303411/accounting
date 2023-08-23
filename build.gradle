@@ -61,6 +61,10 @@ dependencies {
     implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
     
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.13.0'
+    
+    // https://mvnrepository.com/artifact/org.json/json
+	implementation group: 'org.json', name: 'json', version: '20230618'
+    
 }
 
 test {

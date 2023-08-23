@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Accounting Ledger</title>
+    <!-- Add any additional styles or scripts you need -->
+</head>
+<body>
+
+<div class="container">
+    <h2>Accounting Ledger</h2>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Account Type</th>
+                <th>Memo</th>
+                <th>GL Account Name</th>
+                <th>GL Account #</th>
+                <th>Vendor/Client</th>
+                <th>Debit</th>
+                <th>Credit</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Assuming you pass a list of entries named 'ledgerEntries' -->
+            <tr th:each="entry : ${ledgerEntries}">
+                <td th:text="${entry.date}"></td>
+                <td th:text="${entry.accountType}"></td>
+                <td th:text="${entry.message}"></td>
+                <td th:text="${entry.glAccountName}"></td>
+                <td th:text="${entry.glAccountNumber}"></td>
+                <td th:text="${entry.vendorOrClient}"></td>
+                <td th:text="${entry.debit}"></td>
+                <td th:text="${entry.credit}"></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

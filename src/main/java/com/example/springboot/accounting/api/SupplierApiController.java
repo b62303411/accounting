@@ -24,12 +24,14 @@ import com.example.springboot.accounting.model.TransactionType;
 import com.example.springboot.accounting.model.dto.Answer;
 import com.example.springboot.accounting.model.dto.FinanceEntry;
 import com.example.springboot.accounting.model.dto.SelectedRowDTO;
+import com.example.springboot.accounting.model.entities.Asset;
 import com.example.springboot.accounting.model.entities.Consolidation;
 import com.example.springboot.accounting.model.entities.ExploitationExpense;
 import com.example.springboot.accounting.model.entities.Invoice;
 import com.example.springboot.accounting.model.entities.Supplier;
 import com.example.springboot.accounting.model.entities.Transaction;
 import com.example.springboot.accounting.repository.ConsolidationRepository;
+import com.example.springboot.accounting.service.AssetService;
 import com.example.springboot.accounting.service.ExpensesService;
 import com.example.springboot.accounting.service.InvoiceService;
 import com.example.springboot.accounting.service.OpenAiRequestService;
@@ -61,6 +63,9 @@ public class SupplierApiController {
 
 	@Autowired
 	private OpenAiRequestService ai;
+
+	@Autowired
+	private AssetService assetService;
 
 	@GetMapping
 	public ResponseEntity<List<Supplier>> getAllContacts() {
@@ -98,19 +103,29 @@ public class SupplierApiController {
 			c.setInvoice(invoice);
 			c.setTransaction(transaction);
 			c.setSupplier(invoice.getOrigine());
-			if(transaction.getType()==TransactionType.OperatingExpenses) 
-			{
+			if (transaction.getType() == TransactionType.OperatingExpenses) {
 				expense = expenseService.findByTransaction(transaction);
 				expense.setInvoice(invoice);
 				expense.setPayee(invoice.getOrigine());
 				expense.setTransaction(transaction);
-				c.setEpense(expense);			
+				c.setEpense(expense);
 				expenseService.save(expense);
-			
+
 			}
-			// 
-			// 
-			// 
+			if (transaction.getType() == TransactionType.AssetPurchased) {
+
+				Asset asset = assetService.findByTransaction(transaction);
+				c.setAsset(asset);
+				c.setTransaction(transaction);
+				c.setInvoice(invoice);
+				c.setSupplier(transaction.getPayee());
+				consolidations.save(c);
+				return;
+
+			}
+			//
+			//
+			//
 
 			consolidations.save(c);
 		}
@@ -168,13 +183,13 @@ public class SupplierApiController {
 		Consolidation t = consolidations.findByInvoiceId(e.getId());
 		return (null != t);
 	}
+
 	@GetMapping("/{id}/consolidated")
-	public List<Consolidation> getSupplierConsolidatedEntry(@PathVariable Long id) 
-	{
+	public List<Consolidation> getSupplierConsolidatedEntry(@PathVariable Long id) {
 		Supplier supplier = contactService.findById(id);
 		return consolidations.findAllBySupplier(supplier.getName());
 	}
-	
+
 	@GetMapping("/{id}/entries")
 	public List<FinanceEntry> getSupplierEntry(@PathVariable Long id) {
 
@@ -211,20 +226,20 @@ public class SupplierApiController {
 		List<ExploitationExpense> ex = expenseService.findAllByPayee(supplier.getName());
 		List<Consolidation> consolidation = consolidations.findAllBySupplier(supplier.getName());
 		for (ExploitationExpense exploitationExpense : ex) {
-			if(!isConsolidated(exploitationExpense))
+			if (!isConsolidated(exploitationExpense))
 				createEntry(fin, exploitationExpense);
 
 		}
 
 		List<Invoice> invoices = invoiceService.findAllByOrigin(supplier.getName());
 		for (Invoice invoice : invoices) {
-			if(!isConsolidated(invoice))
+			if (!isConsolidated(invoice))
 				createEntry(fin, invoice);
 		}
 
 		List<Transaction> transactions = transactionService.findAllByPayee(supplier.getName());
 		for (Transaction transaction : transactions) {
-			if(!isConsolidated(transaction))
+			if (!isConsolidated(transaction))
 				createEntry(fin, transaction);
 		}
 
@@ -242,6 +257,7 @@ public class SupplierApiController {
 		entry.setType("Transaction");
 		entry.setId(transaction.getId().toString());
 		entry.setAmount("" + transaction.getAmount());
+
 		if (entry.getDate() == null) {
 			System.err.println();
 		}
