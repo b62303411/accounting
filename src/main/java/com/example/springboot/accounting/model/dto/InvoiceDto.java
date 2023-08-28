@@ -1,7 +1,5 @@
 package com.example.springboot.accounting.model.dto;
 
-import java.time.LocalDate;
-
 public class InvoiceDto {
 
 	private String description;

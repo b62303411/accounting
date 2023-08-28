@@ -1,9 +1,13 @@
 package com.example.springboot.accounting.model.entities.qb;
 
+import java.util.Objects;
+
 public class TransactionEntry {
 	private Account account;
 	private double amount;
+	private Double actualBalence;
 	private EntryType type; // Debit or Credit
+	private Double balance;
 	public String getDate() {
 		return date;
 	}
@@ -32,7 +36,7 @@ public class TransactionEntry {
 	 */
 	public TransactionEntry(Account account,String vendor_client, String date, double amount, EntryType type) {
 		this.account = account;
-		this.amount = amount;
+		this.amount = Math.abs(amount);
 		this.type = type;
 		this.date = date;
 		this.vendor_client=vendor_client;
@@ -42,12 +46,14 @@ public class TransactionEntry {
 
 	}
 
-	public void post() {
+	public double post() {
 		if (EntryType.DEBIT.equals(type)) {
 			account.debit(amount);
 		} else if (EntryType.CREDIT.equals(type)) {
 			account.credit(amount);
 		}
+		balance = account.getBalance();
+		return account.getBalance();
 	}
 
 	public void setAccount(Account acc) {
@@ -111,4 +117,41 @@ public class TransactionEntry {
 	
 		return account;
 	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(account, amount, date, type, vendor_client);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		TransactionEntry other = (TransactionEntry) obj;
+		return Objects.equals(account, other.account)
+				&& Double.doubleToLongBits(amount) == Double.doubleToLongBits(other.amount)
+				&& Objects.equals(date, other.date) && type == other.type
+				&& Objects.equals(vendor_client, other.vendor_client);
+	}
+
+	public Double getActualBalence() {
+		return actualBalence;
+	}
+
+	public void setActualBalence(Double actualBalence) {
+		this.actualBalence = actualBalence;
+	}
+
+	public Double getBalance() {
+		return balance;
+	}
+
+//	public void setBalance(Double balance) {
+//		this.balance = balance;
+//	}
+	
 }

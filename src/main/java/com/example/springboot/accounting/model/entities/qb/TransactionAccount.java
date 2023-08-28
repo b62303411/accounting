@@ -10,4 +10,5 @@ public class TransactionAccount {
 	public String vendor_client_from;
 	public String vendor_client_to;
 	public List<TransactionAccount> split;
+	public Double credited_balence;
 }

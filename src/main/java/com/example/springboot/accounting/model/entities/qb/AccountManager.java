@@ -1,11 +1,12 @@
 package com.example.springboot.accounting.model.entities.qb;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
-
 
 @Service
 public class AccountManager {
@@ -22,8 +23,8 @@ public class AccountManager {
 	 * @param type
 	 * @param isDeductable
 	 */
-	public void addAccount(String name, String accountNumber, AccountType type,boolean isTaxable ) {
-	   accounts.put(name, new Account(name,accountNumber,type,isTaxable));
+	public void addAccount(String name, String accountNumber, AccountType type, boolean isTaxable) {
+		accounts.put(name, new Account(name, accountNumber, type, isTaxable));
 	}
 
 	public Account getAccount(String type) {
@@ -38,15 +39,15 @@ public class AccountManager {
 
 	public void addAccount(Account acc) {
 		accounts.put(acc.getName(), acc);
-		
+
 	}
 
 	public Account getAccountByName(String string) {
 		return accounts.get(string);
 	}
 
-	public Collection<Account> getAccounts() {
-		return accounts.values();
+	public List<Account> getAccounts() {
+		return new ArrayList<Account>(accounts.values());
 	}
 
 	public double getBalance(String accountName) {
@@ -61,9 +62,26 @@ public class AccountManager {
 	public Account getAccountByAccountNo(String accountNo) {
 		Collection<Account> values = accounts.values();
 		for (Account account : values) {
-			if(account.getAccountNumber().equals(accountNo))
+			if (account.getAccountNumber().equals(accountNo))
 				return account;
 		}
 		return null;
+	}
+
+	public List<com.example.springboot.accounting.model.entities.Account> getAccountByType(AccountType type) {
+		Collection<Account> values = accounts.values();
+		List<com.example.springboot.accounting.model.entities.Account> list = new ArrayList<com.example.springboot.accounting.model.entities.Account>();
+		for (Account account : values) {
+			if (account.getAccountType() == type) {
+				com.example.springboot.accounting.model.entities.Account a = new com.example.springboot.accounting.model.entities.Account();
+				a.setAccountingType(account.getAccountType());
+				a.setAccountNo(account.getAccountNumber());
+				a.setBalance(account.getBalance());
+				a.setTaxable(account.isTaxable());
+				a.setAccountName(account.getName());
+				list.add(a);
+			}
+		}
+		return list;
 	}
 }

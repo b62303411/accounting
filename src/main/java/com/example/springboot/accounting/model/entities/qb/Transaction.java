@@ -3,6 +3,7 @@ package com.example.springboot.accounting.model.entities.qb;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import com.example.springboot.accounting.model.TransactionNature;
@@ -112,4 +113,29 @@ public class Transaction {
 		this.description=message;
 		
 	}
+
+	@Override
+	public int hashCode() {
+	    int result = 17; // arbitrary prime number
+	    for (TransactionEntry obj : entries) {
+	        result = 31 * result + (obj == null ? 0 : obj.hashCode());
+	    }
+	    return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Transaction other = (Transaction) obj;
+		return Objects.equals(entries, other.entries);
+	}
+
+
+	
+	
 }

@@ -14,6 +14,7 @@ public class AccountFactory {
 		accountManager.addAccount("Prepaid Expenses", "A003", AccountType.ASSET,false);
 		accountManager.addAccount("Office Equipment", "A004", AccountType.ASSET,false);
 		accountManager.addAccount("Loan to Owner", "A005", AccountType.ASSET,false);
+		accountManager.addAccount("Unknown","A006",AccountType.ASSET,false);
 		// Liabilities
 		accountManager.addAccount("Accounts Payable", "L001", AccountType.LIABILITY,false);
 		accountManager.addAccount("Taxes Payable", "L002", AccountType.LIABILITY,false);
@@ -38,8 +39,10 @@ public class AccountFactory {
 		accountManager.addAccount("Bank Fees", "EX006", AccountType.EXPENSE,true);
 		accountManager.addAccount("Income Tax Expense", "EX007", AccountType.EXPENSE,true);
 		accountManager.addAccount("Travel & Meals", "EX008", AccountType.EXPENSE,true);
+		accountManager.addAccount("Loss on Asset Write-off", "EX009", AccountType.EXPENSE,true);
 		// Using simplified method. 
 		accountManager.addAccount("Sales Tax Expense","EX009", AccountType.EXPENSE,true);
 		accountManager.addAccount("Depreciation Expense","EX010", AccountType.EXPENSE,true);
+		accountManager.addAccount("To Classify","EX011", AccountType.EXPENSE,false);
 	}
 }

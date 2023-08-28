@@ -23,7 +23,7 @@ import jakarta.persistence.UniqueConstraint;
 
 @Entity
 @Table(name = "transaction",
-uniqueConstraints = {@UniqueConstraint(columnNames = {"date", "description","amount","account"})}
+uniqueConstraints = {@UniqueConstraint(columnNames = {"date", "description","amount","account","transactionNature"})}
 )
 public class Transaction {
 	@Id
@@ -43,7 +43,7 @@ public class Transaction {
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Attachment> attachments;
     private String payee;
-    
+    private Double solde;
     
     /**
      * 
@@ -139,6 +139,12 @@ public class Transaction {
 	public TransactionEntry[] getEntries() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	public Double getSolde() {
+		return solde;
+	}
+	public void setSolde(Double solde) {
+		this.solde = solde;
 	}
 	
 	

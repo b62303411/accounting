@@ -1,6 +1,5 @@
 package com.example.springboot.accounting.model.entities.qb;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -72,11 +71,16 @@ public class ClassificationRule {
 	 * @param ta
 	 * @param amount
 	 * @param manager
+	 * @param balence 
 	 */
-	public void populate(TransactionAccount ta,double amount,AccountManager manager) 
+	public void populate(TransactionAccount ta,double amount,AccountManager manager, Double balence,String account) 
 	{
 		ta.credited=manager.getAccountByName(this.credited);
 		ta.debited = manager.getAccountByName(this.debited);
+		if(ta.credited.getAccountNumber().equals(account)) 
+		{
+			ta.credited_balence=balence;
+		}
 		ta.amount=Math.abs(amount);		
 		ta.vendor_client = this.client_vendor;
 	}

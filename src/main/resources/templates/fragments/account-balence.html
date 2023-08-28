@@ -1,0 +1,22 @@
+<!-- accounts.html -->
+<div th:fragment="table(accounts, total, title)" class="container mt-5">
+	<h3 th:text="${title}"></h3>
+<table class="table table-hover table-bordered">
+    <tr>
+        <th>Account</th>
+        <th>Amount</th>
+        <th>Natural Balance</th>
+    </tr>
+    <tr th:each="account : ${accounts}">
+        <td th:text="${account.accountName}">Account Name</td>
+        <td th:text="${#numbers.formatCurrency(account.balance)}">Amount</td>
+        <td th:text="${account.accountingType.getNaturalBalance()}">Natural Balance</td>
+     
+    </tr>
+    <tr>
+        <td><strong>Total</strong></td>
+        <td th:text="${#numbers.formatCurrency(total)}"><strong>Total Amount</strong></td>
+        <td></td>
+    </tr>
+</table>
+</div>

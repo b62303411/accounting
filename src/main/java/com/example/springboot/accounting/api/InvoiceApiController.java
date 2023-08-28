@@ -1,20 +1,14 @@
 package com.example.springboot.accounting.api;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,8 +32,9 @@ import com.example.springboot.accounting.model.entities.Invoice;
 import com.example.springboot.accounting.repository.InvoiceRepository;
 import com.example.springboot.accounting.service.AttachmentService;
 import com.example.springboot.accounting.service.DateParser;
+import com.example.springboot.accounting.service.InvoicePromptFactory;
 import com.example.springboot.accounting.service.InvoiceService;
-import com.example.springboot.accounting.service.OpenAiRequestService;
+import com.example.springboot.accounting.service.PdfService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -54,18 +49,29 @@ public class InvoiceApiController {
 	private AttachmentService attachmentService;
 	private InvoiceRepository invoiceRepo;
 	private InvoiceService invoiceService;
-	private OpenAiRequestService service;
+	//private OpenAiRequestService service;
+	private InvoicePromptFactory ipf;
+	private final PdfService pdfService;
+
 	private DateParser dateParser;
 	private HashMap<String, AiFileResult> aiResults;
 
 	@Autowired
-	public InvoiceApiController(DateParser dateParser, AttachmentService attachmentService,
-			InvoiceRepository invoiceRepo, InvoiceService invoiceService, OpenAiRequestService service) {
+	public InvoiceApiController(
+			DateParser dateParser, 
+			AttachmentService attachmentService,
+			InvoiceRepository invoiceRepo, 
+			InvoiceService invoiceService, 
+			//OpenAiRequestService service,
+			InvoicePromptFactory ipf,
+			PdfService pdfService) {
 		this.invoiceRepo = invoiceRepo;
 		this.invoiceService = invoiceService;
-		this.service = service;
+		this.pdfService = pdfService;
 		this.attachmentService = attachmentService;
 		this.dateParser = dateParser;
+		this.ipf = ipf;
+
 		aiResults = new HashMap<String, AiFileResult>();
 	}
 
@@ -169,12 +175,25 @@ public class InvoiceApiController {
 		invoiceRepo.delete(list.get(0));
 
 	}
-
+	
+	
+	
+	
+	/**
+	 * 
+	 * @param file
+	 * @param in
+	 * @param extraContext
+	 * @return
+	 * @throws IOException
+	 * @throws JsonProcessingException
+	 * @throws JsonMappingException
+	 */
 	private AiFileResult populateInvoice(MultipartFile file, Invoice in, String extraContext)
 			throws IOException, JsonProcessingException, JsonMappingException {
-		String text = extractTextFromPDF(file);
+		String text =pdfService.extractTextFromPDF(file);
 
-		AiFileResult response = service.submitInvoiceQuery(text, extraContext);
+		AiFileResult response = this.ipf.submitInvoiceQuery(text, extraContext);
 		if (null == response || response.finalResult == null)
 			return response;
 		JsonNode extractedData = response.finalResult.answer;
@@ -225,27 +244,7 @@ public class InvoiceApiController {
 		return response;
 	}
 
-	public String extractTextFromPDF(MultipartFile file) throws IOException {
-		// Convert the MultipartFile to an InputStream
-		try (InputStream inputStream = file.getInputStream()) {
-			// Load the PDF document
-			PDDocument document = PDDocument.load(inputStream);
-
-			// Create a PDFTextStripper to extract the text
-			PDFTextStripper pdfStripper = new PDFTextStripper();
-
-			// Get the text from the document
-			String text = pdfStripper.getText(document);
-
-			// Close the document
-			document.close();
-
-			// Do something with the text, e.g., parse the invoice details
-			// ...
-
-			return text;
-		}
-	}
+	
 
 	@PostMapping("/create")
 	ResponseEntity<Invoice> create(@ModelAttribute InvoiceCreationRequest request) {
@@ -279,17 +278,16 @@ public class InvoiceApiController {
 		in.setOrigine(request.getOrigine());
 		String dateString = request.getDate();
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-        try {
-            Date date = format.parse(dateString);
-            System.out.println("Parsed Date: " + date);
-            in.setDate(date);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+		try {
+			Date date = format.parse(dateString);
+			System.out.println("Parsed Date: " + date);
+			in.setDate(date);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
 
 //		java.sql.Date sqlDate = java.sql.Date.valueOf(request.getDate());
 //		Date utilDate = new Date(sqlDate.getTime());
-		
 
 	}
 

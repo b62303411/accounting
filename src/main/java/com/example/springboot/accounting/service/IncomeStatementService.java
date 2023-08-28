@@ -13,14 +13,9 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.springboot.accounting.model.ExploitationExpenseType;
-import com.example.springboot.accounting.model.FiscalYearEnd;
-import com.example.springboot.accounting.model.SalesTaxeRates;
 import com.example.springboot.accounting.model.dto.ExpensesLine;
 import com.example.springboot.accounting.model.dto.FinancialStatementLine;
 import com.example.springboot.accounting.model.dto.RevenueLine;
-import com.example.springboot.accounting.model.entities.AmortisationLeg;
-import com.example.springboot.accounting.model.entities.Asset;
 import com.example.springboot.accounting.model.entities.Expense;
 import com.example.springboot.accounting.model.entities.ExploitationExpense;
 import com.example.springboot.accounting.model.entities.Transaction;

@@ -118,5 +118,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 	public List<Transaction> findByPayeeIsNull();
 
 	public List<Transaction> findAllByPayee(String name);
+	 @Query("SELECT t FROM Transaction t WHERE t.date = :date AND ABS(t.amount) = :amount")
+	public List<Transaction> findAllByDateAndAmount(@Param("date") Date date,@Param("amount")  Double amount);
 
 }

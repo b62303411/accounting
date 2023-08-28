@@ -33,10 +33,10 @@ public class Account {
 	public void setAccountingType(AccountType accountingType) {
 		this.accountingType = accountingType;
 	}
-	public boolean isTaxable() {
+	public Boolean isTaxable() {
 		return isTaxable;
 	}
-	public void setTaxable(boolean isTaxable) {
+	public void setTaxable(Boolean isTaxable) {
 		this.isTaxable = isTaxable;
 	}
 	private Boolean isTaxable;

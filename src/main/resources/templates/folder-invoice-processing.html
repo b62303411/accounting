@@ -34,14 +34,38 @@
 </head>
 
 <body>
-	<h1>File Processing Queue</h1>
+	<div class="container">
+		<ul class="nav nav-tabs" id="expenseTabs">
+			<li class="nav-item">
+				<a class="nav-link active" id="expenses-tab" data-bs-toggle="tab" href="#invoices">Invoice</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" id="bulkUpdate-tab" data-bs-toggle="tab" href="#transactions">Transaction</a>
+			</li>
 
-	<input type="file" id="folderInput" webkitdirectory multiple>
-	<button id="startProcessing">Start Processing</button>
+		</ul>
+		<div class="tab-content" id="suppliersTabsContent">
+			<div class="tab-pane fade show active" id="invoices" role="tabpanel" aria-labelledby="suppliers-tab">
+				<h1>File Processing Queue</h1>
 
-	<div id="queue">
-		<h2>Queue</h2>
-		<ul id="queueList"></ul>
+				<input type="file" id="folderInput" webkitdirectory multiple>
+				<button id="startProcessing">Start Processing</button>
+
+				<div id="queue">
+					<h2>Queue</h2>
+					<ul id="queueList"></ul>
+				</div>
+			</div>
+			<div class="tab-pane fade show active" id="transactions" role="tabpanel" aria-labelledby="suppliers-tab">
+				<form class="form-inline ml-auto" method="POST" action="/upload" enctype="multipart/form-data"
+					th:object="${uploadForm}">
+					<div class="form-group">
+						<input type="file" name="file" class="form-control-file" id="fileInput">
+					</div>
+					<button type="submit" class="btn btn-primary ml-2">Upload</button>
+				</form>
+			</div>
+		</div>
 	</div>
 	<script src="/webjars/jquery/3.6.4/jquery.min.js"></script>
 	<script src="/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
@@ -129,7 +153,7 @@
 					var formData = new FormData();
 					formData.append('file', file);
 
-					const response = await fetch('/api/invoice/parse', {
+					const response = await fetch('/api/parse-bank-statement', {
 						method: 'POST',
 						body: formData
 					})
@@ -188,7 +212,7 @@
 							submitButton.addEventListener('click', async () => {
 								const parsedMeta2 = JSON.parse(result.meta2);
 								const parsedDate = new Date(parsedMeta2.date);
-								
+
 								var formData = new FormData();
 								formData.append("description", parsedMeta2.description);
 								formData.append("noFacture", parsedMeta2.noFacture);
@@ -199,7 +223,7 @@
 								formData.append("recipient", parsedMeta2.recipient);
 								formData.append("origine", parsedMeta2.origine);
 								formData.append("file", file);
-								
+
 								const requestPayload = {
 									description: parsedMeta2.description,
 									noFacture: parsedMeta2.noFacture,

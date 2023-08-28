@@ -3,13 +3,15 @@ package com.example.springboot.accounting.model.dto;
 import java.util.Date;
 
 public class LedgerEntryDTO {
-	 private Date date;
+	    private Date date;
 	    private String accountType; // could be an Enum depending on your predefined account types
 	    private String glAccountName;
 	    private String glAccountNumber; // using String in case account numbers have non-numeric characters, otherwise can be an int or long
 	    private String vendorOrClient;
 	    private Double debit;  // using Double for currency values, but BigDecimal is more accurate for financial calculations
 	    private Double credit;
+	    private Double balence;
+	    private Double abalence;
 	    private String message;
 	    // Standard getters and setters for each field
 
@@ -75,6 +77,22 @@ public class LedgerEntryDTO {
 
 		public void setMessage(String message) {
 			this.message = message;
+		}
+
+		public Double getBalence() {
+			return balence;
+		}
+
+		public void setBalence(Double balence) {
+			this.balence = balence;
+		}
+
+		public Double getAbalence() {
+			return abalence;
+		}
+
+		public void setAbalence(Double abalence) {
+			this.abalence = abalence;
 		}
 	    
 }

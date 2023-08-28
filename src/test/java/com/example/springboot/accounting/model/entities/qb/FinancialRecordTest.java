@@ -607,7 +607,7 @@ class FinancialRecordTest {
 //		+------------+-----------+--------------------------+-----+--------------+---------+--------+
 
 		ledger.addTransaction( "5/31/2018", "Cloutier & Longtin", "Cloutier & Longtin", "19.00", "credit",
-				"Liability", "1");
+				"Liability", "1",0.0);
 		//The amount that you owe to the company also reduces, so the asset account "Loan to Owner" (the loan from the company to you) is credited.
 		assertEquals(-19, accountManager.getBalance("Loan to Owner"));
 		//The company's liability (what it owes to Cloutier Longtin) reduces, so we debit "Accounts Payable".
@@ -627,7 +627,7 @@ class FinancialRecordTest {
 		assertEquals(0, accountManager.getBalance("Bank Fees"));
 
 		ledger.addTransaction( "5/31/2018", "Frais Mens Plan", "FRAIS MENS PLAN SERV", "19.00", "debit",
-				"Bank Fee", "TD EVERY DAY A BUSINESS PLAN");
+				"Bank Fee", "TD EVERY DAY A BUSINESS PLAN",0.0);
 
 		// After bank fee is charged
 		assertEquals(-19, accountManager.getBalance(checking));
@@ -635,7 +635,7 @@ class FinancialRecordTest {
 
 		// After bank fee is refunded
 		ledger.addTransaction( "5/31/2018", "Red Solde", "Cpte	RED SOLDE CPTE", "19.00", "credit",
-				"Income", "TD EVERY DAY A BUSINESS PLAN");
+				"Income", "TD EVERY DAY A BUSINESS PLAN",0.0);
 
 		assertEquals(0, accountManager.getBalance(checking));
 		assertEquals(0, accountManager.getBalance("Bank Fees"));
@@ -645,14 +645,14 @@ class FinancialRecordTest {
 		assertEquals(0, accountManager.getBalance(credit));
 
 		ledger.addTransaction("5/28/2018", "Transfer to TD BUSINESS VISA", "PMT PREAUTOR VISA TD",
-				"276.72", "debit", "Credit Card Payment", "TD EVERY DAY A BUSINESS PLAN");
+				"276.72", "debit", "Credit Card Payment", "TD EVERY DAY A BUSINESS PLAN",0.0);
 
 		assertEquals(-276.72, accountManager.getBalance(checking));
 		assertEquals(-276.72, accountManager.getBalance(credit));
 
 		assertEquals(0, accountManager.getBalance("Owner's Draw"));
 		ledger.addTransaction( "5/22/2018", "View Cheque Chq", "View Cheque CHQ#00037-3000249272",
-				"4000.00	", "debit", "Dividend & Cap Gains", "TD EVERY DAY A BUSINESS PLAN");
+				"4000.00	", "debit", "Dividend & Cap Gains", "TD EVERY DAY A BUSINESS PLAN",0.0);
 		assertEquals(-4000.00, accountManager.getBalance("Owner's Draw"));
 		assertEquals(-4276.72, accountManager.getBalance(checking));
 
@@ -663,7 +663,7 @@ class FinancialRecordTest {
 		// Asset , Accounts Receivable,Incloud Solutio Fac, 5472.81, -
 		// Revenue , Sales ,Incloud Solutio Fac, - , 5472.81
 		ledger.addTransaction( "5/14/2018", "Incloud Solutio Fac", "INCLOUD SOLUTIO FAC", "5472.81	",
-				"debit", "Invoice", "TD EVERY DAY A BUSINESS PLAN");
+				"debit", "Invoice", "TD EVERY DAY A BUSINESS PLAN",0.0);
 		ledger.printLedger();
 
 		assertEquals(5472.81, accountManager.getBalance("Accounts Receivable"), 0.001);
@@ -674,7 +674,7 @@ class FinancialRecordTest {
 		// Asset , Check ,Incloud Solutio Fac, 5472.81, -
 		// Revenue , Accounts Receivable,Incloud Solutio Fac, - , 5472.81
 		ledger.addTransaction("5/14/2018", "Incloud Solutio Fac", "INCLOUD SOLUTIO FAC", "5472.81	",
-				"debit", "Income", "TD EVERY DAY A BUSINESS PLAN");
+				"debit", "Income", "TD EVERY DAY A BUSINESS PLAN",0.0);
 
 		ledger.printLedger();
 
@@ -708,7 +708,7 @@ class FinancialRecordTest {
 
 		// Entry from TD bank Account
 		ledger.addTransaction( "5/31/2018", "Frais Mens Plan", "FRAIS MENS PLAN SERV", "19.00", "debit",
-				"Bank Fee", "TD EVERY DAY A BUSINESS PLAN");
+				"Bank Fee", "TD EVERY DAY A BUSINESS PLAN",0.0);
 
 		// After bank fee is charged
 		assertEquals(-19, accountManager.getBalance(checking));
@@ -716,7 +716,7 @@ class FinancialRecordTest {
 		
 		// After bank fee is refunded
 		ledger.addTransaction( "5/31/2018", "Red Solde", "Cpte	RED SOLDE CPTE", "19.00", "credit",
-				"Income", "TD EVERY DAY A BUSINESS PLAN");
+				"Income", "TD EVERY DAY A BUSINESS PLAN",0.0);
 
 		assertEquals(0, accountManager.getBalance(checking));
 		assertEquals(0, accountManager.getBalance("Bank Fees"));
@@ -737,7 +737,7 @@ class FinancialRecordTest {
 		assertEquals(0, accountManager.getBalance("Owner's Draw"));
 		
 		ledger.addTransaction( "5/22/2018", "View Cheque Chq", "View Cheque CHQ#00037-3000249272",
-				"4000.00", "debit", "Dividend & Cap Gains", "TD EVERY DAY A BUSINESS PLAN");
+				"4000.00", "debit", "Dividend & Cap Gains", "TD EVERY DAY A BUSINESS PLAN",0.0);
 		double amount = 4000.00;
 		/**
 		 * Debit (Dr) to Owner's Draw or Dividends (an Equity account): 
@@ -766,7 +766,7 @@ class FinancialRecordTest {
 		// Asset , Accounts Receivable,Incloud Solutio Fac, 5472.81, -
 		// Revenue , Sales ,Incloud Solutio Fac, - , 5472.81
 		ledger.addTransaction( "5/14/2018", "Incloud Solutio Fac", "INCLOUD SOLUTIO FAC", "5472.81	",
-				"debit", "Invoice", "TD EVERY DAY A BUSINESS PLAN");
+				"debit", "Invoice", "TD EVERY DAY A BUSINESS PLAN",0.0);
 		ledger.printLedger();
 
 		double invoiceAmount = 5472.81;
@@ -786,7 +786,7 @@ class FinancialRecordTest {
 		
 		//Your Accounts Receivable decreases by $5472.81 because the client no longer owes you this amount.
 		ledger.addTransaction("5/14/2018", "Incloud Solutio Fac", "INCLOUD SOLUTIO FAC", "5472.81	",
-				"debit", "Income", "TD EVERY DAY A BUSINESS PLAN");
+				"debit", "Income", "TD EVERY DAY A BUSINESS PLAN",0.0);
 		assertEquals(0, accountManager.getBalance("Accounts Receivable"), 0.001);
 		assertEquals(invoiceAmount, accountManager.getBalance(checking), 0.001);
 		assertEquals(invoiceAmount, accountManager.getBalance("Consulting Revenue"), 0.001);
@@ -806,7 +806,7 @@ class FinancialRecordTest {
 		assertEquals(0, accountManager.getBalance(checking));
 
 		ledger.addTransaction("5/28/2018", "amazon", "TD BUSINESS VISA",
-				"276.72", "credit", "OperatingExpenses", "TD BUSINESS VISA");
+				"276.72", "credit", "OperatingExpenses", "TD BUSINESS VISA",0.0);
 		
 		ledger.printAccounts();
 		ledger.printLedger();
@@ -824,7 +824,7 @@ class FinancialRecordTest {
 		assertEquals(276.72, accountManager.getBalance("Office Supplies"));
 		
 		ledger.addTransaction("5/28/2018", "Transfer to TD BUSINESS VISA", "PMT PREAUTOR VISA TD",
-				"276.72", "debit", "Credit Card Payment", "TD EVERY DAY A BUSINESS PLAN");
+				"276.72", "debit", "Credit Card Payment", "TD EVERY DAY A BUSINESS PLAN",0.0);
 
 		assertEquals(-276.72, accountManager.getBalance(checking), 0.001);
 		assertEquals(0.0, accountManager.getBalance(credit), 0.001);
@@ -845,7 +845,7 @@ class FinancialRecordTest {
 		assertEquals(0, accountManager.getBalance(checking));
 		
 		ledger.addTransaction("5/14/2018", "Incloud Solutio Fac", "INCLOUD SOLUTIO FAC", "5472.81",
-				"debit", "Income", "TD EVERY DAY A BUSINESS PLAN");
+				"debit", "Income", "TD EVERY DAY A BUSINESS PLAN",0.0);
 		
 		assertEquals(5472.81, accountManager.getBalance("Consulting Revenue"), 0.001);
 		assertEquals(0, accountManager.getBalance(credit));
