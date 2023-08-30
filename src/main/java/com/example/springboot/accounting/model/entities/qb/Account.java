@@ -1,13 +1,18 @@
 package com.example.springboot.accounting.model.entities.qb;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
 public class Account {
 	private String name;
 	private String accountNumber;
 	private double balance;
 	private AccountType type;
 	private boolean isTaxable;
-
+	Set<UUID> ids;
 	public Account() {
+		ids= new HashSet<UUID>();
 	}
 
 	/**
@@ -18,10 +23,21 @@ public class Account {
 	 * @param isDeductable
 	 */
 	public Account(String name, String accountNumber, AccountType type, boolean isTaxable) {
+		this();
 		this.name = name;
 		this.accountNumber = accountNumber;
 		this.type = type;
 		this.isTaxable = isTaxable;
+		
+	}
+
+	public Account(Account account) {
+		this();
+		this.name=account.getName();
+		this.accountNumber=account.getAccountNumber();
+		this.type=account.getType();
+		this.isTaxable=account.isTaxable;
+		this.balance=0;
 	}
 
 	public String getName() {
@@ -32,7 +48,8 @@ public class Account {
 		this.name = name;
 	}
 
-	public void debit(double amount) {
+	public void debit(double amount,UUID entryId) {
+		this.ids.add(entryId);
 		if (type.getNaturalBalance() == AccountBalance.DEBIT) {
 			balance += amount;
 		} else {
@@ -40,7 +57,8 @@ public class Account {
 		}
 	}
 
-	public void credit(double amount) {
+	public void credit(double amount, UUID entryId) {
+		this.ids.add(entryId);
 		if (type.getNaturalBalance() == AccountBalance.DEBIT) {
 			balance -= amount;
 		} else {
@@ -88,6 +106,10 @@ public class Account {
 
 	public void setTaxable(boolean isTaxable) {
 		this.isTaxable = isTaxable;
+	}
+
+	public boolean hasExecuted(UUID id) {
+		return ids.contains(id);
 	}
 
 

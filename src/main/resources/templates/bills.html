@@ -234,6 +234,8 @@
 		});
 
 	</script>
+	<script src="/webjars/jquery/3.6.4/jquery.min.js"></script>
+	<script src="/webjars/datatables/1.13.5/js/jquery.dataTables.min.js"></script>
 	<script>
 		function openModal(billId) {
 			// Set the action URL based on the billId
@@ -242,6 +244,9 @@
 			// Open the modal
 			$('#uploadModal').modal('show');
 		}
+
+		$('#bill-list').DataTable();
+
 	</script>
 	<script src="/js/createExpenseForm.js"></script>
 

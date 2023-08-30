@@ -30,8 +30,8 @@
 			</thead>
 			<tbody>
 				<!-- Assuming you pass a list of entries named 'ledgerEntries' -->
-				<tr th:each="entry : ${ledgerEntries}">
-					<td th:text="${entry.date.getTime()}"></td>
+				<tr th:each="entry : ${ledgerEntries}">				
+					<td th:text="${entry.getUnixTime()}"></td>
 					<td th:text="${entry.accountType}"></td>
 					<td th:text="${entry.message}"></td>
 					<td th:text="${entry.glAccountName}"></td>

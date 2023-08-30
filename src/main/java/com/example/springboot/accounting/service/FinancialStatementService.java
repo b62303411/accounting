@@ -20,7 +20,7 @@ import com.example.springboot.accounting.repository.TransactionRepository;
 @Service
 public class FinancialStatementService {
 
-	private final IncomeStatementService incomeStatementService;
+	public final IncomeStatementService incomeStatementService;
 	private final TransactionService transactionService;
     private final TransactionRepository transactionRepository;
     private final BankStatementRepository bankStatementRepository;

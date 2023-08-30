@@ -1,9 +1,6 @@
 package com.example.springboot.accounting.service;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.springboot.accounting.model.dto.ExpensesLine;
 import com.example.springboot.accounting.model.dto.FinancialStatementLine;
+import com.example.springboot.accounting.model.dto.IncomeStatementDto;
 import com.example.springboot.accounting.model.dto.RevenueLine;
 import com.example.springboot.accounting.model.entities.Expense;
 import com.example.springboot.accounting.model.entities.ExploitationExpense;
@@ -22,6 +20,7 @@ import com.example.springboot.accounting.model.entities.Transaction;
 import com.example.springboot.accounting.repository.AmortisationLegRepository;
 import com.example.springboot.accounting.repository.ExploitationExpenseRepository;
 import com.example.springboot.accounting.repository.TransactionRepository;
+import com.example.springboot.accounting.service.FiscalYearService.DateBoundaries;
 
 @Service
 public class IncomeStatementService {
@@ -34,22 +33,34 @@ public class IncomeStatementService {
 	
 	private final ExploitationExpenseRepository exploitationExpenseRepo;
 	
-
+	private final GeneralLedgerService gls;
+	
 	private ExpensesService expenseService;
 
+	private final FiscalYearService fys;
+
+	private IncomeStatementFromLedgerService isfls;
+	
+
+	
 	@Autowired
 	public IncomeStatementService(
+			IncomeStatementFromLedgerService isfls,
+			FiscalYearService fys,
+			GeneralLedgerService gls,
 			ExpensesService expenseService,
 			AmortisationLegRepository legRepository,
 			ExploitationExpenseRepository exploitationExpenseRepo, CompanyProfileService profile,
 			FinancialStatementLineFactory fsf, TransactionRepository transactionRepository,
 			TransactionService transactionService, AssetService assetServices) {
+		this.fys= fys;
 		this.exploitationExpenseRepo = exploitationExpenseRepo;
 		this.transactionRepository = transactionRepository;
 		this.expenseService = expenseService;
-
+		this.gls= gls;
 		this.fsf = fsf;
 		this.profile = profile;
+		this.isfls=isfls;
 
 
 	}
@@ -120,10 +131,7 @@ public class IncomeStatementService {
 		return transactionRepository.getCOGSForFiscalYear(start, stop);
 	}
 
-	private class Boundaries {
-		public Date date_start;
-		public Date date_end;
-	}
+
 
 	private class TaxBreakDown {
 		double grossAmount;
@@ -182,17 +190,7 @@ public class IncomeStatementService {
 		return lines;
 	}
 
-	private Boundaries getBoundaries(Integer year) {
-		Boundaries b = new Boundaries();
-		Map<String, LocalDate> boudnaries = profile.getProfile().getFiscalYearEnd().getFiscalYearBoundaries(year);
-		LocalDate start = boudnaries.get("start");
-		LocalDate end = boudnaries.get("end");
 
-		b.date_start = Date.from(start.atStartOfDay(ZoneId.systemDefault()).toInstant());
-		b.date_end = Date.from(end.atStartOfDay(ZoneId.systemDefault()).toInstant());
-
-		return b;
-	}
 
 	/**
 	 * When referring to a fiscal year, it's generally named after the year in which
@@ -205,7 +203,7 @@ public class IncomeStatementService {
 	public List<FinancialStatementLine> getIncomeStatementForFiscalYear(Integer year) {
 		// List<FinancialStatementLine> transactions =
 		// financeStatementService.getIncomeStatement(year);
-		Boundaries b = getBoundaries(year);
+		DateBoundaries b = fys.getBoundaries(year);
 
 		double incomeTax = 0;
 		FinantialStatement statement = getFinantialStatement(b.date_start, b.date_end);
@@ -224,22 +222,10 @@ public class IncomeStatementService {
 		return grossAmount;
 	}
 
-	public int getFiscalYear(Date start) {
 
-		System.out.println("Today's date: " + start);
-		Calendar calendar = Calendar.getInstance();
-		// Create a Calendar instance and set it to the current date
-
-		calendar.setTime(start);
-		// Add one day to the current date
-		calendar.add(Calendar.DATE, 1);
-		Date tomorrow = calendar.getTime();
-
-		return profile.getProfile().getFiscalYearEnd().getFiscalYear(tomorrow);
-	}
 
 	public Map<String, Double> getExpenseReport(Integer year) {
-		Boundaries b = getBoundaries(year);
+		DateBoundaries b = fys.getBoundaries(year);
 		return getExpenseReport(b.date_start, b.date_end);
 
 	}
@@ -389,18 +375,18 @@ public class IncomeStatementService {
 	}
 
 	public List<ExpensesLine> getExpensesForFiscalYear(Integer year) {
-		Boundaries b = getBoundaries(year);
+		DateBoundaries b = fys.getBoundaries(year);
 		return getExpensesLinesBetween(b.date_start, b.date_end);
 
 	}
 
 	public List<ExpensesLine> getOtherExpenses(Integer year) {
-		Boundaries b = getBoundaries(year);
+		DateBoundaries b = fys.getBoundaries(year);
 		return getOtherExpensesBetween(b.date_start, b.date_end);
 	}
 
 	public List<RevenueLine> getRevenuesForFiscalYear(Integer year) {
-		Boundaries b = getBoundaries(year);
+		DateBoundaries b = fys.getBoundaries(year);
 		List<Transaction> value = transactionRepository.getSalesTransactionsForFiscalYear(b.date_start, b.date_end);
 		List<RevenueLine> lines = new ArrayList<RevenueLine>();
 		for (Transaction transaction : value) {
@@ -516,5 +502,14 @@ public class IncomeStatementService {
 	public double getOtherExpensesIncome(Integer year) {
 		return transactionRepository.getOperatingExpensesForYear(year);
 	}
+	
+	public IncomeStatementDto generateIncomeStatement(int fiscal_year) 
+	{
+		return this.isfls.generateIncomeStatement(fiscal_year);
+	} 
+	
+
+
+	
 
 }

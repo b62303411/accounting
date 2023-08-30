@@ -90,6 +90,25 @@ public class AdministrationController {
 
 		return "balance-sheet"; // This should be the name of your Thymeleaf template
 	}
+	
+	@GetMapping("/expense-balance-sheet")
+	public String getExpenseBalanceSheet(Model model) {
+		model.addAttribute("currentDate", LocalDate.now());
+
+		model.addAttribute("taxable_expenses", accountService.getTaxableAccountsByType(AccountType.EXPENSE));
+		model.addAttribute("taxable_totalExpenes", accountService.getTotalTaxableByType(AccountType.EXPENSE));
+		
+		model.addAttribute("non_taxable_expenses", accountService.getNonTaxableAccountsByType(AccountType.EXPENSE));
+		model.addAttribute("non_taxable_totalExpenes", accountService.getTotalNonTaxableByType(AccountType.EXPENSE));
+
+		
+		model.addAttribute("revenues", accountService.getAccountsByType(AccountType.REVENUE));
+		model.addAttribute("totalRevenues", accountService.getTotalByType(AccountType.REVENUE));
+
+	
+
+		return "expense-balance-sheet"; // This should be the name of your Thymeleaf template
+	}
 
 	private void insertOptions(Model model) {
 		List<MenuOption> menuOptions = MenuOptions.getOptions();

@@ -43,6 +43,7 @@ public class ExpensesController {
 	public String editExpense(Model model, @PathVariable("id") Long id) {
 		Optional<ExploitationExpense> expense = repo.findById(id);
 		model.addAttribute("expense", expense.get());
+		
 		return "expense_edit";
 	}
 	

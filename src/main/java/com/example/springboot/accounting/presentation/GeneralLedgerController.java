@@ -37,7 +37,7 @@ public class GeneralLedgerController {
 		
 		model.addAttribute("ledgerEntries", list);
 
-		gls.l.printAccounts();
+		gls.getLedger().printAccounts();
 		return "generalLedger";
 	}
 

@@ -1,5 +1,7 @@
 package com.example.springboot.accounting.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.example.springboot.accounting.model.entities.qb.AccountManager;
@@ -7,42 +9,78 @@ import com.example.springboot.accounting.model.entities.qb.AccountType;
 
 @Service
 public class AccountFactory {
+
 	public void createAccounts(AccountManager accountManager) {
-	
-	    // Assets
-		accountManager.addAccount("Accounts Receivable", "A002", AccountType.ASSET,false);
-		accountManager.addAccount("Prepaid Expenses", "A003", AccountType.ASSET,false);
-		accountManager.addAccount("Office Equipment", "A004", AccountType.ASSET,false);
-		accountManager.addAccount("Loan to Owner", "A005", AccountType.ASSET,false);
-		accountManager.addAccount("Unknown","A006",AccountType.ASSET,false);
+
+		
+		// Assets
+		createAssetAccounts(accountManager);
+		
 		// Liabilities
-		accountManager.addAccount("Accounts Payable", "L001", AccountType.LIABILITY,false);
-		accountManager.addAccount("Taxes Payable", "L002", AccountType.LIABILITY,false);
-		accountManager.addAccount("Unearned Revenue", "L003", AccountType.LIABILITY,false);
-	
+		createLiabilitiesAccounts(accountManager);
 
 		// Equity
-		accountManager.addAccount("Owner's Draw", "E001", AccountType.EQUITY,false);
-		accountManager.addAccount("Owner's Equity", "E002", AccountType.EQUITY,false);
-		accountManager.addAccount("Retained Earnings", "E003", AccountType.EQUITY,false);
-	
+		createEquityAccounts(accountManager);
 
 		// Revenue
-		accountManager.addAccount("Consulting Revenue", "R001", AccountType.REVENUE,true);
-		accountManager.addAccount("Miscellaneous Revenue", "R002", AccountType.REVENUE,true);
+		accountManager.addAccount("Consulting Revenue", "R001", AccountType.REVENUE, true);
+		accountManager.addAccount("Miscellaneous Revenue", "R002", AccountType.REVENUE, true);
 
 		// Expenses
-		accountManager.addAccount("Salaries and Wages", "EX001", AccountType.EXPENSE,true);
-		accountManager.addAccount("Professional Fees", "EX002", AccountType.EXPENSE,true);
-		accountManager.addAccount("Office Supplies", "EX003", AccountType.EXPENSE,true);
-		accountManager.addAccount("Software SAS", "A005", AccountType.EXPENSE,true);
-		accountManager.addAccount("Bank Fees", "EX006", AccountType.EXPENSE,true);
-		accountManager.addAccount("Income Tax Expense", "EX007", AccountType.EXPENSE,true);
-		accountManager.addAccount("Travel & Meals", "EX008", AccountType.EXPENSE,true);
-		accountManager.addAccount("Loss on Asset Write-off", "EX009", AccountType.EXPENSE,true);
-		// Using simplified method. 
-		accountManager.addAccount("Sales Tax Expense","EX009", AccountType.EXPENSE,true);
-		accountManager.addAccount("Depreciation Expense","EX010", AccountType.EXPENSE,true);
-		accountManager.addAccount("To Classify","EX011", AccountType.EXPENSE,false);
+		createExpensesAccounts(accountManager);
+	}
+
+	private void createExpensesAccounts(AccountManager accountManager) {
+		SuffixCount count_exp = new SuffixCount("E");
+		
+		List<String> taxableExpenses = List.of(
+				"Salaries and Wages", 
+				"Professional Fees", 
+				"Office Supplies", 
+				"Software SAS",
+				"Bank Fees",
+				"Travel & Meals",
+				"Loss on Asset Write-off",
+				"Sales Tax Expense",// Using simplified method.
+				"Depreciation Expense"
+				);
+	
+		for (String string : taxableExpenses) {
+			accountManager.addAccount(string, count_exp.getNext(), AccountType.EXPENSE, true);
+		}
+	
+		accountManager.addAccount("To Classify", count_exp.getNext(), AccountType.EXPENSE, false);
+		accountManager.addAccount("Income Tax Expense", count_exp.getNext(), AccountType.EXPENSE, false);
+	}
+
+	private void createEquityAccounts(AccountManager accountManager) {
+		SuffixCount count_eq = new SuffixCount("EX");
+		accountManager.addAccount("Owner's Draw", count_eq.getNext(), AccountType.EQUITY, false);
+		accountManager.addAccount("Owner's Equity",count_eq.getNext(), AccountType.EQUITY, false);
+		accountManager.addAccount("Retained Earnings", count_eq.getNext(), AccountType.EQUITY, false);
+	}
+
+	private void createLiabilitiesAccounts(AccountManager accountManager) {
+		SuffixCount count_liab = new SuffixCount("L");
+		List<String> liabilities = List.of(
+				"Accounts Payable", 
+				"Taxes Payable", 
+				"Unearned Revenue");
+		for (String string : liabilities) {
+			accountManager.addAccount(string, count_liab.getNext(), AccountType.LIABILITY, false);
+		}
+	}
+
+	private void createAssetAccounts(AccountManager accountManager) {
+		SuffixCount count_asset = new SuffixCount("A");
+		List<String> assets = List.of(
+				"Accounts Receivable", 
+				"Prepaid Expenses", 
+				"Office Equipment", 
+				"Loan to Owner",
+				"Unknown");
+		for (String string : assets) {
+			accountManager.addAccount(string, count_asset.getNext(), AccountType.ASSET, false);
+		}
 	}
 }

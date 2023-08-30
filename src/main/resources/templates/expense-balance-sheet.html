@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Balance Sheet</title>
+</head>
+
+<body>
+	<header th:replace="fragments/header :: header"></header>
+
+	<div class="container shadow min-vh-100 py-2">
+		<h2>Balance Sheet as of <span th:text="${currentDate}">[Date]</span></h2>
+
+		<!-- ASSETS -->
+		<div th:replace="fragments/account-balence :: table(${taxable_expenses}, ${taxable_totalExpenes},'Taxable Expenses')"></div>
+        
+        <!-- EQUITY -->
+		<div th:replace="fragments/account-balence :: table(${non_taxable_expenses}, ${non_taxable_totalExpenes}, 'Non taxable Expenses')"></div>
+		
+		<!-- LIABILITIES -->
+		<div th:replace="fragments/account-balence :: table(${revenues}, ${totalRevenues},'Revenues')"></div>
+
+		
+
+	</div>
+</body>
+
+</html>

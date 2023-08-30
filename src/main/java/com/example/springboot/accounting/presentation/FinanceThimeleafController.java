@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.example.springboot.accounting.model.TransactionType;
 import com.example.springboot.accounting.model.dto.AccountValidation;
 import com.example.springboot.accounting.model.dto.FinancialStatementLine;
+import com.example.springboot.accounting.model.dto.IncomeStatementDto;
+import com.example.springboot.accounting.model.dto.LedgerEntryDTO;
 import com.example.springboot.accounting.model.dto.ReportAvailable;
 import com.example.springboot.accounting.model.dto.RevenueLine;
 import com.example.springboot.accounting.model.entities.Account;
@@ -30,6 +32,7 @@ import com.example.springboot.accounting.repository.InvoiceRepository;
 import com.example.springboot.accounting.service.AssetService;
 import com.example.springboot.accounting.service.CompanyProfileService;
 import com.example.springboot.accounting.service.FinancialStatementService;
+import com.example.springboot.accounting.service.LedgerTransactionToDto;
 
 @Controller
 @RequestMapping("/view")
@@ -42,8 +45,9 @@ public class FinanceThimeleafController {
 	private InvoiceRepository invoiceRepo;
 	private final NavigationFixture navFixture;
 
+	private final  LedgerTransactionToDto dtoParser;
 	@Autowired
-	public FinanceThimeleafController(NavigationFixture navFixture, AssetService assetService,
+	public FinanceThimeleafController(LedgerTransactionToDto dtoParser,NavigationFixture navFixture, AssetService assetService,
 			AssetRepository assetRepository, AccountRepository accountRepo, CompanyProfileService service,
 			FinancialStatementService financeStatementService, InvoiceRepository invoiceRepo) {
 		this.financeStatementService = financeStatementService;
@@ -53,6 +57,7 @@ public class FinanceThimeleafController {
 		this.assetService = assetService;
 		this.invoiceRepo = invoiceRepo;
 		this.navFixture = navFixture;
+		this.dtoParser=dtoParser;
 
 	}
 
@@ -174,8 +179,31 @@ public class FinanceThimeleafController {
 		return "BalanceSheet";
 	}
 
+	
 	@GetMapping("/incomeStatement/{year}")
-	public String incomeStatement(Model model, @PathVariable("year") Integer year) {
+	public String incomeStatement(Model model, @PathVariable("year") Integer year) 
+	{
+		if (year == null) {
+			year = 2023;
+		}
+		model.addAttribute("selected_report_type", "transactions");
+		navFixture.insertOptions(year, model);
+		model.addAttribute("currentPage", "Income Statement");
+		
+		IncomeStatementDto dto = this.financeStatementService.incomeStatementService.generateIncomeStatement(year);
+		//dto.expenseAccounts
+		model.addAttribute("expenseAccounts",dto.expenseAccounts);
+		model.addAttribute("revenueAccounts",dto.revenueAccounts);
+		model.addAttribute("totalRevenue",dto.totalRevenue);
+		model.addAttribute("totalExpenses",dto.totalExpenses);
+		model.addAttribute("netIncome", dto.netIncome);
+		List<LedgerEntryDTO> dtos = dtoParser.convertToLedgerEntryDTOs(dto.wb.getTransactions());
+		model.addAttribute("ledgerEntries",dtos);
+		return "income-statement";
+	}
+	
+	@GetMapping("/incomeStatement-old/{year}")
+	public String incomeStatementOld(Model model, @PathVariable("year") Integer year) {
 		if (year == null) {
 			year = 2023;
 		}

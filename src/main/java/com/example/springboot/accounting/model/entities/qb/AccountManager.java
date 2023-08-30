@@ -84,4 +84,21 @@ public class AccountManager {
 		}
 		return list;
 	}
+
+	public List<com.example.springboot.accounting.model.entities.Account> getAccountByType(AccountType type, boolean b) {
+		Collection<Account> values = accounts.values();
+		List<com.example.springboot.accounting.model.entities.Account> list = new ArrayList<com.example.springboot.accounting.model.entities.Account>();
+		for (Account account : values) {
+			if (account.getAccountType() == type && account.isTaxable() ==b) {
+				com.example.springboot.accounting.model.entities.Account a = new com.example.springboot.accounting.model.entities.Account();
+				a.setAccountingType(account.getAccountType());
+				a.setAccountNo(account.getAccountNumber());
+				a.setBalance(account.getBalance());
+				a.setTaxable(account.isTaxable());
+				a.setAccountName(account.getName());
+				list.add(a);
+			}
+		}
+		return list;
+	}
 }

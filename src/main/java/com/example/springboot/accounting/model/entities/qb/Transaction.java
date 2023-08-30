@@ -1,33 +1,45 @@
 package com.example.springboot.accounting.model.entities.qb;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 import com.example.springboot.accounting.model.TransactionNature;
 
+/**
+ * 
+ */
 public class Transaction {
-	
-	
-	private LocalDate date;
+
+	private Date date;
 	private String description;
 	private double amount;
 	private TransactionNature nature;
 	private String id;
-	private TransactionStatus status;  // Enum: Unposted, Posted
-	public Transaction()
-	{
+	private TransactionStatus status; // Enum: Unposted, Posted
+	private Set<TransactionEntry> entries = new HashSet();
+	private String message;
+
+	public Transaction() {
 		this.id = UUID.randomUUID().toString();
 		this.status = TransactionStatus.UNPOSTED;
 	}
-	
-	public LocalDate getDate() {
+
+	public Transaction(Transaction transaction) {
+	  this.date=transaction.getDate();
+	  this.id=transaction.getId();
+	  this.nature=transaction.getNature();
+	  
+	}
+
+	public Date getDate() {
 		return date;
 	}
 
-	public void setDate(LocalDate date) {
+	public void setDate(Date date) {
 		this.date = date;
 	}
 
@@ -55,10 +67,6 @@ public class Transaction {
 		this.nature = nature;
 	}
 
-	private List<TransactionEntry> entries = new ArrayList<>();
-	
-	private String message;
-
 	public void addEntry(TransactionEntry entry) {
 		entries.add(entry);
 	}
@@ -68,6 +76,7 @@ public class Transaction {
 			entry.post();
 		}
 	}
+
 	public String getId() {
 		return id;
 	}
@@ -84,43 +93,37 @@ public class Transaction {
 		this.status = status;
 	}
 
-	public List<TransactionEntry> getEntries() {
+	public Set<TransactionEntry> getEntries() {
 		return entries;
 	}
 
-	public void setEntries(List<TransactionEntry> entries) {
-		this.entries = entries;
+	public void setEntries(Collection<TransactionEntry> entries) {
+		this.entries = new HashSet<>(entries);
 	}
 
-	 @Override
-	    public String toString() {
-	     StringBuilder str = new StringBuilder(); 
-	     str.append(String.format("%-10s\t%-10s\t%-25s\t%s\t%-20s\t%-5s\t%-5s", 
-		 			"Date",
-		 			"Type", 
-		 			"Name" , 
-		 			"No", 
-		 			"Vendor/Client", 
-		            "Debit", 
-		            "Credit")).append("\n");
-		 for (TransactionEntry transactionEntry : entries) {
+	@Override
+	public String toString() {
+		StringBuilder str = new StringBuilder();
+		str.append(String.format("%-10s\t%-10s\t%-25s\t%s\t%-20s\t%-5s\t%-5s", "Date", "Type", "Name", "No",
+				"Vendor/Client", "Debit", "Credit")).append("\n");
+		for (TransactionEntry transactionEntry : entries) {
 			str.append(transactionEntry.toString()).append("\n");
 		}
-		 return str.toString();
-	    }
+		return str.toString();
+	}
 
 	public void setMessage(String message) {
-		this.description=message;
-		
+		this.description = message;
+
 	}
 
 	@Override
 	public int hashCode() {
-	    int result = 17; // arbitrary prime number
-	    for (TransactionEntry obj : entries) {
-	        result = 31 * result + (obj == null ? 0 : obj.hashCode());
-	    }
-	    return result;
+		int result = 17; // arbitrary prime number
+		for (TransactionEntry obj : entries) {
+			result = 31 * result + (obj == null ? 0 : obj.hashCode());
+		}
+		return result;
 	}
 
 	@Override
@@ -135,7 +138,4 @@ public class Transaction {
 		return Objects.equals(entries, other.entries);
 	}
 
-
-	
-	
 }

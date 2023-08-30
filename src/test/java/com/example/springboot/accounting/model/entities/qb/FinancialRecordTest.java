@@ -3,8 +3,10 @@ package com.example.springboot.accounting.model.entities.qb;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -287,14 +289,14 @@ class FinancialRecordTest {
 
 		// Creating a bank transaction
 		BankTransaction bankTransaction = new BankTransaction();
-		bankTransaction.setDate(LocalDate.now());
+		bankTransaction.setDate(Date.from(Instant.now()));
 		bankTransaction.setDescription("Withdrawal for dividend payment");
 		bankTransaction.setAmount(-1000.0); // Negative amount for withdrawals
 
 		// Creating a financial record for an expense transaction
 		FinancialRecord expenseRecord = new FinancialRecord();
 		expenseRecord.setTransactionType("Expense");
-		expenseRecord.setDate(LocalDate.now());
+		expenseRecord.setDate(Date.from(Instant.now()));
 		expenseRecord.setDescription("Dividend payment to owner");
 		expenseRecord.setAmount(1000.0); // Positive amount for expenses
 		expenseRecord.setAccount("Dividends Paid"); // Example account
@@ -312,20 +314,20 @@ class FinancialRecordTest {
 		// Simulate a dividend payment
 		FinancialRecord dividendRecord = new FinancialRecord();
 		dividendRecord.setTransactionType("Expense");
-		dividendRecord.setDate(LocalDate.now());
+		dividendRecord.setDate(Date.from(Instant.now()));
 		dividendRecord.setDescription("Dividend payment to owner");
 		dividendRecord.setAmount(1000.0); // Positive amount for expenses
 		dividendRecord.setAccount("Dividends Paid");
 
 		// Simulate a corresponding bank withdrawal
 		BankTransaction bankWithdrawal = new BankTransaction();
-		bankWithdrawal.setDate(LocalDate.now());
+		bankWithdrawal.setDate(Date.from(Instant.now()));
 		bankWithdrawal.setDescription("Withdrawal for dividend payment");
 		bankWithdrawal.setAmount(-1000.0); // Negative amount for withdrawals
 
 		// Simulate an offsetting bank deposit
 		BankTransaction bankDeposit = new BankTransaction();
-		bankDeposit.setDate(LocalDate.now());
+		bankDeposit.setDate(Date.from(Instant.now()));
 		bankDeposit.setDescription("Offsetting deposit for dividend payment");
 		bankDeposit.setAmount(1000.0); // Positive amount for deposits
 
@@ -358,7 +360,7 @@ class FinancialRecordTest {
 		AccountManager accountManager = new AccountManager();
 		LedgerRuleFactory fac = new LedgerRuleFactory(accountManager);
 		Ledger ledger = new Ledger(accountManager,fac);
-		String date="";
+		Date date=Date.from(Instant.now());
 		Account equipment = new Account("Equipment", "001", AccountType.ASSET,false);
 		Account cash = new Account("Cash", "002", AccountType.ASSET,false);
 		Account payable = new Account("Accounts Payable", "003", AccountType.LIABILITY,false);
@@ -413,7 +415,7 @@ class FinancialRecordTest {
 		// Creating a sales with sales tax transaction
 		Transaction salesTransaction = new Transaction();
 
-		String date="";
+		Date date=Date.from(Instant.now());
 		String vendor_client="";
 		// Cash is increased by the total amount including tax: $530
 		salesTransaction.addEntry(new TransactionEntry(cash,vendor_client, date,530, EntryType.DEBIT));
@@ -474,7 +476,7 @@ class FinancialRecordTest {
 		// Step 1: Declaring the Dividends
 		Transaction declareDividends = new Transaction();
 
-		String date="";
+		Date date=Date.from(Instant.now());
 		String vendor_client="";
 		// Retained Earnings is decreased by the declared dividend amount
 		declareDividends.addEntry(new TransactionEntry(retainedEarnings,vendor_client, date,300, EntryType.DEBIT));
@@ -518,31 +520,31 @@ class FinancialRecordTest {
 		Account government = new Account("Government", "008", AccountType.LIABILITY,false);
 
 		Transaction depositToChecking = new Transaction();
-		String date="";
-		depositToChecking.addEntry(new TransactionEntry(checking,date,"", 1000, EntryType.DEBIT));
+		Date date=Date.from(Instant.now());
+		depositToChecking.addEntry(new TransactionEntry(checking,"",date, 1000, EntryType.DEBIT));
 
 //		Transaction transferToSavings = new Transaction();
 //		transferToSavings.addEntry(new TransactionEntry(checking, 500, "Credit"));
 //		transferToSavings.addEntry(new TransactionEntry(savings, 500, "Debit"));
 
 		Transaction payCreditCard = new Transaction();
-		payCreditCard.addEntry(new TransactionEntry(checking,date,"",  200, EntryType.CREDIT));
-		payCreditCard.addEntry(new TransactionEntry(creditCard,date,"",  200, EntryType.DEBIT));
+		payCreditCard.addEntry(new TransactionEntry(checking,"",date,  200, EntryType.CREDIT));
+		payCreditCard.addEntry(new TransactionEntry(creditCard,"",date,  200, EntryType.DEBIT));
 
 		Transaction earnInvestment = new Transaction();
-		earnInvestment.addEntry(new TransactionEntry(investment,date,"",  100, EntryType.DEBIT));
+		earnInvestment.addEntry(new TransactionEntry(investment,"",date,  100, EntryType.DEBIT));
 
 		Transaction amazonInvoice = new Transaction();
-		amazonInvoice.addEntry(new TransactionEntry(amazon,date,"",  200, EntryType.CREDIT));
-		amazonInvoice.addEntry(new TransactionEntry(checking,date,"",  200, EntryType.DEBIT));
+		amazonInvoice.addEntry(new TransactionEntry(amazon,"",date,  200, EntryType.CREDIT));
+		amazonInvoice.addEntry(new TransactionEntry(checking,"",date,  200, EntryType.DEBIT));
 
 		Transaction lawyerInvoice = new Transaction();
-		lawyerInvoice.addEntry(new TransactionEntry(lawyer,date,"",  500, EntryType.CREDIT));
-		lawyerInvoice.addEntry(new TransactionEntry(checking,date,"",  500, EntryType.DEBIT));
+		lawyerInvoice.addEntry(new TransactionEntry(lawyer,"",date,  500, EntryType.CREDIT));
+		lawyerInvoice.addEntry(new TransactionEntry(checking,"",date,  500, EntryType.DEBIT));
 
 		Transaction accountantInvoice = new Transaction();
-		accountantInvoice.addEntry(new TransactionEntry(accountant,date,"",  300, EntryType.CREDIT));
-		accountantInvoice.addEntry(new TransactionEntry(checking,date,"",  300, EntryType.DEBIT));
+		accountantInvoice.addEntry(new TransactionEntry(accountant,"",date,  300, EntryType.CREDIT));
+		accountantInvoice.addEntry(new TransactionEntry(checking,"",date,  300, EntryType.DEBIT));
 
 		Transaction governmentTaxDue = new Transaction();
 		String vendor_client="";

@@ -19,6 +19,11 @@ public class LedgerEntryDTO {
 	        return date;
 	    }
 
+	    public long getUnixTime() 
+	    {
+	    	return date.getTime();
+	    }
+	    
 	    public void setDate(Date date) {
 	        this.date = date;
 	    }
