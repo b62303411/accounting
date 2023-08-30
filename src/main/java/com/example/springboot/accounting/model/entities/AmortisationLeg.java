@@ -6,8 +6,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 
 @Entity
@@ -19,6 +17,8 @@ public class AmortisationLeg {
 	private int fiscalYear;
 	private Date date;
 	private Double amount;
+	@OneToOne
+	private Expense expense;
 	//@JoinColumn(@name = "amortisation_id")
 	@OneToOne
 	private Amortisation amortisation;
@@ -68,6 +68,12 @@ public class AmortisationLeg {
 	}
 	public void setRemainingValue(double remainingValue) {
 		this.remainingValue = remainingValue;
+	}
+	public Expense getExpense() {
+		return expense;
+	}
+	public void setExpense(Expense expense) {
+		this.expense = expense;
 	}
 	
 	

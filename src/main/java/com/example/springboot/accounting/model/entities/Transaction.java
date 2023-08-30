@@ -1,24 +1,29 @@
 package com.example.springboot.accounting.model.entities;
 
 import java.util.Date;
+import java.util.List;
 
 import org.hibernate.annotations.Formula;
 
 import com.example.springboot.accounting.model.TransactionNature;
 import com.example.springboot.accounting.model.TransactionType;
+import com.example.springboot.accounting.model.entities.qb.TransactionEntry;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
 @Entity
 @Table(name = "transaction",
-uniqueConstraints = {@UniqueConstraint(columnNames = {"date", "description","amount","account"})}
+uniqueConstraints = {@UniqueConstraint(columnNames = {"date", "description","amount","account","transactionNature"})}
 )
 public class Transaction {
 	@Id
@@ -35,9 +40,10 @@ public class Transaction {
     private String note;
     @Enumerated(EnumType.STRING)
     private TransactionNature transactionNature;
-    
-
-    
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Attachment> attachments;
+    private String payee;
+    private Double solde;
     
     /**
      * 
@@ -114,6 +120,31 @@ public class Transaction {
 	}
 	public void setTransactionNature(TransactionNature transactionNature) {
 		this.transactionNature = transactionNature;
+	}
+	public List<Attachment> getAttachments() {
+		return attachments;
+	}
+	public void setAttachments(List<Attachment> attachments) {
+		this.attachments = attachments;
+	}
+	public void addAttachment(Attachment att) {
+		attachments.add(att);
+	}
+	public String getPayee() {
+		return payee;
+	}
+	public void setPayee(String payee) {
+		this.payee = payee;
+	}
+	public TransactionEntry[] getEntries() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	public Double getSolde() {
+		return solde;
+	}
+	public void setSolde(Double solde) {
+		this.solde = solde;
 	}
 	
 	

@@ -1,9 +1,17 @@
 package com.example.springboot.accounting.model.entities;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 
 @Entity
 public class Invoice {
@@ -11,11 +19,35 @@ public class Invoice {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 	
+	private String noFacture;
+	
 	private Double amount;
 	
 	private Double tps;
 	
 	private Double tvq;
+	
+	private String recipient;
+	
+	private String origine;
+	
+	
+	
+	
+    @Column(length = 1000)
+	private String description;
+	
+	private Date date;
+	
+	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Attachment> attachments;
+	
+	public Invoice()
+	{
+		attachments = new ArrayList<Attachment>();
+	}
+	
+
 
 	public Long getId() {
 		return id;
@@ -48,6 +80,72 @@ public class Invoice {
 	public void setTvq(Double tvq) {
 		this.tvq = tvq;
 	}
+
+	public String getRecipient() {
+		return recipient;
+	}
+
+	public void setRecipient(String recipient) {
+		this.recipient = recipient;
+	}
+
+	public String getOrigine() {
+		return origine;
+	}
+
+	public void setOrigine(String origine) {
+		this.origine = origine;
+	}
 	
-	
+	public void addAttachment(Attachment att) 
+	{
+		this.attachments.add(att);
+	}
+
+
+
+	public String getDescription() {
+		return description;
+	}
+
+
+
+	public Date getDate() {
+		return date;
+	}
+
+
+
+	public void setDate(Date date) {
+		this.date = date;
+	}
+
+
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+
+
+	public List<Attachment> getAttachments() {
+		return attachments;
+	}
+
+
+
+	public void setAttachments(List<Attachment> attachments) {
+		this.attachments = attachments;
+	}
+
+
+
+	public String getNoFacture() {
+		return noFacture;
+	}
+
+	public void setNoFacture(String noFacture) {
+		this.noFacture = noFacture;
+	}
+
 }

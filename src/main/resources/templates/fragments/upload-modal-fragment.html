@@ -1,0 +1,26 @@
+<!-- upload-modal-fragment.html -->
+<div th:fragment="uploadModal" class="modal fade" id="uploadModal" tabindex="-1" role="dialog"
+	aria-labelledby="uploadModalLabel" aria-hidden="true">
+
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="uploadModalLabel">Add Attachment</h5>
+				<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<form id="uploadForm" method="post" enctype="multipart/form-data">
+					<input type="file" name="attachment" required />
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+				<button type="submit" class="btn btn-primary" form="uploadForm">Add Attachment</button>
+			</div>
+		</div>
+	</div>
+
+
+</div>

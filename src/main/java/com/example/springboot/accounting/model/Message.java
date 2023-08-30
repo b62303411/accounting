@@ -1,5 +1,5 @@
 package com.example.springboot.accounting.model;
 
-public enum TransactionSubType {
+public class Message {
 
 }

@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Fragments</title>
+</head>
+<body>
+    <div th:fragment="reportHeader(reportTitle, companyName, fiscal_end_day, fiscal_end_month, fiscal_end_year)">
+        <h4 th:text="${reportTitle + ' for ' + companyName + ' for the year ended AU ' + fiscal_end_day + ' ' + fiscal_end_month + ' ' + fiscal_end_year}"></h4>
+    </div>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Fragment: Bulk Update</title>
+</head>
+
+<body>
+	<div th:fragment="bill-list" class="container my-3">
+		<h1>Bills</h1>
+		<table class="table" id="bill-list">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>No Facture</th>
+					<th>Description</th>
+					<th>Total</th>
+					<th>Tps</th>
+					<th>Tvq</th>
+					<th>Origin</th>
+					<th>Recipient</th>
+					<th>Date</th>
+					<th>Attachments</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="bill : ${bills}">
+					<td name="id" th:text="${bill.id}"></td>
+					<td name="no-fac">
+						<span th:id="'nofac-'+${bill.id}" contenteditable="true" th:text="${bill.noFacture}"></span>
+					</td>
+					<td name="desc">
+						<textarea th:id="'description-'+${bill.id}" contenteditable="true"
+							th:text="${bill.description}"></textarea>
+					</td>
+					<td name="Total">
+						<span th:id="'amount-'+${bill.id}" contenteditable="true" th:text="${bill.amount}"></span>
+					</td>
+					<td name="tps">
+						<span th:id="'tps-'+${bill.id}" contenteditable="true" th:text="${bill.tps}"></span>
+					</td>
+					<td name="tvq">
+						<span th:id="'tvq-'+${bill.id}" contenteditable="true" th:text="${bill.tvq}"></span>
+					</td>
+					<td name="origin">
+						<span th:id="'origin-'+${bill.id}" contenteditable="true" th:text="${bill.origine}"></span>
+					</td>
+					<td name="recipient">
+						<span th:id="'recipient-'+${bill.id}" contenteditable="true" th:text="${bill.recipient}"></span>
+					</td>
+					<td name="date">
+						<input type="date" th:id="'date-'+${bill.id}"
+							th:value="${#dates.format(bill.date, 'yyyy-MM-dd')}" />
+					</td>
+					<td name="att">
+						<div th:each="attachment : ${bill.attachments}">
+							<button class="btn btn-link" th:onclick="'showPreview(' + ${attachment.id} + ')'"><i
+									class="fa-file-pdf-o"></i> <!-- Icon for uploading --></button>
+						</div>
+					</td>
+					<td name="actions">
+						<button type="button" class="btn btn-link" data-toggle="modal" data-target="#uploadModal"
+							th:onclick="'openModal(' + ${bill.id} + ')'">
+							<i class="fa fa-upload"></i> <!-- Icon for uploading -->
+						</button>
+						<div>
+							<button th:onclick="'editBill(' + ${bill.id} + ')'">Edit</button>
+							<button th:onclick="'saveBill(' + ${bill.id} + ')'">Save</button>
+							<button th:onclick="'deleteBill(' + ${bill.id} + ')'"><i class="fa fa-trash"></i></button>
+						</div>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</body>
+
+</html>

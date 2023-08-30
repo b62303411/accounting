@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.example.springboot.accounting.model.dto.ExpensesLine;
 import com.example.springboot.accounting.model.dto.FinancialStatementLine;
+import com.example.springboot.accounting.model.dto.RevenueLine;
 import com.example.springboot.accounting.model.entities.BankStatement;
 import com.example.springboot.accounting.model.entities.KnownDescription;
 import com.example.springboot.accounting.model.entities.Transaction;
@@ -17,7 +20,7 @@ import com.example.springboot.accounting.repository.TransactionRepository;
 @Service
 public class FinancialStatementService {
 
-	private final IncomeStatementService incomeStatementService;
+	public final IncomeStatementService incomeStatementService;
 	private final TransactionService transactionService;
     private final TransactionRepository transactionRepository;
     private final BankStatementRepository bankStatementRepository;
@@ -33,6 +36,20 @@ public class FinancialStatementService {
     public List<FinancialStatementLine> getIncomeStatement(Integer year) {
     	return incomeStatementService.getIncomeStatementForFiscalYear(year);
     }
+    
+    public List<RevenueLine> getRevenues(Integer year) {
+    	return incomeStatementService.getRevenuesForFiscalYear(year);
+    }
+	public List<ExpensesLine> getOtherExpenses(Integer year) {
+		return incomeStatementService.getOtherExpenses(year);
+	}
+	public List<ExpensesLine> getExpenses(Integer year) {
+		return incomeStatementService.getExpensesForFiscalYear(year);
+	}
+	public Map<String, Double> getExpenseReport(Integer year) {
+		return incomeStatementService.getExpenseReport(year);
+		
+	}
   
     public List<FinancialStatementLine> getBalanceSheet(Date date) {
         // a method that retrieves and sums transactions up to a given date
@@ -45,11 +62,7 @@ public class FinancialStatementService {
         //List<FinancialStatementLine> cashFlowStatementLines = transactionRepository.sumCashFlowTransactionsByTypeAndYear(year);
         return new ArrayList<FinancialStatementLine>();
     }
-    
 
-
-
-    
     public List<Transaction> getTransactions(Integer year) {
 		return transactionRepository.findAllTransactionsByYear(year);
 	}
@@ -103,13 +116,6 @@ public class FinancialStatementService {
         return transactionService.getKnownDescriptions();
 	}
 
-
-
-
-
-	
-
-	
 
 	
 }

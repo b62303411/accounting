@@ -47,6 +47,8 @@ public class FinantialStatement {
 	Double otherRevenue;
 	Double pretaxIncome;
 	Double incomeTax;
+	private double quebecTax;
+	private double federalTax;
 
 	/**
 	 * Net income, also known as net profit or net earnings, is a financial measure
@@ -60,7 +62,7 @@ public class FinantialStatement {
 
 		Double totalExpenses = getTotalExpenses();
 		Double totalRevenue = getTotalRevenue();
-		double netIncome = totalRevenue - totalExpenses;
+		double netIncome = totalRevenue - totalExpenses - getIncomeTax();
 		return netIncome;
 	}
 
@@ -182,6 +184,40 @@ public class FinantialStatement {
 
 	public void setPretaxIncome(Double pretaxIncome) {
 		this.pretaxIncome = pretaxIncome;
+	}
+
+	public void setQuebecTax(double d) {
+		this.quebecTax=d;
+		
+	}
+
+	public void setFederalTax(double d) {
+		this.federalTax=d;
+		
+	}
+
+	public Double getDepreciation() {
+		return depreciation;
+	}
+
+	public void setDepreciation(Double depreciation) {
+		this.depreciation = depreciation;
+	}
+
+	public Double getAmortization() {
+		return amortization;
+	}
+
+	public void setAmortization(Double amortization) {
+		this.amortization = amortization;
+	}
+
+	public double getQuebecTax() {
+		return quebecTax;
+	}
+
+	public double getFederalTax() {
+		return federalTax;
 	}
 	
 	

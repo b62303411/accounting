@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Accounting Ledger</title>
+	<!-- Add any additional styles or scripts you need -->
+	<link rel="stylesheet" type="text/css" href="/webjars/datatables/1.13.5/css/jquery.dataTables.min.css" />
+</head>
+
+<body>
+	<header th:replace="fragments/header :: header"></header>
+	<div class="container">
+		<h2>Accounting Ledger</h2>
+
+		<table id="ledger-table" border="1" class="table table-striped" style="width:100%">
+			<thead>
+				<tr>
+					<th name="date">Date</th>
+					<th>Account Type</th>
+					<th>Memo</th>
+					<th>GL Account Name</th>
+					<th>GL Account #</th>
+					<th>Vendor/Client</th>
+					<th style="width:50px;">Debit</th>
+					<th style="width:50px;">Credit</th>
+					<th>Balence</th>
+					<th>Actual Balence</th>
+				</tr>
+			</thead>
+			<tbody>
+				<!-- Assuming you pass a list of entries named 'ledgerEntries' -->
+				<tr th:each="entry : ${ledgerEntries}">				
+					<td th:text="${entry.getUnixTime()}"></td>
+					<td th:text="${entry.accountType}"></td>
+					<td th:text="${entry.message}"></td>
+					<td th:text="${entry.glAccountName}"></td>
+					<td th:text="${entry.glAccountNumber}"></td>
+					<td th:text="${entry.vendorOrClient}"></td>
+					<td th:text="${entry.debit}"></td>
+					<td th:text="${entry.credit}"></td>
+					<td th:text="${entry.balence}"></td>
+					<td th:text="${entry.abalence}"></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</body>
+<script src="/webjars/jquery/3.6.4/jquery.min.js"></script>
+<script src="/webjars/datatables/1.13.5/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" type="text/css"
+	href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.dataTables.min.css">
+<script type="text/javascript" charset="utf8"
+	src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+
+<script th:inline="none">
+	function format(timestamp) {
+		const i_timestamp = parseInt(timestamp);
+		const date = new Date(i_timestamp);
+		const options = {year: 'numeric', month: 'long', day: 'numeric'};
+		const formattedDate = new Intl.DateTimeFormat('en-US', options).format(date);
+		return formattedDate;
+	}
+
+	$(document).ready(function () {
+		$('#ledger-table').DataTable({
+			responsive: true,
+			columnDefs: [
+            {
+                targets: 0,  // Target the first column (date column)
+                render: function (data, type, row) {
+						if (type === 'sort' || type === 'type') {
+							return data;
+						}
+						return format(data);
+					}
+            },
+            {
+				
+            targets: [6, 7,8,9],  // The indices of the "Debit" and "Credit" columns
+            render: function(data, type, row) {
+                if (type === 'display' || type === 'filter') {
+                    if (data === null || data === '') {
+                        return '-';
+                    }
+                    return '$' + parseFloat(data).toFixed(2);
+                }
+                return data;
+            
+			}}
+			],
+			order: [[0, 'asc']]  // Sort by the date column
+
+
+		});
+	});
+
+</script>
+
+</html>

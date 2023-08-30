@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+</head>
+
+<body>
+	<header th:replace="fragments/header :: header"></header>
+	<div class="container-fluid">
+		<!-- Left Side Menu -->
+		<div class="row">
+			<div th:replace="fragments/sidebar :: sidebar"></div>
+			<div class="col-md-10">
+				<div th:replace="fragments/yearselect :: navbar"></div>
+				<div class="container shadow min-vh-100 py-2">
+					<div th:replace="fragments/reportHeader :: reportHeader('Revenue Statement', ${companyName}, ${fiscal_end_day}, ${fiscal_end_month}, ${fiscal_end_year})"/>
+					<table class="table table-striped">
+						<thead>
+							<tr>
+								<th>Description</th>
+								<th>Amount</th>
+								<th>Revenue</th>
+								<th>Tps/Tvq</th>
+								<th>Date</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="line : ${revenues}">
+								<td th:text="${line.description}"></td>
+								<td th:insert="fragments/formatCurrency::formattedSpanCurrency(${line.amount})"></td>
+								<td th:insert="fragments/formatCurrency::formattedSpanCurrency(${line.revenue})"></td>
+								<td th:insert="fragments/formatCurrency::formattedSpanCurrency(${line.tpsTvq})"></td>
+								<td th:text="${line.date}"> </td>
+							</tr>
+							<tr>
+								<td th:text="${totals.description}"></td>
+								<td th:text="${#numbers.formatDecimal(totals.amount, 1, 'COMMA', 2, 'POINT')}+'$'"></td>
+								<td th:text="${#numbers.formatDecimal(totals.revenue, 1, 'COMMA', 2, 'POINT')}+'$'">
+								</td>
+								<td th:text="${#numbers.formatDecimal(totals.tpsTvq, 1, 'COMMA', 2, 'POINT')}+'$'"></td>
+								<td> </td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+		<script src="/webjars/datatables/1.13.5/js/dataTables.bootstrap5.min.js"></script>
+
+</body>
+
+</html>

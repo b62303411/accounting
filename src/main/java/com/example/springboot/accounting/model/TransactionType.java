@@ -16,9 +16,12 @@ public enum TransactionType {
     AssetPurchased(TransactionCategory.Asset),
     Debit,
     Credit,
+    Transfer,
+    Liability,
+    Income(TransactionCategory.Revenue),
     BankFees(TransactionCategory.Expense), // For charges and potentially refunds
     Refunds(TransactionCategory.Revenue); // If you want to categorize refunds separately
-    
+ 
 	TransactionType() {
 		this.category = null;
 	}

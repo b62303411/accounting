@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Income Statement</title>
+	<!-- Include Bootstrap CSS for styling if you like -->
+	<link rel="stylesheet" href="/webjars/bootstrap/5.3.0/css/bootstrap.min.css" />
+</head>
+
+<body>
+	<header th:replace="fragments/header :: header"></header>
+	<div class="row">
+		<div th:replace="fragments/sidebar :: sidebar"></div>
+		<div class="col-md-10">
+			<div th:replace="fragments/yearselect :: navbar"></div>
+			<div class="container">
+				<ul class="nav nav-tabs" id="expenseTabs">
+					<li class="nav-item">
+						<a class="nav-link active" id="report-tab" data-bs-toggle="tab" href="#report">Report</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" id="transactions-tab" data-bs-toggle="tab"
+							href="#transactions">Transaction</a>
+					</li>
+
+				</ul>
+				<div class="tab-content" id="suppliersTabsContent">
+					<div class="tab-pane fade show active" id="report" role="tabpanel" aria-labelledby="report-tab">
+						<div class="container shadow min-vh-100 py-2">
+							<div
+								th:replace="fragments/reportHeader :: reportHeader('Income Statement', ${companyName}, ${fiscal_end_day}, ${fiscal_end_month}, ${fiscal_end_year})" />
+							<div class="card mb-4">
+								<!-- Revenues -->
+								<div class="card-header bg-primary text-white">
+									<h2>Revenues</h2>
+								</div>
+								<table class="table">
+									<tr>
+										<th>Description</th>
+										<th>Amount</th>
+									</tr>
+									<tr th:each="account : ${revenueAccounts}">
+										<td th:text="${account.name}"></td>
+										<td th:text="${'$'+#numbers.formatDecimal(account.balance, 1, 2)}"></td>
+
+									</tr>
+								</table>
+								<div class="container my-3">
+									<strong>Total Revenue: </strong>
+									<h3 th:text="${'$'+#numbers.formatDecimal(totalRevenue, 1, 2)}"></h3>
+								</div>
+							</div>
+							<div class="card mb-4">
+								<!-- Revenues -->
+								<div class="card-header bg-primary text-white">
+									<!-- Operating Expenses -->
+									<h2>Operating Expenses</h2>
+								</div>
+								<table class="table">
+									<tr>
+										<th>Description</th>
+										<th>Amount</th>
+									</tr>
+									<tr th:each="account : ${expenseAccounts}">
+										<td th:text="${account.name}"></td>
+										<td th:text="${'$'+#numbers.formatDecimal(account.balance, 1, 2)}"></td>
+									</tr>
+								</table>
+								<div class="container my-3">
+									<strong>Total Operating Expenses: </strong>
+									<h3 th:text="${'$'+#numbers.formatDecimal(totalExpenses, 1, 2)}"></h3>
+								</div>
+							</div>
+							<div class="card mb-4">
+								<!-- Revenues -->
+								<div class="card-header bg-primary text-white">
+									<!-- Net Income -->
+									<h2>Net Income</h2>
+								</div>
+								<div class="container my-3">
+									<strong>Net Income: </strong>
+									<h3 th:text="${'$'+#numbers.formatDecimal(netIncome, 1, 2)}"></h3>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="tab-pane fade show active" id="transactions" role="tabpanel" aria-labelledby="transaction-tab">
+					<h2>Accounting Ledger</h2>
+
+		<table id="ledger-table" border="1" class="table table-striped" style="width:100%">
+			<thead>
+				<tr>
+					<th name="date">Date</th>
+					<th>Account Type</th>
+					<th>Memo</th>
+					<th>GL Account Name</th>
+					<th>GL Account #</th>
+					<th>Vendor/Client</th>
+					<th style="width:50px;">Debit</th>
+					<th style="width:50px;">Credit</th>
+					<th>Balence</th>
+					<th>Actual Balence</th>
+				</tr>
+			</thead>
+			<tbody>
+				<!-- Assuming you pass a list of entries named 'ledgerEntries' -->
+				<tr th:each="entry : ${ledgerEntries}">				
+					<td th:text="${entry.getUnixTime()}"></td>
+					<td th:text="${entry.accountType}"></td>
+					<td th:text="${entry.message}"></td>
+					<td th:text="${entry.glAccountName}"></td>
+					<td th:text="${entry.glAccountNumber}"></td>
+					<td th:text="${entry.vendorOrClient}"></td>
+					<td th:text="${entry.debit}"></td>
+					<td th:text="${entry.credit}"></td>
+					<td th:text="${entry.balence}"></td>
+					<td th:text="${entry.abalence}"></td>
+				</tr>
+			</tbody>
+		</table>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="/webjars/jquery/3.6.4/jquery.min.js"></script>
+	<script src="/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+	<script src="/webjars/popper.js/2.11.7/umd/popper.min.js"></script>
+</body>
+
+</html>

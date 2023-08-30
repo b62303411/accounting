@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>File Processing Queue</title>
+	<style>
+		.collapsible-section {
+			margin-top: 10px;
+			border: 1px solid #ccc;
+			border-radius: 4px;
+		}
+
+		.collapsible-header {
+			display: block;
+			width: 100%;
+			padding: 10px;
+			background-color: #f5f5f5;
+			border: none;
+			text-align: left;
+			cursor: pointer;
+		}
+
+		.collapsible-content {
+			display: none;
+			padding: 10px;
+		}
+
+		.collapsible-content.active {
+			display: block;
+		}
+	</style>
+	<link rel="stylesheet" href="/webjars/bootstrap/5.3.0/css/bootstrap.min.css" />
+	<header th:replace="fragments/header :: header"></header>
+</head>
+
+<body>
+	<div class="container">
+		<ul class="nav nav-tabs" id="expenseTabs">
+			<li class="nav-item">
+				<a class="nav-link active" id="expenses-tab" data-bs-toggle="tab" href="#invoices">Invoice</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" id="bulkUpdate-tab" data-bs-toggle="tab" href="#transactions">Transaction</a>
+			</li>
+
+		</ul>
+		<div class="tab-content" id="suppliersTabsContent">
+			<div class="tab-pane fade show active" id="invoices" role="tabpanel" aria-labelledby="invoices-tab">
+				<h1>File Processing Queue</h1>
+
+				<input type="file" id="folderInput" webkitdirectory multiple>
+				<button id="startProcessing">Start Processing</button>
+
+				<div id="queue">
+					<h2>Queue</h2>
+					<ul id="queueList"></ul>
+				</div>
+			</div>
+			<div class="tab-pane fade show active" id="transactions" role="tabpanel" aria-labelledby="suppliers-tab">
+				<form class="form-inline ml-auto" method="POST" action="/upload" enctype="multipart/form-data"
+					th:object="${uploadForm}">
+					<div class="form-group">
+						<input type="file" name="file" class="form-control-file" id="fileInput">
+					</div>
+					<button type="submit" class="btn btn-primary ml-2">Upload</button>
+				</form>
+			</div>
+		</div>
+	</div>
+	<script src="/webjars/jquery/3.6.4/jquery.min.js"></script>
+	<script src="/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+	<script src="/webjars/popper.js/2.11.7/umd/popper.min.js"></script>
+	<script>
+		const queue = [];
+		const queueList = document.getElementById('queueList');
+		const startProcessingBtn = document.getElementById('startProcessing');
+
+		function addToQueue(fileList) {
+			for (const file of fileList) {
+				queue.push(file);
+				const listItem = document.createElement('li');
+				listItem.textContent = file.name;
+				queueList.appendChild(listItem);
+			}
+		}
+
+		function findListItemByName(filename) {
+			const listItems = queueList.getElementsByTagName('li');
+			for (const listItem of listItems) {
+				if (listItem.textContent.includes(filename)) {
+					return listItem;
+				}
+			}
+			return null;
+		}
+		function createMetadataCard(title, content) {
+			const card = document.createElement('div');
+			card.classList.add('card');
+
+			const cardHeader = document.createElement('div');
+			cardHeader.classList.add('card-header');
+			const cardTitle = document.createElement('h4');
+			cardTitle.textContent = title;
+			cardHeader.appendChild(cardTitle);
+			card.appendChild(cardHeader);
+
+			const cardBody = document.createElement('div');
+			cardBody.classList.add('card-body');
+			cardBody.textContent = content;
+			card.appendChild(cardBody);
+
+			return card;
+		}
+
+
+		async function handleSubmission(meta2) {
+			try {
+				const requestPayload = {
+					description: meta2.description,
+					noFacture: meta2.noFacture,
+					amount: meta2.amount,
+					tps: meta2.tps,
+					tvq: meta2.tvq,
+					// Add other fields from meta2 as needed
+				};
+
+				const response = await fetch('your_submit_api_endpoint', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(requestPayload)
+				});
+
+				if (response.ok) {
+					// Handle success
+				} else {
+					// Handle error
+				}
+			} catch (error) {
+				// Handle error
+			}
+		}
+
+		async function processQueue() {
+			while (queue.length > 0) {
+				const file = queue.shift();
+				const listItem = findListItemByName(file.name);
+				listItem.textContent = `${file.name} - Processing...`;
+
+				try {
+					//var fileInput = document.getElementById('file');
+					var formData = new FormData();
+					formData.append('file', file);
+
+					const response = await fetch('/api/parse-bank-statement', {
+						method: 'POST',
+						body: formData
+					})
+
+
+					if (response.ok) {
+						const result = await response.json();
+						listItem.textContent = `${file.name} - Processed`;
+
+						const collapsibleSection = document.createElement('div');
+						collapsibleSection.classList.add('collapsible-section');
+
+						// Create metadata header
+						const metadataHeader = document.createElement('div');
+						metadataHeader.classList.add('card-header');
+						collapsibleSection.appendChild(metadataHeader);
+
+						// Create toggle button
+						const toggleButton = document.createElement('button');
+						toggleButton.classList.add('btn', 'btn-link');
+						toggleButton.setAttribute('type', 'button');
+						toggleButton.setAttribute('data-bs-toggle', 'collapse');
+						toggleButton.setAttribute('data-bs-target', `#metadataContent-${file.name}`); // Use file name as ID
+						toggleButton.setAttribute('aria-expanded', 'true');
+						toggleButton.setAttribute('aria-controls', `metadataContent-${file.name}`); // Use file name as ID
+						toggleButton.textContent = 'Metadata';
+						metadataHeader.appendChild(toggleButton);
+
+						// Create metadata content
+						const metadataContent = document.createElement('div');
+						metadataContent.classList.add('collapse');
+						metadataContent.setAttribute('aria-labelledby', "metadataHeader");
+						metadataContent.setAttribute('id', `metadataContent-${file.name}`); // Use file name as ID
+						// Create card for meta1
+						const meta1Card = createMetadataCard('Meta 1', result.meta1);
+						metadataContent.appendChild(meta1Card);
+
+						// Create card for meta2
+						const meta2Card = createMetadataCard('Meta 2', result.meta2);
+						metadataContent.appendChild(meta2Card);
+
+						collapsibleSection.appendChild(metadataContent);
+
+						const invoiceInfo = document.createElement('p');
+						invoiceInfo.textContent = result.noFacture;
+						listItem.appendChild(invoiceInfo);
+
+						listItem.appendChild(collapsibleSection);
+
+
+
+
+						if (!result.invoiceExist) {
+							const submitButton = document.createElement('button');
+							submitButton.textContent = 'Submit';
+							submitButton.addEventListener('click', async () => {
+								const parsedMeta2 = JSON.parse(result.meta2);
+								const parsedDate = new Date(parsedMeta2.date);
+
+								var formData = new FormData();
+								formData.append("description", parsedMeta2.description);
+								formData.append("noFacture", parsedMeta2.noFacture);
+								formData.append("amount", parsedMeta2.amount);
+								formData.append("tps", parsedMeta2.tps);
+								formData.append("tvq", parsedMeta2.tvq);
+								formData.append("date", parsedDate.toISOString());
+								formData.append("recipient", parsedMeta2.recipient);
+								formData.append("origine", parsedMeta2.origine);
+								formData.append("file", file);
+
+								const requestPayload = {
+									description: parsedMeta2.description,
+									noFacture: parsedMeta2.noFacture,
+									amount: parsedMeta2.amount,
+									tps: parsedMeta2.tps,
+									tvq: parsedMeta2.tvq,
+									date: parsedDate,
+									recipient: parsedMeta2.recipient,
+									origine: parsedMeta2.origine,
+									file: file
+									// Add other fields from meta2 as needed
+								};
+								const submitResponse = await fetch('/api/invoice/create', {
+									method: 'POST',
+									body: formData
+								});
+
+								if (submitResponse.ok) {
+									submitButton.textContent = 'Submitted';
+									submitButton.disabled = true;
+								}
+							});
+							listItem.appendChild(submitButton);
+
+						}
+					} else {
+						listItem.textContent = `${file.name} - Processing Failed`;
+					}
+				} catch (error) {
+					listItem.textContent = `${file.name} - Processing Error`;
+					console.error(error);
+				}
+			}
+		}
+
+
+
+
+		startProcessingBtn.addEventListener('click', async () => {
+			const folderInput = document.getElementById('folderInput');
+			addToQueue(folderInput.files);
+			startProcessingBtn.disabled = true;
+			await processQueue();
+			startProcessingBtn.disabled = false;
+		});
+	</script>
+</body>
+
+</html>

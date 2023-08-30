@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Supplier Management</title>
+	<!-- Include Bootstrap CSS -->
+	<link rel="stylesheet" href="/webjars/bootstrap/5.3.0/css/bootstrap.min.css" />
+	<style>
+		.selected {
+			background-color: #f2f2f2 !important;
+			;
+			/* Change this to your desired highlight color */
+		}
+
+		#consolidation_table_body tr.selected {
+			background-color: #f2f2f2 !important;
+			;
+			/* Change this to your desired highlight color */
+		}
+	</style>
+	<header th:replace="fragments/header :: header"></header>
+
+</head>
+
+<body>
+	<div class="container mt-4">
+		<h1>Supplier Management</h1>
+		<div class="container">
+			<ul class="nav nav-tabs" id="expenseTabs">
+				<li class="nav-item">
+					<a class="nav-link active" id="expenses-tab" data-bs-toggle="tab" href="#suppliers">Supliers</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" id="bulkUpdate-tab" data-bs-toggle="tab" href="#balence">Balence</a>
+				</li>
+
+			</ul>
+			<div class="tab-content" id="suppliersTabsContent">
+				<div class="tab-pane fade show active" id="suppliers" role="tabpanel" aria-labelledby="suppliers-tab">
+					<!-- Create supplier Form -->
+					<form id="createSupplierForm" th:action="@{/create}" method="post">
+						<h3>Create Supplier</h3>
+						<div class="mb-3">
+							<input id="name" type="text" name="name" class="form-control" placeholder="Name" required />
+						</div>
+						<!-- Other input fields for creating supplier -->
+						<!-- ... -->
+						<button type="submit" class="btn btn-primary">Create Supplier</button>
+					</form>
+
+					<!-- List of suppliers -->
+					<h3 class="mt-4">Suppliers</h3>
+					<div class="responsive-table-wrapper">
+						<table class="table table-striped">
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Address</th>
+									<th>Email</th>
+									<th>Phone</th>
+									<th>No Tps</th>
+									<th>No Tvq</th>
+
+									<th>Actions</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:each="supplier : ${suppliers}">
+									<td><input type="text" th:id="'name-' + ${supplier.id}"
+											th:value="${supplier.name}" /></td>
+									<td><input type="text" th:id="'address-' + ${supplier.id}"
+											th:value="${supplier.address}" /></td>
+									<td><input type="email" th:id="'contactEmail-' + ${supplier.id}"
+											th:value="${supplier.contactEmail}" /></td>
+									<td><input type="text" th:id="'contactPhone-' + ${supplier.id}"
+											th:value="${supplier.contactPhone}" /></td>
+									<td><input type="text" th:id="'noTps-' + ${supplier.id}"
+											th:value="${supplier.noTps}" /></td>
+									<td><input type="text" th:id="'noTvq-' + ${supplier.id}"
+											th:value="${supplier.noTvq}" /></td>
+									<td>
+										<button th:onclick="'saveSupplier(' + ${supplier.id} + ')'"
+											class="btn btn-success">Save</button>
+										<button th:onclick="'deleteSupplier(' + ${supplier.id} + ')'"
+											class="btn btn-danger">Delete</button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="tab-pane fade show active" id="balence" role="tabpanel" aria-labelledby="balence-tab">
+					<div th:replace="fragments/supplier-balence :: supplier-balence"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Include Bootstrap JS -->
+	<script src="/webjars/jquery/3.6.4/jquery.min.js"></script>
+	<script src="/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+	<script src="/webjars/popper.js/2.11.7/umd/popper.min.js"></script>
+	<script>
+		// GET all contacts
+		function getAllSuppliers() {
+			$.get("/api/suppliers", function (data) {
+				// Populate the table with the data
+			});
+		}
+
+		// POST a new contact
+		function createSupplier(contact) {
+			$.ajax({
+				url: "/api/suppliers",
+				method: "POST",
+				contentType: "application/json",
+				data: JSON.stringify(contact),
+				success: function (data) {
+					// Handle successful creation
+					getAllContacts();
+				},
+				error: function (error) {
+					// Optionally handle error response
+					console.error('There was an error!', error);
+				}
+			});
+		}
+
+		// Create Contact
+		$("#createSupplierForm").submit(function (e) {
+			e.preventDefault();
+			// Collect form data
+			var contactData = {
+				name: $("#name").val(),
+				// Other fields
+			};
+			createSupplier(contactData);
+		});
+
+		$("#createSupplierForm").submit(function (e) {
+			e.preventDefault();
+			// Collect form data
+			var contactData = {
+				name: $("#name").val(),
+				// Other fields
+			};
+			createSupplier(contactData);
+		});
+		function saveSupplier(supplierId) {
+			var supplier = {
+				name: document.getElementById('name-' + supplierId).value,
+				address: document.getElementById('address-' + supplierId).value,
+				contactEmail: document.getElementById('contactEmail-' + supplierId).value,
+				contactPhone: document.getElementById('contactPhone-' + supplierId).value,
+				noTps: document.getElementById('noTps-' + supplierId).value,
+				noTvq: document.getElementById('noTvq-' + supplierId).value
+			};
+
+			updateSupplier(supplierId, supplier);
+		}
+		// PUT to update a contact
+		function updateSupplier(id, contact) {
+
+			$.ajax({
+				url: "/api/suppliers/" + id,
+				type: "PUT",
+				contentType: "application/json",
+				data: JSON.stringify(contact),
+				success: function (data) {
+					// Handle successful update
+				}
+			});
+		}
+
+		// DELETE a contact
+		function deleteSupplier(supplierId) {
+			if (confirm('Are you sure you want to delete this supplier?')) {
+				$.ajax({
+					url: '/api/suppliers/' + supplierId,
+					type: 'DELETE',
+					success: function (result) {
+						// Handle successful deletion, such as reloading the list of suppliers
+						getAllSuppliers(); // Assuming this is a function to reload the suppliers
+					},
+					error: function (error) {
+						// Handle error if deletion fails
+						alert('An error occurred while deleting the supplier.');
+					}
+				});
+			}
+		}
+
+		// Call the functions as needed, e.g., getAllContacts on page load
+		$(document).ready(function () {
+			getAllSuppliers();
+		});
+	</script>
+
+
+
+	<script>
+		function simplifyDate(dateString) {
+			return new Date(dateString).toLocaleDateString();
+		}
+		function updateConsolidatedTable(entries) {
+			//var tbody = $('#consolidation_table_body');
+			//tbody.empty(); // Clear current entries
+			const great = document.getElementById('consolidated');
+			great.empty();
+			$.each(entries, function (index, entry) {
+				var card = document.createElement('div');
+				card.classList.add('card');
+				var div = document.createElement('div');
+				card.appendChild(div);
+				div.classList.add('card-body');
+				var table = document.createElement('table');
+				div.appendChild(table);
+				great.appendChild(card);
+				tbody = document.createElement('tbody');
+				table.appendChild(tbody);
+				if (entry.transaction) {
+					var tr_transaction = document.createElement('tr');
+					var date_td = document.createElement('td');
+					var type_td = document.createElement('td');
+					var id_td = document.createElement('td');
+					var content_td = document.createElement('td');
+					var amount_td = document.createElement('td');
+
+					date_td.textContent = simplifyDate(entry.transaction.date);
+					type_td.textContent = 'Transaction';
+					id_td.textContent = entry.transaction.id;
+					content_td.textContent = entry.transaction.description;
+					amount_td.textContent = entry.transaction.amount;
+
+					tr_transaction.appendChild(date_td);
+					tr_transaction.appendChild(id_td);
+					tr_transaction.appendChild(type_td);
+					tr_transaction.appendChild(amount_td);
+					tr_transaction.appendChild(content_td);
+
+					tbody.appendChild(tr_transaction);
+
+				}
+				if (entry.invoice) {
+					var tr_invoice = document.createElement('tr');
+					var date_td = document.createElement('td');
+					var type_td = document.createElement('td');
+					var id_td = document.createElement('td');
+					var content_td = document.createElement('td');
+					var amount_td = document.createElement('td');
+
+					date_td.textContent = simplifyDate(entry.invoice.date);
+					type_td.textContent = 'Invoice';
+					id_td.textContent = entry.invoice.id;
+					content_td.textContent = entry.invoice.description;
+					amount_td.textContent = entry.invoice.amount;
+
+					tr_invoice.appendChild(date_td);
+					tr_invoice.appendChild(id_td);
+					tr_invoice.appendChild(type_td);
+					tr_invoice.appendChild(amount_td);
+					tr_invoice.appendChild(content_td);
+
+					tbody.appendChild(tr_invoice);
+				}
+
+				if (entry.epense) {
+					var tr_epense = document.createElement('tr');
+					var date_td = document.createElement('td');
+					var type_td = document.createElement('td');
+					var id_td = document.createElement('td');
+					var content_td = document.createElement('td');
+					var amount_td = document.createElement('td');
+
+					date_td.textContent = simplifyDate(entry.epense.date);
+					type_td.textContent = 'Expense';
+					id_td.textContent = entry.epense.id;
+					content_td.textContent = entry.epense.description;
+					amount_td.textContent = entry.epense.total;
+
+					tr_epense.appendChild(date_td);
+					tr_epense.appendChild(id_td);
+					tr_epense.appendChild(type_td);
+					tr_epense.appendChild(amount_td);
+					tr_epense.appendChild(content_td);
+
+					tbody.appendChild(tr_epense);
+				}
+
+
+			});
+		}
+		function fillWithSuplier(supplierId) {
+			if (supplierId) {
+				$.ajax({
+					url: `/api/suppliers/${supplierId}/entries`,
+					method: 'GET',
+					dataType: 'json',
+					success: function (data) {
+						updateTable(data);
+					},
+					error: function (error) {
+						console.log("Error fetching data:", error);
+					}
+				});
+
+				$.ajax({
+					url: `/api/suppliers/${supplierId}/consolidated`,
+					method: 'GET',
+					dataType: 'json',
+					success: function (data) {
+						updateConsolidatedTable(data);
+					},
+					error: function (error) {
+						console.log("Error fetching data:", error);
+					}
+				});
+			}
+		}
+
+		function updateTable(entries) {
+			var tbody = $('#consolidation_table_body');
+			tbody.empty(); // Clear current entries
+
+			$.each(entries, function (index, entry) {
+				tbody.append(
+					'<tr data-entry-id=' + index + ' id=' + index + '>' +
+					'<td>' + entry.date + '</td>' +
+					'<td>' + entry.id + '</td>' +
+					'<td>' + entry.type + '</td>' +
+					'<td>' + entry.amount + '</td>' +
+					'<td>' + entry.content + '</td>' +
+					'<td></td>' + // Empty action column
+					'</tr>'
+				);
+			});
+
+			$("#reconcileButton").click(function () {
+				// Send AJAX request to your REST API
+				$.ajax({
+					type: "POST",
+					url: "/api/reconcile",
+					data: JSON.stringify(selectedRows),
+					contentType: "application/json",
+					success: function (response) {
+						// Handle success response
+						console.log("Reconciliation successful:", response);
+						selectedRows = []; // Clear selected rows after reconciliation
+						updateReconcileButtonState();
+						$(".selected").removeClass("selected");
+					},
+					error: function (xhr, status, error) {
+						// Handle error response
+						console.error("Reconciliation error:", error);
+					}
+				});
+			});
+		}
+
+		$(document).ready(function () {
+			$('#supplierDropdown').change(function () {
+				var supplierId = $(this).val();
+				fillWithSuplier(supplierId);
+			});
+		});
+
+
+	</script>
+	<script>
+		var selectedRows = [];
+
+		function reconciliateSelected() {
+			var selectedData = [];
+			selectedRows.forEach(function (index) {
+				var tr = $("#" + index);
+				// Assuming the id is the ID of the <tr> element
+				var id = tr.find("td:nth-child(2)").text();
+				var type = tr.find("td:nth-child(3)").text(); // Get the type from the 3rd column
+
+				var rowData = {
+					id: id,
+					type: type
+				};
+
+				selectedData.push(rowData);
+			});
+
+
+			$.ajax({
+				type: "POST",
+				url: "/api/suppliers/reconcile",
+				data: JSON.stringify(selectedData),
+				contentType: "application/json",
+				success: function (response) {
+					// Handle success response
+					console.log("Reconciliation successful:", response);
+					selectedRows = []; // Clear selected rows after reconciliation
+					updateReconcileButtonState();
+					$(".selected").removeClass("selected");
+				},
+				error: function (xhr, status, error) {
+					// Handle error response
+					console.error("Reconciliation error:", error);
+				}
+			});
+		}
+
+		// Update the state of the Reconcile button
+		function updateReconcileButtonState() {
+			if (selectedRows.length >= 2) {
+				$("#reconcileButton").prop("disabled", false);
+			} else {
+				$("#reconcileButton").prop("disabled", true);
+			}
+
+		}
+
+		$(document).ready(function () {
+
+
+			// Handle row selection
+			$("#consolidation_table").on("click", "tr", function () {
+				var rowId = $(this).attr("data-entry-id");
+				if (selectedRows.includes(rowId)) {
+					selectedRows = selectedRows.filter(id => id !== rowId);
+					$(this).removeClass("selected");
+					$(this).removeClass("table-primary");
+				} else {
+					if (selectedRows.length < 3) {
+						selectedRows.push(rowId);
+						$(this).addClass("selected, table-primary");
+						$(this).attr("style", "background-color: #f2f2f2 !important;");
+					}
+				}
+				updateReconcileButtonState();
+			});
+
+		});
+	</script>
+</body>
+
+</html>

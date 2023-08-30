@@ -22,8 +22,13 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	
+	implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '2.0.29'
 	// tag::tests[]
 	testImplementation('org.springframework.boot:spring-boot-starter-test')
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.0'
+	 
 	// end::tests[]
 	
   
@@ -46,7 +51,20 @@ dependencies {
     implementation group: 'org.webjars', name: 'datatables-colvis', version: '1.1.1'
     
     implementation group: 'org.webjars.bower', name: 'datatables.net-buttons', version: '1.5.3'
-
+    
+    implementation group: 'org.webjars', name: 'font-awesome', version: '4.7.0'
+    
+    implementation group: 'org.webjars', name: 'chartjs', version: '4.1.2'
+    
+    implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '2.0.29'
+    
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
+    
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.13.0'
+    
+    // https://mvnrepository.com/artifact/org.json/json
+	implementation group: 'org.json', name: 'json', version: '20230618'
+    
 }
 
 test {
