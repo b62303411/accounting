@@ -23,6 +23,8 @@ public class IncomeStatementWhiteBoard {
 	public List<Account> assetAccounts = new ArrayList<Account>();
 	public List<Account> equityAccounts = new ArrayList<Account>();
 	public List<Account> expensesAccounts = new ArrayList<Account>();
+	public List<Account> operatingExpensesAccounts = new ArrayList<Account>();
+	public List<Account> otherExpensesAccounts = new ArrayList<Account>();
 	public List<Account> liabilityAccounts = new ArrayList<Account>();
 	public Map<String, Account> accountMap = new HashMap<>();
 	public int fiscal_year;

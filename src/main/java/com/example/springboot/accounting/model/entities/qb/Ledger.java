@@ -27,6 +27,7 @@ public class Ledger {
 		this.rules = new ArrayList<ClassificationRule>();
 		this.vendors= new ArrayList<String>();
 		vendors.add("Cloutier & Longtin");
+		vendors.add("MTA");
 		
 		taxes_rule = new ClassificationRule();
 		taxes_rule.addKeyWord("QUEBEC GOV'T");

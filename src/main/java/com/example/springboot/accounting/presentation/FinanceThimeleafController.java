@@ -192,11 +192,15 @@ public class FinanceThimeleafController {
 		
 		IncomeStatementDto dto = this.financeStatementService.incomeStatementService.generateIncomeStatement(year);
 		//dto.expenseAccounts
-		model.addAttribute("expenseAccounts",dto.expenseAccounts);
+		model.addAttribute("operatingExpenseAccounts",dto.operatingExpenseAccounts);
+		model.addAttribute("otherExpenseAccounts",dto.otherExpenseAccounts);
 		model.addAttribute("revenueAccounts",dto.revenueAccounts);
 		model.addAttribute("totalRevenue",dto.totalRevenue);
-		model.addAttribute("totalExpenses",dto.totalExpenses);
-		model.addAttribute("netIncome", dto.netIncome);
+		model.addAttribute("totalOperatingExpenses",dto.totalOperatingExpenses);
+		model.addAttribute("totalOtherExpenses",dto.totalOtherExpenses);
+		model.addAttribute("incomeBeforeTax", dto.incomeBeforeTax);
+		model.addAttribute("incomeTax", dto.incomeTax);
+		model.addAttribute("incomeAfterTax", dto.incomeAfterTax);
 		List<LedgerEntryDTO> dtos = dtoParser.convertToLedgerEntryDTOs(dto.wb.getTransactions());
 		model.addAttribute("ledgerEntries",dtos);
 		return "income-statement";

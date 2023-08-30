@@ -61,7 +61,28 @@
 										<th>Description</th>
 										<th>Amount</th>
 									</tr>
-									<tr th:each="account : ${expenseAccounts}">
+									<tr th:each="account : ${operatingExpenseAccounts}">
+										<td th:text="${account.name}"></td>
+										<td th:text="${'$'+#numbers.formatDecimal(account.balance, 1, 2)}"></td>
+									</tr>
+								</table>
+								<div class="container my-3">
+									<strong>Total Operating Expenses: </strong>
+									<h3 th:text="${'$'+#numbers.formatDecimal(totalOperatingExpenses, 1, 2)}"></h3>
+								</div>
+							</div>
+							<div class="card mb-4">
+								<!-- Revenues -->
+								<div class="card-header bg-primary text-white">
+									<!-- Operating Expenses -->
+									<h2>Other Expenses</h2>
+								</div>
+								<table class="table">
+									<tr>
+										<th>Description</th>
+										<th>Amount</th>
+									</tr>
+									<tr th:each="account : ${otherExpenseAccounts}">
 										<td th:text="${account.name}"></td>
 										<td th:text="${'$'+#numbers.formatDecimal(account.balance, 1, 2)}"></td>
 									</tr>
@@ -75,49 +96,68 @@
 								<!-- Revenues -->
 								<div class="card-header bg-primary text-white">
 									<!-- Net Income -->
-									<h2>Net Income</h2>
+									<h2>Tax Information</h2>
 								</div>
 								<div class="container my-3">
-									<strong>Net Income: </strong>
-									<h3 th:text="${'$'+#numbers.formatDecimal(netIncome, 1, 2)}"></h3>
+									
+									<h3 th:text=""></h3>
+									<table class="table">
+										<tr>
+											<th>Description</th>
+											<th>Amount</th>
+										</tr>
+										<tr>
+											<td>Income Before Tax</td>
+											<td th:text="${'$'+#numbers.formatDecimal(incomeBeforeTax, 1, 2)}"></td>
+										</tr>
+										<tr>
+											<td>Income Tax</td>
+											<td th:text="${'$'+#numbers.formatDecimal(incomeTax, 1, 2)}"></td>
+										</tr>
+										<tr>
+											<td>Income After Tax</td>
+											<td th:text="${'$'+#numbers.formatDecimal(incomeAfterTax, 1, 2)}"></td>
+										</tr>
+									</table>
 								</div>
 							</div>
 						</div>
 					</div>
-					<div class="tab-pane fade show active" id="transactions" role="tabpanel" aria-labelledby="transaction-tab">
-					<h2>Accounting Ledger</h2>
+					<div class="tab-pane fade show active" id="transactions" role="tabpanel"
+						aria-labelledby="transaction-tab">
+						<h2>Accounting Ledger</h2>
 
-		<table id="ledger-table" border="1" class="table table-striped" style="width:100%">
-			<thead>
-				<tr>
-					<th name="date">Date</th>
-					<th>Account Type</th>
-					<th>Memo</th>
-					<th>GL Account Name</th>
-					<th>GL Account #</th>
-					<th>Vendor/Client</th>
-					<th style="width:50px;">Debit</th>
-					<th style="width:50px;">Credit</th>
-					<th>Balence</th>
-					<th>Actual Balence</th>
-				</tr>
-			</thead>
-			<tbody>
-				<!-- Assuming you pass a list of entries named 'ledgerEntries' -->
-				<tr th:each="entry : ${ledgerEntries}">				
-					<td th:text="${entry.getUnixTime()}"></td>
-					<td th:text="${entry.accountType}"></td>
-					<td th:text="${entry.message}"></td>
-					<td th:text="${entry.glAccountName}"></td>
-					<td th:text="${entry.glAccountNumber}"></td>
-					<td th:text="${entry.vendorOrClient}"></td>
-					<td th:text="${entry.debit}"></td>
-					<td th:text="${entry.credit}"></td>
-					<td th:text="${entry.balence}"></td>
-					<td th:text="${entry.abalence}"></td>
-				</tr>
-			</tbody>
-		</table>
+						<table id="ledger-table" border="1" class="table table-striped" style="width:100%">
+							<thead>
+								<tr>
+									<th name="date">Date</th>
+									<th>Account Type</th>
+									<th>Memo</th>
+									<th>GL Account Name</th>
+									<th>GL Account #</th>
+									<th>Vendor/Client</th>
+									<th style="width:50px;">Debit</th>
+									<th style="width:50px;">Credit</th>
+									<th>Balence</th>
+									<th>Actual Balence</th>
+								</tr>
+							</thead>
+							<tbody>
+								<!-- Assuming you pass a list of entries named 'ledgerEntries' -->
+								<tr th:each="entry : ${ledgerEntries}">
+									<td th:text="${entry.getUnixTime()}"></td>
+									<td th:text="${entry.accountType}"></td>
+									<td th:text="${entry.message}"></td>
+									<td th:text="${entry.glAccountName}"></td>
+									<td th:text="${entry.glAccountNumber}"></td>
+									<td th:text="${entry.vendorOrClient}"></td>
+									<td th:text="${entry.debit}"></td>
+									<td th:text="${entry.credit}"></td>
+									<td th:text="${entry.balence}"></td>
+									<td th:text="${entry.abalence}"></td>
+								</tr>
+							</tbody>
+						</table>
 					</div>
 
 				</div>

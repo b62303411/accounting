@@ -79,7 +79,12 @@ public class GeneralLedgerService {
 			return o1.getDate().compareTo(o2.getDate());
 		}
 	};
-
+	
+	public void rePopulateLedger() {
+		// TODO Auto-generated method stub
+		
+	}
+	
 	public Ledger populateLedger() {
 		createAccounts(accountManager);
 		ledger = new Ledger(accountManager, ruleFactory);
@@ -105,6 +110,14 @@ public class GeneralLedgerService {
 
 	private void populateFromInvoices() {
 		List<Invoice> list = i_repo.findAllByOrigine("Cloutier & Longtin");
+		populateInvoices(list);
+		
+		list = i_repo.findAllByOrigine("MTA");
+		populateInvoices(list);
+
+	}
+
+	private void populateInvoices(List<Invoice> list) {
 		for (Invoice invoice : list) {
 			SimpleDateFormat sdf = new SimpleDateFormat("d-MMM-yy");
 			Date d = invoice.getDate();
@@ -119,7 +132,6 @@ public class GeneralLedgerService {
 			String acc = "5235425";
 			ledger.addTransaction(d , message, mo, amount, type, cath, acc,null);
 		}
-
 	}
 
 	private void populateFromAsset() {
@@ -206,7 +218,7 @@ public class GeneralLedgerService {
 	}
 
 	private List<LedgerEntryDTO> extractAndPopulateLedger() {
-		ledger = populateLedger();
+		ledger = getLedger();
 
 		List<LedgerEntryDTO> list = new ArrayList<LedgerEntryDTO>();
 		list = this.dtoParser.convertToLedgerEntryDTOs(ledger.getTransactions());
@@ -222,4 +234,6 @@ public class GeneralLedgerService {
 		accountFactory.createAccounts(accountManager);
 
 	}
+
+
 }

@@ -25,14 +25,6 @@ public class GeneralLedgerController {
 
 	@GetMapping
 	public String expenses(Model model) {
-//		List<ExpensesLine> expenses = financeStatementService.getExpenses(year);
-//		List<ExpensesLine> otherExpenses = financeStatementService.getOtherExpenses(year);
-//		Map<String, Double> spendingData = financeStatementService.getExpenseReport(year);
-//		ExpensesLine totals = getTotalLine(expenses);
-//	
-		// ExpensesLine totalOthers= getTotalLine(otherExpenses);
-		// ... other categories
-
 		List<LedgerEntryDTO> list = gls.getLedgerDtos();
 		
 		model.addAttribute("ledgerEntries", list);

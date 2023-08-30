@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -60,6 +59,14 @@ public class IncomeStatementFromLedgerService {
 				break;
 			case EXPENSE:
 				wb.expensesAccounts.add(fyAccount);
+				if(fyAccount.isTaxable()) 
+				{
+					wb.operatingExpensesAccounts.add(fyAccount);
+				}
+				else 
+				{
+					wb.otherExpensesAccounts.add(fyAccount);
+				}
 				break;
 			case LIABILITY:
 				wb.liabilityAccounts.add(fyAccount);
@@ -156,12 +163,15 @@ public class IncomeStatementFromLedgerService {
 
 		// Set the maps to the incomeStatement object
 		incomeStatement.setRevenueAccounts(wb.revenueAccounts);
-		incomeStatement.setExpenseAccounts(wb.expensesAccounts);
+		incomeStatement.setOperatingExpenseAccounts(wb.operatingExpensesAccounts);
+		incomeStatement.setOtherExpenseAccounts(wb.otherExpensesAccounts);
 
 		// Calculate totals
 		incomeStatement.setTotalRevenue(wb.revenueAccounts.stream().mapToDouble(Account::getBalance).sum());
-		incomeStatement.setTotalExpenses(wb.expensesAccounts.stream().mapToDouble(Account::getBalance).sum());
-		incomeStatement.setNetIncome(incomeStatement.getTotalRevenue().subtract(incomeStatement.getTotalExpenses()));
+		incomeStatement.setTotalOperatingExpenses(wb.operatingExpensesAccounts.stream().mapToDouble(Account::getBalance).sum());
+		incomeStatement.setTotalOtherExpenses(wb.operatingExpensesAccounts.stream().mapToDouble(Account::getBalance).sum());
+		
+		//incomeStatement.setNetIncome(incomeStatement.getTotalRevenue().subtract(incomeStatement.getTotalExpenses()));
 
 		return incomeStatement;
 	}
@@ -172,10 +182,10 @@ public class IncomeStatementFromLedgerService {
 	 * @return
 	 */
 	public IncomeStatementDto generateIncomeStatement(int fiscal_year) {
+		Set<Transaction> transactions = this.gls.getLedger().getTransactions();
 		populateMap();
 		IncomeStatementWhiteBoard wb = wbBoards.get(fiscal_year);
-		DateBoundaries boundaries = fys.getBoundaries(fiscal_year);
-		Set<Transaction> transactions = this.gls.getLedger().getTransactions();
+		DateBoundaries boundaries = fys.getBoundaries(fiscal_year);		
 		return generateIncomeStatement(transactions, boundaries.date_start, boundaries.date_end, wb);
 	}
 
