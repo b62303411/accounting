@@ -65,6 +65,7 @@ public class AccountFactory {
 		List<String> liabilities = List.of(
 				"Accounts Payable", 
 				"Taxes Payable", 
+				"Sales Tax Payable",
 				"Unearned Revenue");
 		for (String string : liabilities) {
 			accountManager.addAccount(string, count_liab.getNext(), AccountType.LIABILITY, false);

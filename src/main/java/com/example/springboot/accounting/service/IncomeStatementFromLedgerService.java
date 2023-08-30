@@ -1,5 +1,6 @@
 package com.example.springboot.accounting.service;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.springboot.accounting.model.IncomeStatementWhiteBoard;
 import com.example.springboot.accounting.model.dto.IncomeStatementDto;
+import com.example.springboot.accounting.model.entities.Rates;
 import com.example.springboot.accounting.model.entities.qb.Account;
 import com.example.springboot.accounting.model.entities.qb.AccountManager;
 import com.example.springboot.accounting.model.entities.qb.Transaction;
@@ -32,8 +34,12 @@ public class IncomeStatementFromLedgerService {
 	@Autowired
 	GeneralLedgerService gls;
 
-	
+	@Autowired
+	SmallBusinessTaxRateService smallBusinessTaxRateService;
 
+	@Autowired
+	TaxService taxesService;
+	
 	public IncomeStatementWhiteBoard getWhiteBoard() {
 		IncomeStatementWhiteBoard wb = new IncomeStatementWhiteBoard();
 
@@ -82,7 +88,7 @@ public class IncomeStatementFromLedgerService {
 
 	public void populateMap() {
 
-		for (int fiscal_year = 2015; fiscal_year < 2026; fiscal_year++) {
+		for (int fiscal_year = 2014; fiscal_year < 2026; fiscal_year++) {
 			IncomeStatementWhiteBoard wb = wbBoards.get(fiscal_year);
 			if(null == wb) 
 			{
@@ -140,27 +146,6 @@ public class IncomeStatementFromLedgerService {
 		IncomeStatementDto incomeStatement = new IncomeStatementDto();
 		incomeStatement.wb=wb;
 
-//		// Filter transactions based on the fiscal year
-//		List<Transaction> filteredTransactions = allTransactions.stream()
-//				.filter(t -> (t.getDate().after(startDate) || t.getDate().equals(startDate))
-//						&& (t.getDate().before(endDate) || t.getDate().equals(endDate)))
-//				.collect(Collectors.toList());
-//
-//		// Iterate through filtered transactions to populate the maps
-//		for (Transaction transaction : filteredTransactions) {
-//			Transaction fy_t = new Transaction(transaction);
-//			for (TransactionEntry entry : transaction.getEntries()) {
-//				Account account = wb.accountMap.get(entry.getAccount().getAccountNumber());
-//				TransactionEntry fy_entry = new TransactionEntry(entry, account);
-//				fy_t.addEntry(fy_entry);
-//			}
-//			wb.fy_transactions.add(fy_t);
-//		}
-//
-//		for (Transaction transaction : wb.fy_transactions) {
-//			transaction.post();
-//		}
-
 		// Set the maps to the incomeStatement object
 		incomeStatement.setRevenueAccounts(wb.revenueAccounts);
 		incomeStatement.setOperatingExpenseAccounts(wb.operatingExpensesAccounts);
@@ -171,8 +156,18 @@ public class IncomeStatementFromLedgerService {
 		incomeStatement.setTotalOperatingExpenses(wb.operatingExpensesAccounts.stream().mapToDouble(Account::getBalance).sum());
 		incomeStatement.setTotalOtherExpenses(wb.operatingExpensesAccounts.stream().mapToDouble(Account::getBalance).sum());
 		
-		//incomeStatement.setNetIncome(incomeStatement.getTotalRevenue().subtract(incomeStatement.getTotalExpenses()));
+		BigDecimal revenueBeforeTaxes = incomeStatement.getTotalRevenue().subtract(incomeStatement.getTotalOperatingExpenses());
+		
+		incomeStatement.setIncomeBeforeTax(revenueBeforeTaxes);
 
+		Rates rate = smallBusinessTaxRateService.getRates(endDate);
+		
+		BigDecimal taxes_fed = revenueBeforeTaxes.multiply(BigDecimal.valueOf(rate.getFederal()/100));
+		BigDecimal taxes_prov = revenueBeforeTaxes.multiply(BigDecimal.valueOf(rate.getProvintial()/100));
+		incomeStatement.incomeTax=taxes_fed.add(taxes_prov);
+		
+		incomeStatement.incomeAfterTax=revenueBeforeTaxes.subtract(incomeStatement.incomeTax);
+		
 		return incomeStatement;
 	}
 

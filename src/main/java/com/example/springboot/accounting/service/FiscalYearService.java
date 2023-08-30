@@ -58,4 +58,14 @@ public class FiscalYearService {
 
 		return b;
 	}
+
+	protected CompanyProfileService getProfile() {
+		return profile;
+	}
+
+	protected void setProfile(CompanyProfileService profile) {
+		this.profile = profile;
+	}
+	
+	
 }

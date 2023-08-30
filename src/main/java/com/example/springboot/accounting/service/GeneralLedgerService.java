@@ -55,6 +55,9 @@ public class GeneralLedgerService {
 	@Autowired
 	public LedgerTransactionToDto dtoParser;
 	
+	@Autowired
+	public TaxService taxService;
+	
 	private Ledger ledger;
 
 	private List<LedgerEntryDTO> cashedLedger;
@@ -87,7 +90,7 @@ public class GeneralLedgerService {
 	
 	public Ledger populateLedger() {
 		createAccounts(accountManager);
-		ledger = new Ledger(accountManager, ruleFactory);
+		ledger = new Ledger(accountManager, ruleFactory,taxService);
 
 		List<Account> acounts = a_repo.findAll();
 		for (Account account : acounts) {

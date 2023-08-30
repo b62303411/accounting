@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.example.springboot.accounting.service.TaxService;
+
 public class Ledger {
 	private static final String Owner = "Samuel Audet-Arsenault";
 	private AccountManager accountManager;
@@ -16,16 +18,18 @@ public class Ledger {
 	private LedgerRuleFactory factory;
 	private List<ClassificationRule> rules;
 	private List<String> vendors;
+	private TaxService taxService;
 	String creditCardAccountNo = "7053";
 	String checkAccountNo = "5235425";
 
-	public Ledger(AccountManager manager, LedgerRuleFactory factory) {
+	public Ledger(AccountManager manager, LedgerRuleFactory factory,TaxService taxService) {
 		this.factory = factory;
 		this.accountManager = manager;
 		this.postedTransactionIds = new HashSet<>();
 		this.transactions = new HashSet<Transaction>();
 		this.rules = new ArrayList<ClassificationRule>();
 		this.vendors= new ArrayList<String>();
+		this.taxService=taxService;
 		vendors.add("Cloutier & Longtin");
 		vendors.add("MTA");
 		
@@ -823,7 +827,7 @@ public class Ledger {
 		// c.to = receivable;
 		// c.amount = -amount;
 		c.split = new ArrayList<TransactionAccount>();
-		c.split.add(qc_inc_invoice);
+		c.split.addAll(qc_inc_invoice.split);
 		c.split.add(invoice_payment);
 		return c;
 	}
@@ -849,9 +853,24 @@ public class Ledger {
 		// | 01/06/2023 | REVENUE | Consulting Revenue | 061 | Client XYZ | - |
 		// $5,000.00|
 		// +------------+-----------+-------------------------+-----+--------------+----------+----------+
-		qc_inc_invoice.amount = Math.abs(amount);
-		qc_inc_invoice.debited = receivable;
-		qc_inc_invoice.credited = accountManager.getAccount("Consulting Revenue");
+		TransactionAccount without_sales_tax_revenue  = new TransactionAccount();
+		TransactionAccount tax_collected= new TransactionAccount();
+		double amount_without_tax = taxService.getBeforeTaxesValue(Math.abs(amount));
+		double tax=amount-amount_without_tax;
+		
+		
+		without_sales_tax_revenue.amount=amount_without_tax;
+		without_sales_tax_revenue.credited = accountManager.getAccount("Consulting Revenue");
+		without_sales_tax_revenue.debited = receivable;
+		
+		tax_collected.amount =tax;
+		tax_collected.credited = accountManager.getAccount("Sales Tax Payable");
+	    tax_collected.debited = receivable;
+	    qc_inc_invoice.split= new ArrayList<TransactionAccount>();
+	    qc_inc_invoice.split.add(tax_collected);
+	    qc_inc_invoice.split.add(without_sales_tax_revenue);
+
+		
 	}
 
 	/**
