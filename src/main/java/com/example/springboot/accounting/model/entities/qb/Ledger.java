@@ -643,17 +643,17 @@ public class Ledger {
 //	+------------+----------+-----------------------+-----+------------------+----------+----------+
 	private void populateTax(double amount, Account checkingAccount, TransactionAccount cardinality,Double balence) {
 
-		TransactionAccount incomeTaxInvoice = new TransactionAccount();
+//TransactionAccount incomeTaxInvoice = new TransactionAccount();
 		TransactionAccount incomeTaxPayment = new TransactionAccount();
 
 		String vendor = "Revenue Agency";
 		Account payable = accountManager.getAccountByName("Taxes Payable");
 
-		incomeTaxInvoice.debited = accountManager.getAccountByName("Income Tax Expense");
-		incomeTaxInvoice.credited = payable;
-		incomeTaxInvoice.amount = Math.abs(amount);
-
-		incomeTaxInvoice.vendor_client = vendor;
+//		incomeTaxInvoice.debited = accountManager.getAccountByName("Income Tax Expense");
+//		incomeTaxInvoice.credited = payable;
+//		incomeTaxInvoice.amount = Math.abs(amount);
+//
+//		incomeTaxInvoice.vendor_client = vendor;
 
 		incomeTaxPayment.debited = payable;
 		incomeTaxPayment.credited = checkingAccount;
@@ -662,7 +662,7 @@ public class Ledger {
 		incomeTaxPayment.vendor_client = vendor;
 
 		cardinality.split = new ArrayList<TransactionAccount>();
-		cardinality.split.add(incomeTaxInvoice);
+		//cardinality.split.add(incomeTaxInvoice);
 		cardinality.split.add(incomeTaxPayment);
 	}
 

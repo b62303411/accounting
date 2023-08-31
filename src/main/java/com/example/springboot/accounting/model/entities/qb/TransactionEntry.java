@@ -41,6 +41,7 @@ public class TransactionEntry {
 		this.date = entry.getDate();
 		this.amount = entry.getAmount();
 		this.type = entry.getType();
+		this.id=entry.id;
 
 	}
 
@@ -147,7 +148,7 @@ public class TransactionEntry {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(account, amount, date, type, vendor_client);
+		return Objects.hash(account.getAccountNumber(), amount, date, type, vendor_client);
 	}
 
 	@Override
@@ -159,7 +160,7 @@ public class TransactionEntry {
 		if (getClass() != obj.getClass())
 			return false;
 		TransactionEntry other = (TransactionEntry) obj;
-		return Objects.equals(account, other.account)
+		return Objects.equals(account.getAccountNumber(), other.account.getAccountNumber())
 				&& Double.doubleToLongBits(amount) == Double.doubleToLongBits(other.amount)
 				&& Objects.equals(date, other.date) && type == other.type
 				&& Objects.equals(vendor_client, other.vendor_client);

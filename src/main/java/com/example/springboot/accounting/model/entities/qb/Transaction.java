@@ -32,7 +32,8 @@ public class Transaction {
 	  this.date=transaction.getDate();
 	  this.id=transaction.getId();
 	  this.nature=transaction.getNature();
-	  
+	  this.description=transaction.getDescription();
+	  this.message=transaction.message;
 	}
 
 	public Date getDate() {

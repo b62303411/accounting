@@ -25,18 +25,9 @@ public class FiscalYearService {
 	@Autowired
 	private CompanyProfileService profile;
 	
-	public int getFiscalYear(Date start) {
-
-		System.out.println("Today's date: " + start);
-		Calendar calendar = Calendar.getInstance();
-		// Create a Calendar instance and set it to the current date
-
-		calendar.setTime(start);
-		// Add one day to the current date
-		calendar.add(Calendar.DATE, 1);
-		Date tomorrow = calendar.getTime();
-
-		return profile.getProfile().getFiscalYearEnd().getFiscalYear(tomorrow);
+	public int getFiscalYear(Date date) {
+		System.out.println("Today's date: " + date);
+		return profile.getProfile().getFiscalYearEnd().getFiscalYear(date);
 	}
 	
 	public LocalDateBoundaries getLocalDateBoundaries(Integer year) 

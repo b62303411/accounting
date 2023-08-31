@@ -39,7 +39,10 @@ public class IncomeStatementFromLedgerService {
 
 	@Autowired
 	TaxService taxesService;
-	
+
+	@Autowired
+	TaxAdjustmentService taxAdjustmentService;
+
 	public IncomeStatementWhiteBoard getWhiteBoard() {
 		IncomeStatementWhiteBoard wb = new IncomeStatementWhiteBoard();
 
@@ -65,12 +68,9 @@ public class IncomeStatementFromLedgerService {
 				break;
 			case EXPENSE:
 				wb.expensesAccounts.add(fyAccount);
-				if(fyAccount.isTaxable()) 
-				{
+				if (fyAccount.isTaxable()) {
 					wb.operatingExpensesAccounts.add(fyAccount);
-				}
-				else 
-				{
+				} else {
 					wb.otherExpensesAccounts.add(fyAccount);
 				}
 				break;
@@ -90,36 +90,18 @@ public class IncomeStatementFromLedgerService {
 
 		for (int fiscal_year = 2014; fiscal_year < 2026; fiscal_year++) {
 			IncomeStatementWhiteBoard wb = wbBoards.get(fiscal_year);
-			if(null == wb) 
-			{
+			if (null == wb) {
 				wb = getWhiteBoard();
 				wb.fiscal_year = fiscal_year;
 				wb.boundaries = fys.getBoundaries(fiscal_year);
 				wbBoards.put(fiscal_year, wb);
 			}
-					
 		}
+
 		Set<Transaction> transactions = this.gls.getLedger().getTransactions();
 		for (Transaction t : transactions) {
 			if (t.getDate() != null) {
-				int fy = this.fys.getFiscalYear(t.getDate());
-				IncomeStatementWhiteBoard wb = wbBoards.get(fy);
-				if (null == wb) {
-					System.err.println(fy);
-				}
-				Transaction fy_t = new Transaction(t);
-				for (TransactionEntry entry : t.getEntries()) {
-					Account account = wb.accountMap.get(entry.getAccount().getAccountNumber());
-					if(null == account) 
-					{
-						System.err.println();
-					}
-					TransactionEntry fy_entry = new TransactionEntry(entry, account);
-					wb.addEntry(fy_entry);
-					fy_t.addEntry(fy_entry);
-				}
-				wb.getTransactions().add(fy_t);
-				temp_transactions.add(fy_t);
+				translateTransaction(t);
 			} else {
 				System.err.println();
 			}
@@ -131,6 +113,56 @@ public class IncomeStatementFromLedgerService {
 //			System.err.println(e.getVendor_client());
 		}
 
+		for (int fiscal_year = 2014; fiscal_year < 2025; fiscal_year++) {
+			IncomeStatementWhiteBoard wb = wbBoards.get(fiscal_year);
+			double tot = wb.getTotalRevenue();
+			double op = wb.getTotalOperatingExpenses();
+			double beforeTax = tot-op;
+			Date endDate=fys.getBoundaries(fiscal_year).date_end;
+			BigDecimal totalTaxes = calculateIncomeTax(BigDecimal.valueOf(beforeTax), endDate);
+			Transaction t = taxAdjustmentService.generateIncomeTaxTransaction(totalTaxes.doubleValue(),
+					endDate);
+			if(!temp_transactions.contains(t)) 
+			{   
+				if(!wb.hasTransaction(t)) 
+				{
+					taxAdjustmentService.postTransactionToLedger(t);
+					Transaction please_post = translateTransaction(t);
+					please_post.post();
+				}	
+				else 
+				{
+					System.err.println();
+				}
+			}
+		}
+	}
+
+	private Transaction translateTransaction(Transaction t) {
+		int fy = this.fys.getFiscalYear(t.getDate());
+		IncomeStatementWhiteBoard wb = wbBoards.get(fy);
+		if (null == wb) {
+			System.err.println(fy);
+		}
+		Transaction fy_t = new Transaction(t);
+		for (TransactionEntry entry : t.getEntries()) {
+			Account account = wb.accountMap.get(entry.getAccount().getAccountNumber());
+			TransactionEntry fy_entry = new TransactionEntry(entry, account);
+			wb.addEntry(fy_entry);
+			fy_t.addEntry(fy_entry);
+			
+		}
+		wb.getTransactions().add(fy_t);
+		temp_transactions.add(fy_t);
+		return fy_t;
+	}
+
+	public BigDecimal calculateIncomeTax(BigDecimal revenueBeforeTaxes, Date endDate) {
+		Rates rate = smallBusinessTaxRateService.getRates(endDate);
+		BigDecimal taxes_fed = revenueBeforeTaxes.multiply(BigDecimal.valueOf(rate.getFederal() / 100));
+		BigDecimal taxes_prov = revenueBeforeTaxes.multiply(BigDecimal.valueOf(rate.getProvintial() / 100));
+		BigDecimal totalTaxes = taxes_fed.add(taxes_prov);
+		return totalTaxes;
 	}
 
 	/**
@@ -144,7 +176,7 @@ public class IncomeStatementFromLedgerService {
 	public IncomeStatementDto generateIncomeStatement(Set<Transaction> allTransactions, Date startDate, Date endDate,
 			IncomeStatementWhiteBoard wb) {
 		IncomeStatementDto incomeStatement = new IncomeStatementDto();
-		incomeStatement.wb=wb;
+		incomeStatement.wb = wb;
 
 		// Set the maps to the incomeStatement object
 		incomeStatement.setRevenueAccounts(wb.revenueAccounts);
@@ -152,21 +184,19 @@ public class IncomeStatementFromLedgerService {
 		incomeStatement.setOtherExpenseAccounts(wb.otherExpensesAccounts);
 
 		// Calculate totals
-		incomeStatement.setTotalRevenue(wb.revenueAccounts.stream().mapToDouble(Account::getBalance).sum());
-		incomeStatement.setTotalOperatingExpenses(wb.operatingExpensesAccounts.stream().mapToDouble(Account::getBalance).sum());
-		incomeStatement.setTotalOtherExpenses(wb.operatingExpensesAccounts.stream().mapToDouble(Account::getBalance).sum());
-		
-		BigDecimal revenueBeforeTaxes = incomeStatement.getTotalRevenue().subtract(incomeStatement.getTotalOperatingExpenses());
-		
+		incomeStatement.setTotalRevenue(wb.getTotalRevenue());
+		incomeStatement.setTotalOperatingExpenses(wb.getTotalOperatingExpenses());
+		incomeStatement.setTotalOtherExpenses(wb.getTotalOtherExpenses());
+
+		BigDecimal revenueBeforeTaxes = incomeStatement.getTotalRevenue()
+				.subtract(incomeStatement.getTotalOperatingExpenses());
+
 		incomeStatement.setIncomeBeforeTax(revenueBeforeTaxes);
 
-		Rates rate = smallBusinessTaxRateService.getRates(endDate);
-		
-		BigDecimal taxes_fed = revenueBeforeTaxes.multiply(BigDecimal.valueOf(rate.getFederal()/100));
-		BigDecimal taxes_prov = revenueBeforeTaxes.multiply(BigDecimal.valueOf(rate.getProvintial()/100));
-		incomeStatement.incomeTax=taxes_fed.add(taxes_prov);
-		
-		incomeStatement.incomeAfterTax=revenueBeforeTaxes.subtract(incomeStatement.incomeTax);
+		BigDecimal totalTaxes = calculateIncomeTax(revenueBeforeTaxes, endDate);
+		incomeStatement.incomeTax = totalTaxes;
+
+		incomeStatement.incomeAfterTax = revenueBeforeTaxes.subtract(incomeStatement.incomeTax);
 		
 		return incomeStatement;
 	}
@@ -180,7 +210,7 @@ public class IncomeStatementFromLedgerService {
 		Set<Transaction> transactions = this.gls.getLedger().getTransactions();
 		populateMap();
 		IncomeStatementWhiteBoard wb = wbBoards.get(fiscal_year);
-		DateBoundaries boundaries = fys.getBoundaries(fiscal_year);		
+		DateBoundaries boundaries = fys.getBoundaries(fiscal_year);
 		return generateIncomeStatement(transactions, boundaries.date_start, boundaries.date_end, wb);
 	}
 
