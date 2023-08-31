@@ -238,5 +238,9 @@ public class GeneralLedgerService {
 
 	}
 
+	public void clearCashedLedger() {
+		this.cashedLedger.clear();
+	}
+
 
 }

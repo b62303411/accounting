@@ -118,6 +118,7 @@ public class TaxAdjustmentService {
 
 	public void postTransactionToLedger(Transaction taxTransaction) {
 		gls.getLedger().postTransaction(taxTransaction);
+		gls.clearCashedLedger();
 
 	}
 
