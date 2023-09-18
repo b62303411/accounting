@@ -1,6 +1,7 @@
 package com.example.springboot.accounting.model.entities.qb;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -50,20 +51,26 @@ public class Account {
 
 	public void debit(double amount,UUID entryId) {
 		this.ids.add(entryId);
+		System.out.println(accountNumber+" NB:"+type.getNaturalBalance()+" Balence:"+balance);
+		System.out.println(accountNumber+" Debit:"+amount);
 		if (type.getNaturalBalance() == AccountBalance.DEBIT) {
 			balance += amount;
 		} else {
 			balance -= amount;
 		}
+		System.out.println(accountNumber+" Balence:"+balance);
 	}
 
 	public void credit(double amount, UUID entryId) {
 		this.ids.add(entryId);
+		System.out.println(accountNumber+" NB:"+type.getNaturalBalance()+" Balence:"+balance);
+		System.out.println(accountNumber+" Credit:"+amount);
 		if (type.getNaturalBalance() == AccountBalance.DEBIT) {
 			balance -= amount;
 		} else {
 			balance += amount;
 		}
+		System.out.println(accountNumber+" Balence:"+balance);
 	}
 
 	@Override
@@ -110,6 +117,28 @@ public class Account {
 
 	public boolean hasExecuted(UUID id) {
 		return ids.contains(id);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(accountNumber);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Account other = (Account) obj;
+		return Objects.equals(accountNumber, other.accountNumber);
+	}
+
+	public void clear() {
+		balance=0;
+		ids.clear();
 	}
 
 

@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.springboot.accounting.model.Sequence;
 import com.example.springboot.accounting.model.dto.ExpensesLine;
 import com.example.springboot.accounting.model.dto.FinancialStatementLine;
 import com.example.springboot.accounting.model.dto.IncomeStatementDto;
@@ -505,7 +506,8 @@ public class IncomeStatementService {
 	
 	public IncomeStatementDto generateIncomeStatement(int fiscal_year) 
 	{
-		return this.isfls.generateIncomeStatement(fiscal_year);
+		Sequence seq = this.gls.getLedger().getSeq();
+		return this.isfls.generateIncomeStatement(fiscal_year, seq);
 	} 
 	
 

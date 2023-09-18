@@ -19,6 +19,12 @@ public class CreditCardActivity {
     @JsonProperty("year")
     private String year;
     
+    @JsonProperty("start_date")
+    private String start_date;
+    
+    @JsonProperty("end_date")
+    private String end_date;
+    
     private String account_name;
     
     private String date_report;
@@ -87,6 +93,22 @@ public class CreditCardActivity {
 
 	public void setYear(String year) {
 		this.year = year;
+	}
+
+	public String getStart_date() {
+		return start_date;
+	}
+
+	protected void setStart_date(String start_date) {
+		this.start_date = start_date;
+	}
+
+	public String getEnd_date() {
+		return end_date;
+	}
+
+	protected void setEnd_date(String end_date) {
+		this.end_date = end_date;
 	}
     
     

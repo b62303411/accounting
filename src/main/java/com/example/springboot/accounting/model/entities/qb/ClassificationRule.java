@@ -75,12 +75,16 @@ public class ClassificationRule {
 	 */
 	public void populate(TransactionAccount ta,double amount,AccountManager manager, Double balence,String account) 
 	{
-		ta.credited=manager.getAccountByName(this.credited);
+		ta.setCredited(manager.getAccountByName(this.credited));
 		ta.debited = manager.getAccountByName(this.debited);
-		if(ta.credited.getAccountNumber().equals(account)) 
-		{
-			ta.credited_balence=balence;
+		for (Account acc : ta.creditedAccounts) {
+			if(acc.getAccountNumber().equals(account)) 
+			{
+				ta.credited_balence=balence;
+				break;
+			}		
 		}
+
 		ta.amount=Math.abs(amount);		
 		ta.vendor_client = this.client_vendor;
 	}

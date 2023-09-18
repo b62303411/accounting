@@ -6,6 +6,7 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.springboot.accounting.model.Sequence;
 import com.example.springboot.accounting.model.entities.qb.Account;
 import com.example.springboot.accounting.model.entities.qb.AccountManager;
 import com.example.springboot.accounting.model.entities.qb.AccountType;
@@ -28,54 +29,64 @@ public class TaxAdjustmentService {
 	 * Create a tax adjustment transaction for Net Operating Loss
 	 * 
 	 * @param nolAmount           the amount of Net Operating Loss
+	 * @param seq 
 	 * @param taxLiabilityAccount the account representing tax liability
 	 * @param taxExpenseAccount   the account representing tax expense
 	 * @return 
 	 */
-	public Transaction createTaxAdjustmentForNOL(BigDecimal nolAmount,Date date) {
-
-		String taxLiabilityAccountNumber = "";
-		Account taxLiabilityAccount = accountManager.getAccountByAccountNo(taxLiabilityAccountNumber);
-		String taxExpenseAccountNumber = "";
-		Account taxExpenseAccount = accountManager.getAccountByAccountNo(taxExpenseAccountNumber);
+	public Transaction createTaxAdjustmentForNOL(BigDecimal nolAmount,Date date_of_transaction,Date date_of_affected_year, Sequence seq) {
+		Account taxSavingAccount = getAccountByTypeAndName(AccountType.ASSET, "Tax Savings from NOL");
+		Account taxExpenseAccount = getAccountByTypeAndName(AccountType.EXPENSE, "Income Tax Expense");
+		Account taxLiabilityAccount =getAccountByTypeAndName(AccountType.LIABILITY, "Taxes Payable");
 
 		if (taxLiabilityAccount != null && taxExpenseAccount != null) {
 			// Prepare the transaction
-			Transaction taxAdjustmentTransaction = new Transaction();
-			taxAdjustmentTransaction.setDate(date); // Assuming current date
-			taxAdjustmentTransaction.setDescription("Adjustment for Net Operating Loss");
-
+			Transaction taxAdjustmentTransaction = new Transaction(seq);
+			taxAdjustmentTransaction.setDate(date_of_transaction); // Assuming current date
+			
+			String description = "Adjustment for Net Operating Loss:"+date_of_affected_year;
+			
+			taxAdjustmentTransaction.setDescription(description);
+			taxAdjustmentTransaction.setMessage(description);
+		
 			// Create entries
 			TransactionEntry creditEntry = new TransactionEntry();
 			creditEntry.setAccount(taxLiabilityAccount);
 			creditEntry.setType(EntryType.CREDIT);
 			creditEntry.setAmount(nolAmount.doubleValue());
-
+			creditEntry.setVendor_client("Canada Revenue Agency");
+			creditEntry.setDate(date_of_transaction);
 			TransactionEntry debitEntry = new TransactionEntry();
 			debitEntry.setAccount(taxExpenseAccount);
 			debitEntry.setType(EntryType.DEBIT);
 			debitEntry.setAmount(nolAmount.doubleValue());
-
+			debitEntry.setDate(date_of_transaction);
+			debitEntry.setVendor_client("Canada Revenue Agency");
+			
+			TransactionEntry taxSavingEntry = new TransactionEntry();
+			taxSavingEntry.setAccount(taxSavingAccount);
+			taxSavingEntry.setDate(date_of_transaction);
+			taxSavingEntry.setAmount(nolAmount.doubleValue());
+			taxSavingEntry.setType(EntryType.CREDIT);
+			taxSavingEntry.setVendor_client("Canada Revenue Agency");
+			taxSavingEntry.setVendor_client("Canada Revenue Agency");
+			
 			// Add entries to transaction
 			taxAdjustmentTransaction.addEntry(creditEntry);
 			taxAdjustmentTransaction.addEntry(debitEntry);
-
-			// Post the transaction
-			taxAdjustmentTransaction.post();
-			
+			taxAdjustmentTransaction.addEntry(taxSavingEntry);
 			return taxAdjustmentTransaction;
-
 		}
 		return null;
 	}
 
-	public Transaction generateIncomeTaxTransaction(double incomeTaxExpense,Date yearEndDate) {
+	public Transaction generateIncomeTaxTransaction(double incomeTaxExpense,Date yearEndDate, Sequence seq) {
 		// Calculate the income tax expense based on the year's net income
 
 		// Get the date for the last day of the fiscal year
 
 		// Create a new transaction
-		Transaction taxTransaction = new Transaction();
+		Transaction taxTransaction = new Transaction(seq);
 		taxTransaction.setDate(yearEndDate);
 
 		// Debit Income Tax Expense

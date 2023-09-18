@@ -11,7 +11,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.springboot.accounting.model.AiFileResult;
-import com.example.springboot.accounting.model.CollisionSet;
 import com.example.springboot.accounting.model.TransactionNature;
 import com.example.springboot.accounting.model.TransactionType;
 import com.example.springboot.accounting.model.dto.CreditCardActivity;
@@ -46,69 +45,69 @@ import com.example.springboot.accounting.repository.AccountRepository;
 import com.example.springboot.accounting.service.BankReccordService;
 import com.example.springboot.accounting.service.BankStatementPromptFactory;
 import com.example.springboot.accounting.service.DataParsingService;
-import com.example.springboot.accounting.service.PdfService;
+import com.example.springboot.accounting.service.TransactionParser;
 import com.example.springboot.accounting.service.TransactionService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.example.springboot.accounting.service.util.PdfService;
 
 @Controller
 public class TransactionApiController {
-	Map<String, String> monthConversion = new HashMap<>();
-	private BankStatementPromptFactory pspf;
+	//Map<String, String> monthConversion = new HashMap<>();
+	//private BankStatementPromptFactory pspf;
 	private final TransactionService transactionService;
 	private final BankReccordService bankReccordService;
 	private final AccountRepository accountRepo;
-	private final PdfService pdfService;
+	//private final PdfService pdfService;
 	private final DataParsingService dataParsingService;
+	private final TransactionParser parser;
 	@Autowired
-	public TransactionApiController(DataParsingService dataParsingService,BankStatementPromptFactory pspf, AccountRepository accountRepo,
+	public TransactionApiController(TransactionParser parser,DataParsingService dataParsingService,BankStatementPromptFactory pspf, AccountRepository accountRepo,
 			TransactionService transactionService, BankReccordService bankReccordService, PdfService pdfService) {
 		super();
-		this.pdfService = pdfService;
-		this.pspf = pspf;
+		this.parser=parser;
+//		this.pdfService = pdfService;
+//		this.pspf = pspf;
 		this.transactionService = transactionService;
 		this.bankReccordService = bankReccordService;
 		this.accountRepo = accountRepo;
 		this.dataParsingService=dataParsingService;
-		monthConversion.put("Jan", "Jan");
-		monthConversion.put("Fév", "Feb");
-		monthConversion.put("Mar", "Mar");
-		monthConversion.put("Avr", "Apr");
-		monthConversion.put("Mai", "May");
-		monthConversion.put("Juin", "Jun");
-		monthConversion.put("Juil", "Jul");
-		monthConversion.put("Août", "Aug");
-		monthConversion.put("Sept", "Sep");
-		monthConversion.put("Oct", "Oct");
-		monthConversion.put("Nov", "Nov");
-		monthConversion.put("Déc", "Dec");
-
-		monthConversion.put("janv", "Jan");
-		monthConversion.put("févr", "Feb");
-		monthConversion.put("mars", "Mar");
-		monthConversion.put("avr", "Apr");
-		monthConversion.put("mai", "May");
-		monthConversion.put("juin", "Jun");
-		monthConversion.put("juil", "Jul");
-		monthConversion.put("août", "Aug");
-		monthConversion.put("sept", "Sep");
-		monthConversion.put("oct", "Oct");
-		monthConversion.put("nov", "Nov");
-		monthConversion.put("déc", "Dec");
-
-		monthConversion.put("JAN", "Jan");
-		monthConversion.put("FEV", "Feb");
-		monthConversion.put("MAR", "Mar");
-		monthConversion.put("AVR", "Apr");
-		monthConversion.put("MAI", "May");
-		monthConversion.put("JUN", "Jun");
-		monthConversion.put("JUL", "Jul");
-		monthConversion.put("AOU", "Aug");
-		monthConversion.put("SEP", "Sep");
-		monthConversion.put("OCT", "Oct");
-		monthConversion.put("NOV", "Nov");
-		monthConversion.put("DEC", "Dec");
+//		monthConversion.put("Jan", "Jan");
+//		monthConversion.put("Fév", "Feb");
+//		monthConversion.put("Mar", "Mar");
+//		monthConversion.put("Avr", "Apr");
+//		monthConversion.put("Mai", "May");
+//		monthConversion.put("Juin", "Jun");
+//		monthConversion.put("Juil", "Jul");
+//		monthConversion.put("Août", "Aug");
+//		monthConversion.put("Sept", "Sep");
+//		monthConversion.put("Oct", "Oct");
+//		monthConversion.put("Nov", "Nov");
+//		monthConversion.put("Déc", "Dec");
+//
+//		monthConversion.put("janv", "Jan");
+//		monthConversion.put("févr", "Feb");
+//		monthConversion.put("mars", "Mar");
+//		monthConversion.put("avr", "Apr");
+//		monthConversion.put("mai", "May");
+//		monthConversion.put("juin", "Jun");
+//		monthConversion.put("juil", "Jul");
+//		monthConversion.put("août", "Aug");
+//		monthConversion.put("sept", "Sep");
+//		monthConversion.put("oct", "Oct");
+//		monthConversion.put("nov", "Nov");
+//		monthConversion.put("déc", "Dec");
+//
+//		monthConversion.put("JAN", "Jan");
+//		monthConversion.put("FEV", "Feb");
+//		monthConversion.put("MAR", "Mar");
+//		monthConversion.put("AVR", "Apr");
+//		monthConversion.put("MAI", "May");
+//		monthConversion.put("JUN", "Jun");
+//		monthConversion.put("JUL", "Jul");
+//		monthConversion.put("AOU", "Aug");
+//		monthConversion.put("SEP", "Sep");
+//		monthConversion.put("OCT", "Oct");
+//		monthConversion.put("NOV", "Nov");
+//		monthConversion.put("DEC", "Dec");
 	}
 
 	@PostMapping("/upload")
@@ -121,7 +120,7 @@ public class TransactionApiController {
 			String line;
 			int line_count = 0;
 			while ((line = bufferedReader.readLine()) != null) {
-				Transaction transaction = parseString(line);
+				Transaction transaction = dataParsingService.parseString(line);
 				try {
 					transactionService.save(transaction);
 					line_count++;
@@ -145,7 +144,7 @@ public class TransactionApiController {
 		Map<String, Object> results = new HashMap<String, Object>();
 
 		try {
-			AiFileResult r = populateTransaction(file, "");
+			AiFileResult r = parser.populateTransaction(file, "");
 
 			return ResponseEntity.ok(results);
 		} catch (IOException e) {
@@ -156,167 +155,20 @@ public class TransactionApiController {
 		return ResponseEntity.ok(results);
 	}
 
-	/**
-	 * 
-	 * @param file
-	 * @param in
-	 * @param extraContext
-	 * @return
-	 * @throws IOException
-	 * @throws JsonProcessingException
-	 * @throws JsonMappingException
-	 */
-	private AiFileResult populateTransaction(MultipartFile file, String extraContext)
-			throws IOException, JsonProcessingException, JsonMappingException {
-		String text = pdfService.extractTextFromPDF(file);
-
-		AiFileResult response = this.pspf.submitBankStatementQuery(text, extraContext);
-
-		JsonNode extractedData = response.firstMetaData.answer;
-		JsonNode AccountInfo = extractedData.get("AccountInfo");
-		JsonNode StatementPeriod = AccountInfo.get("StatementPeriod");
-		String[] dateParts = StatementPeriod.textValue().split("-"); // split by " - "
-		Date start = null;
-		if (dateParts.length == 2) {
-			String[] here = dateParts[0].split(" ");
-			start = dataParsingService.parseDate(here);
-
-		} else {
-			System.err.println("Invalid date string format");
-			return null;
-
-		}
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(start);
-		int year = calendar.get(Calendar.YEAR);
-		if (extractedData.has("Transactions") && !extractedData.get("Transactions").isNull()) {
-			for (final JsonNode objNode : extractedData.get("Transactions")) {
-				// Do something with each individual object in the array
-				String Retraits = objNode.get("Retraits").asText();
-				String Depots = objNode.get("Depots").asText();
-				String date = objNode.get("Date").asText();
-				String description = objNode.get("Description").asText();
-				String day_str = date.substring(0, 2);
-				String month_str = date.substring(2, 5);
-				String month = monthConversion.get(month_str);
-				String Solde = objNode.get("Solde").asText();
-				Double sold = dataParsingService.parseDouble(Solde);
-				Double retrait = dataParsingService.parseDouble(Retraits);
-				Double depot = dataParsingService.parseDouble(Depots);
-				Double amount = (retrait == null) ? depot : retrait;
-				if (null != amount) {
-					Date date_transaction = dataParsingService.parseDate(day_str, month, year);
-					List<Transaction> list = transactionService.findAllByDateAndAmount(date_transaction, amount);
-					for (Transaction t : list) {
-						t.setSolde(sold);
-						transactionService.save(t);
-						System.out.println(t.getId() + "");
-					}
-					if (list.isEmpty() && !description.contains("SOLDE REPORTE")
-							&& (depot != null && depot != 0.0 || retrait != null && retrait != 0.0)) {
-						Transaction t = new Transaction();
-						t.setAmount(amount);
-						t.setDescription(description);
-						if (depot != null) {
-							t.setTransactionNature(TransactionNature.Debit);
-						} else {
-							t.setTransactionNature(TransactionNature.Credit);
-						}
-						t.setDate(date_transaction);
-						transactionService.save(t);
-
-					}
-				}
-				System.err.println(objNode.toString());
-			}
-			// JSONArray array = extractedData.("Transactions").
-			// in.setAmount(extractedData.get("amount").asDouble());
-
-		}
-		return response;
-	}
-
+	
 
 	
 
-	public Transaction parseString(String line) {
-		String[] fields = line.split(",");
-		Transaction transaction = new Transaction();
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-		try {
-			transaction.setDate(dateFormat.parse(fields[0]));
-		} catch (ParseException e) {
-			e.printStackTrace();
-
-		}
-
-		transaction.setDescription(fields[1]);
-		switch (fields[2]) {
-		case "Restaurants":
-			transaction.setType(TransactionType.OperatingExpenses);
-			break;
-		default:
-			transaction.setType(TransactionType.Unknown);
-			break;
-
-		}
-
-		// transaction.setType(null);
-		try {
-			transaction.setAmount(Double.parseDouble(fields[3].replace("-", "").replace("$", "")));
-		} catch (Exception e) {
-			System.err.println();
-		}
-		if (transaction.getAmount() > 0) {
-			transaction.setTransactionNature(TransactionNature.Credit);
-		} else {
-			transaction.setTransactionNature(TransactionNature.Debit);
-		}
-		transaction.setAccount(fields[5]);
-
-		return transaction;
-	}
-
-	public Double convertDouble(String numberString) {
-		numberString = numberString.replace(" ", "").replace(",", ".");
-		return Double.parseDouble(numberString);
-	}
-
 	
 
-	private Double getAmmount(TransactionRequest transaction) {
-		String depots = transaction.getDEPOTS();
-		String retrait = transaction.getRETRAITS();
-		if (null != depots && !depots.isBlank()) {
-			return convertDouble(depots);
-		} else if (null != retrait && !retrait.isBlank()) {
-			return -convertDouble(retrait);
-		}
-		return null;
+	@GetMapping("/api/transactions/delete/{id}")
+	public ResponseEntity<Object> delete(@PathVariable Long id)
+	{
+		Transaction t = transactionService.findById(id);
+		transactionService.delete(t);
+		return ResponseEntity.ok(new String());
 	}
 
-	/**
-	 * 
-	 * @param year
-	 * @param date_str
-	 * @return
-	 */
-	public Map<String, LocalDate> getBoundaries(String year, String date_str) {
-		Map<String, LocalDate> boundaries = new HashMap<>();
-
-		Date date_ = dataParsingService.getDate(date_str, year);
-		LocalDate date = dataParsingService.getLocalDateFromDate(date_);
-		LocalDate startBoundary = date.minusMonths(1).withDayOfMonth(date.minusMonths(1).lengthOfMonth());
-		LocalDate endBoundary = date.withDayOfMonth(date.lengthOfMonth());
-		boundaries.put("start", startBoundary);
-		boundaries.put("end", endBoundary);
-		return boundaries;
-
-	}
-	
- 
-	
 	@PostMapping("/api/transactions/eliminate-duplicates")
 	public ResponseEntity<Object> fixDuplicateTransactions()
 	{
@@ -336,7 +188,7 @@ public class TransactionApiController {
 		bs.setAcc(activity.getAcc());
 		bs.setAccountName(activity.getAccount_name());
 		String operation_date_str = activity.getDateOperation();
-		Map<String, LocalDate> b = getBoundaries(activity.getYear(), operation_date_str);
+		Map<String, LocalDate> b = dataParsingService.getBoundaries(activity.getStart_date(),activity.getEnd_date(), operation_date_str);
 		bs.setFrom(dataParsingService.formatLocalDate(b.get("start")));
 		bs.setTo(dataParsingService.formatLocalDate(b.get("end")));
 		bs.setYear(Integer.parseInt(activity.getYear()));
@@ -345,23 +197,36 @@ public class TransactionApiController {
 		transaction.setAccount(activity.getAcc());
 		Double amount = dataParsingService.currencyToDouble(activity.getMontant());
 		// Remove currency symbol and thousands separators
-		transaction.setAmount(amount);
-		Date date = dataParsingService.getDate(activity.getDateActivite(), activity.getYear());
+		if(amount <0)
+			transaction.setTransactionNature(TransactionNature.Debit);
+		else
+		{
+			transaction.setTransactionNature(TransactionNature.Credit);
+			transaction.setType(TransactionType.OperatingExpenses);
+		}
+		
+		transaction.setAmount(Math.abs(amount));
+		if(activity.getDescription().contains("PREAUTOR")) 
+		{
+			transaction.setType(TransactionType.Transfer);
+		}
+		
+		Date date = dataParsingService.getDate(activity.getDateActivite(), b);
 		transaction.setDate(date);
 		transaction.setDescription(activity.getDescription());
 		transactionService.save(transaction);
 		return ResponseEntity.ok().build();
 	}
 
-	private void addAmountToTransaction(String cleanedAmountString, Transaction transaction) {
-		try {
-			double amount = Double.parseDouble(cleanedAmountString);
-			transaction.setAmount(amount);
-			System.out.println("Parsed amount: " + amount);
-		} catch (NumberFormatException e) {
-			System.out.println("Failed to parse amount: " + e.getMessage());
-		}
-	}
+//	private void addAmountToTransaction(String cleanedAmountString, Transaction transaction) {
+//		try {
+//			double amount = Double.parseDouble(cleanedAmountString);
+//			transaction.setAmount(amount);
+//			System.out.println("Parsed amount: " + amount);
+//		} catch (NumberFormatException e) {
+//			System.out.println("Failed to parse amount: " + e.getMessage());
+//		}
+//	}
 
 	@PostMapping("/addLegacyTransaction")
 	public ResponseEntity<Object> addLegacyTransaction(@RequestBody TransactionDTO transactionRequest) {
@@ -438,9 +303,9 @@ public class TransactionApiController {
 		if (transaction.getDATE().isEmpty() || transaction.getDESCRIPTION() == null)
 			return;
 		Date date = dataParsingService.getDate(transaction.getDATE(), transaction.getYear());
-		Double ammount = getAmmount(transaction);
+		Double ammount = dataParsingService.getAmmount(transaction);
 		if(transaction.SOLDE!=null && !transaction.SOLDE.isEmpty())
-			br.setSolde(convertDouble(transaction.SOLDE));
+			br.setSolde(dataParsingService.convertDouble(transaction.SOLDE));
 		br.setAcc(transaction.getAcc());
 		br.setDescription(transaction.getDESCRIPTION());
 		br.setSuc(transaction.getSuc());

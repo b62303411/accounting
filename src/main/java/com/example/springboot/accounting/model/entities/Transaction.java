@@ -18,6 +18,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
@@ -44,6 +45,9 @@ public class Transaction {
 	private List<Attachment> attachments;
     private String payee;
     private Double solde;
+    
+    @OneToOne(mappedBy = "transaction", cascade = CascadeType.REMOVE)
+    private Expense expense;
     
     /**
      * 

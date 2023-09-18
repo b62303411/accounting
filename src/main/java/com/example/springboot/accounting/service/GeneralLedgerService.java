@@ -58,6 +58,9 @@ public class GeneralLedgerService {
 	@Autowired
 	public TaxService taxService;
 	
+	@Autowired
+	public SimplifiedSalesTaxesService ssts;
+	
 	private Ledger ledger;
 
 	private List<LedgerEntryDTO> cashedLedger;
@@ -72,6 +75,7 @@ public class GeneralLedgerService {
 		{
 			populateLedger();
 		}
+		ledger.recalculateLedger();
 		return ledger;
 	}
 	
@@ -107,8 +111,15 @@ public class GeneralLedgerService {
 		populateFromAsset();
 
 		populateFromInvoices();
+		
+		populateFromSimplifiedMethod();
 
 		return ledger;
+	}
+
+	private void populateFromSimplifiedMethod() {
+		ssts.run(ledger.getSeq(),ledger.getTransactions(),ledger);
+		
 	}
 
 	private void populateFromInvoices() {

@@ -9,7 +9,16 @@
     </tr>
     <tr th:each="account : ${accounts}">
         <td th:text="${account.accountName}">Account Name</td>
-        <td th:text="${#numbers.formatCurrency(account.balance)}">Amount</td>
+        <td>
+        <span th:text="${#numbers.formatCurrency(account.balance)}">Amount</span>
+               <!-- For DEBIT accounts -->
+                <span th:if="${account.accountingType.getNaturalBalance() == T(com.example.springboot.accounting.model.entities.qb.AccountBalance).DEBIT and account.balance > 0}" class="arrow-up">↑</span>
+                <span th:if="${account.accountingType.getNaturalBalance() == T(com.example.springboot.accounting.model.entities.qb.AccountBalance).DEBIT and account.balance < 0}" class="arrow-down">↓</span>
+
+                <!-- For CREDIT accounts -->
+                <span th:if="${account.accountingType.getNaturalBalance() == T(com.example.springboot.accounting.model.entities.qb.AccountBalance).CREDIT and account.balance < 0}" class="arrow-up">↑</span>
+                <span th:if="${account.accountingType.getNaturalBalance() == T(com.example.springboot.accounting.model.entities.qb.AccountBalance).CREDIT and account.balance > 0}" class="arrow-down">↓</span>
+        </td>
         <td th:text="${account.accountingType.getNaturalBalance()}">Natural Balance</td>
      
     </tr>

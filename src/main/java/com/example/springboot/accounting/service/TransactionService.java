@@ -150,7 +150,7 @@ public class TransactionService {
 		}
 	}
 
-	private void delete(Transaction to_be_deleted) {
+	public void delete(Transaction to_be_deleted) {
 		try {
 		BankReccord br = this.brr.findByTransaction(to_be_deleted);
 		if(null != br)

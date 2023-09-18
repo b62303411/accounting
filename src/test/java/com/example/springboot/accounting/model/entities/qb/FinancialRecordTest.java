@@ -4,15 +4,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import com.example.springboot.accounting.TestFixture;
+import com.example.springboot.accounting.model.Sequence;
 import com.example.springboot.accounting.service.AccountFactory;
-import com.example.springboot.accounting.service.TaxService;
 
 class FinancialRecordTest {
 
@@ -286,13 +286,13 @@ class FinancialRecordTest {
 	void test() {
 
 		// Creating a bank transaction
-		BankTransaction bankTransaction = new BankTransaction();
+		BankTransaction bankTransaction = new BankTransaction(null);
 		bankTransaction.setDate(Date.from(Instant.now()));
 		bankTransaction.setDescription("Withdrawal for dividend payment");
 		bankTransaction.setAmount(-1000.0); // Negative amount for withdrawals
 
 		// Creating a financial record for an expense transaction
-		FinancialRecord expenseRecord = new FinancialRecord();
+		FinancialRecord expenseRecord = new FinancialRecord(null);
 		expenseRecord.setTransactionType("Expense");
 		expenseRecord.setDate(Date.from(Instant.now()));
 		expenseRecord.setDescription("Dividend payment to owner");
@@ -310,7 +310,7 @@ class FinancialRecordTest {
 		accountManager.addAccount("CHECKING", "002", AccountType.ASSET, false);
 		accountManager.addAccount("INVESTMENT", "004", AccountType.ASSET, false);
 		// Simulate a dividend payment
-		FinancialRecord dividendRecord = new FinancialRecord();
+		FinancialRecord dividendRecord = new FinancialRecord(null);
 		dividendRecord.setTransactionType("Expense");
 		dividendRecord.setDate(Date.from(Instant.now()));
 		dividendRecord.setDescription("Dividend payment to owner");
@@ -318,13 +318,13 @@ class FinancialRecordTest {
 		dividendRecord.setAccount("Dividends Paid");
 
 		// Simulate a corresponding bank withdrawal
-		BankTransaction bankWithdrawal = new BankTransaction();
+		BankTransaction bankWithdrawal = new BankTransaction(null);
 		bankWithdrawal.setDate(Date.from(Instant.now()));
 		bankWithdrawal.setDescription("Withdrawal for dividend payment");
 		bankWithdrawal.setAmount(-1000.0); // Negative amount for withdrawals
 
 		// Simulate an offsetting bank deposit
-		BankTransaction bankDeposit = new BankTransaction();
+		BankTransaction bankDeposit = new BankTransaction(null);
 		bankDeposit.setDate(Date.from(Instant.now()));
 		bankDeposit.setDescription("Offsetting deposit for dividend payment");
 		bankDeposit.setAmount(1000.0); // Positive amount for deposits
@@ -346,46 +346,7 @@ class FinancialRecordTest {
 		// Additional validation or business logic checks can be added here
 	}
 
-	class TextFixture {
-		AccountManager accountManager = new AccountManager();
-		LedgerRuleFactory fac = new LedgerRuleFactory(accountManager);
-		TaxService tax = new TaxService();
-		Ledger ledger = new Ledger(accountManager, fac, tax);
-		Account cash = new Account("Cash", "001", AccountType.ASSET, false);
-		Account salesRevenue = new Account("Sales Revenue", "002", AccountType.REVENUE, true);
-		Account salesTaxPayable = new Account("Sales Tax Payable", "003", AccountType.LIABILITY, false);
-		Account equipment = new Account("Equipment", "001", AccountType.ASSET, false);
-		Account payable = new Account("Accounts Payable", "003", AccountType.LIABILITY, false);
-		Account retainedEarnings = new Account("Retained Earnings", "001", AccountType.EQUITY, false);
-		Account dividendsDeclared = new Account("Dividends Declared", "002", AccountType.EQUITY, false);
-		Account checking = new Account("Checking", "001", AccountType.ASSET, false);
-		// Account savings = new Account("Savings", "002", AccountType.ASSET);
-		Account creditCard = new Account("Credit Card", "003", AccountType.LIABILITY, false);
-		Account investment = new Account("Investment", "004", AccountType.ASSET, false);
-
-		Account amazon = new Account("Amazon", "005", AccountType.LIABILITY, false); // Assuming Amazon's invoice would
-																						// be a
-		// liability until paid.
-		Account lawyer = new Account("Lawyer", "006", AccountType.LIABILITY, false);
-		Account accountant = new Account("Accountant", "007", AccountType.LIABILITY, false);
-		Account government = new Account("Government", "008", AccountType.LIABILITY, false);
-
-		TextFixture() {
-			accountManager.addAccount(cash);
-			accountManager.addAccount(salesRevenue);
-			accountManager.addAccount(salesTaxPayable);
-			accountManager.addAccount(payable);
-			accountManager.addAccount(dividendsDeclared);
-			accountManager.addAccount(retainedEarnings);
-			accountManager.addAccount(equipment);
-			accountManager.addAccount(investment);
-			accountManager.addAccount(lawyer);
-			accountManager.addAccount(government);
-			accountManager.addAccount(creditCard);
-			accountManager.addAccount(checking);
-			createAccounts(accountManager);
-		}
-	}
+	
 
 	/**
 	 * Purchasing Items with a Split Payment: Suppose a business buys equipment
@@ -396,11 +357,11 @@ class FinancialRecordTest {
 	 */
 	@Test
 	void testSplitPaymentTransaction() {
-		TextFixture f = new TextFixture();
+		TestFixture f = new TestFixture();
 		Date date = Date.from(Instant.now());
-
+		Sequence seq = new Sequence();
 		// Creating a split payment transaction
-		Transaction purchaseEquipment = new Transaction();
+		Transaction purchaseEquipment = new Transaction(seq);
 
 		String vendor_client = "";
 		// Equipment is increased by $1,000
@@ -431,10 +392,10 @@ class FinancialRecordTest {
 	 */
 	@Test
 	void testSalesWithSalesTaxTransaction() {
-		TextFixture f = new TextFixture();
-
+		TestFixture f = new TestFixture();
+		Sequence seq = new Sequence();
 		// Creating a sales with sales tax transaction
-		Transaction salesTransaction = new Transaction();
+		Transaction salesTransaction = new Transaction(seq);
 
 		Date date = Date.from(Instant.now());
 		String vendor_client = "";
@@ -483,10 +444,10 @@ class FinancialRecordTest {
 
 	@Test
 	public void testDividendPaymentToString() {
-		TextFixture f = new TextFixture();
-
+		TestFixture f = new TestFixture();
+		Sequence seq = new Sequence();
 		// Step 1: Declaring the Dividends
-		Transaction declareDividends = new Transaction();
+		Transaction declareDividends = new Transaction(seq);
 
 		Date date = Date.from(Instant.now());
 		String vendor_client = "";
@@ -504,7 +465,7 @@ class FinancialRecordTest {
 		assertEquals(300, f.dividendsDeclared.getBalance()); // Dividends Declared is credited
 
 		// Step 2: Paying the Dividends
-		Transaction payDividends = new Transaction();
+		Transaction payDividends = new Transaction(seq);
 
 		// Dividends Declared (liability) is decreased by the payment amount
 		payDividends.addEntry(new TransactionEntry(f.dividendsDeclared, vendor_client, date, 300, EntryType.DEBIT));
@@ -522,9 +483,9 @@ class FinancialRecordTest {
 	@Test
 	public void testReal() {
 
-		TextFixture f = new TextFixture();
-
-		Transaction depositToChecking = new Transaction();
+		TestFixture f = new TestFixture();
+		Sequence seq = new Sequence();
+		Transaction depositToChecking = new Transaction(seq);
 		Date date = Date.from(Instant.now());
 		depositToChecking.addEntry(new TransactionEntry(f.checking, "", date, 1000, EntryType.DEBIT));
 
@@ -532,31 +493,32 @@ class FinancialRecordTest {
 //		transferToSavings.addEntry(new TransactionEntry(checking, 500, "Credit"));
 //		transferToSavings.addEntry(new TransactionEntry(savings, 500, "Debit"));
 
-		Transaction payCreditCard = new Transaction();
+	
+		Transaction payCreditCard = new Transaction(seq );
 		payCreditCard.addEntry(new TransactionEntry(f.checking, "", date, 200, EntryType.CREDIT));
 		payCreditCard.addEntry(new TransactionEntry(f.creditCard, "", date, 200, EntryType.DEBIT));
 
-		Transaction earnInvestment = new Transaction();
+		Transaction earnInvestment = new Transaction(seq);
 		earnInvestment.addEntry(new TransactionEntry(f.investment, "", date, 100, EntryType.DEBIT));
 
-		Transaction amazonInvoice = new Transaction();
+		Transaction amazonInvoice = new Transaction(seq);
 		amazonInvoice.addEntry(new TransactionEntry(f.amazon, "", date, 200, EntryType.CREDIT));
 		amazonInvoice.addEntry(new TransactionEntry(f.checking, "", date, 200, EntryType.DEBIT));
 
-		Transaction lawyerInvoice = new Transaction();
+		Transaction lawyerInvoice = new Transaction(seq);
 		lawyerInvoice.addEntry(new TransactionEntry(f.lawyer, "", date, 500, EntryType.CREDIT));
 		lawyerInvoice.addEntry(new TransactionEntry(f.checking, "", date, 500, EntryType.DEBIT));
 
-		Transaction accountantInvoice = new Transaction();
+		Transaction accountantInvoice = new Transaction(seq);
 		accountantInvoice.addEntry(new TransactionEntry(f.accountant, "", date, 300, EntryType.CREDIT));
 		accountantInvoice.addEntry(new TransactionEntry(f.checking, "", date, 300, EntryType.DEBIT));
 
-		Transaction governmentTaxDue = new Transaction();
+		Transaction governmentTaxDue = new Transaction(seq);
 		String vendor_client = "";
 		governmentTaxDue.addEntry(new TransactionEntry(f.government, vendor_client, date, 1500, EntryType.CREDIT));
 		governmentTaxDue.addEntry(new TransactionEntry(f.checking, vendor_client, date, 1500, EntryType.DEBIT));
 
-		Transaction payAmazonInvoice = new Transaction();
+		Transaction payAmazonInvoice = new Transaction(seq);
 		payAmazonInvoice.addEntry(new TransactionEntry(f.amazon, vendor_client, date, 200, EntryType.DEBIT)); // Invoice
 																												// is
 																												// settled.
@@ -588,7 +550,7 @@ class FinancialRecordTest {
 
 	@Test
 	public void liability() {
-		TextFixture f = new TextFixture();
+		TestFixture f = new TestFixture();
 		
 		// Initial balances
 		assertEquals(0, f.accountManager.getBalance(checking));
@@ -613,7 +575,7 @@ class FinancialRecordTest {
 
 	@Test
 	public void ok() {
-		TextFixture f = new TextFixture();
+		TestFixture f = new TestFixture();
 
 		// Initial balances
 		assertEquals(0, f.accountManager.getBalance(checking));
@@ -688,7 +650,7 @@ class FinancialRecordTest {
 
 	@Test
 	public void testBankFees() {
-		TextFixture f = new TextFixture();
+		TestFixture f = new TestFixture();
 		AccountManager accountManager = f.accountManager;
 		Ledger ledger = f.ledger;
 		// Initial balances
@@ -717,7 +679,7 @@ class FinancialRecordTest {
 
 	@Test
 	public void testDividend() {
-		TextFixture f = new TextFixture();
+		TestFixture f = new TestFixture();
 		AccountManager accountManager = f.accountManager;
 		Ledger ledger = f.ledger;
 		assertEquals(0, accountManager.getBalance(checking));
@@ -740,7 +702,7 @@ class FinancialRecordTest {
 
 	@Test
 	public void testRevenueSales() {
-		TextFixture f = new TextFixture();
+		TestFixture f = new TestFixture();
 		AccountManager accountManager = f.accountManager;
 		Ledger ledger = f.ledger;
 
@@ -784,7 +746,7 @@ class FinancialRecordTest {
 
 	@Test
 	public void testVisaPayment() {
-		TextFixture f = new TextFixture();
+		TestFixture f = new TestFixture();
 		AccountManager accountManager = f.accountManager;
 		Ledger ledger = f.ledger;
 
@@ -821,7 +783,7 @@ class FinancialRecordTest {
 
 	@Test
 	void testSales() {
-		TextFixture f = new TextFixture();
+		TestFixture f = new TestFixture();
 		AccountManager accountManager = f.accountManager;
 		Ledger ledger = f.ledger;
 		
@@ -838,11 +800,5 @@ class FinancialRecordTest {
 
 	}
 
-	private void createAccounts(AccountManager accountManager) {
-		// Assets
-		accountManager.addAccount(checking, "A001", AccountType.ASSET, false);
-		accountManager.addAccount(credit, "L004", AccountType.LIABILITY, false);
-		AccountFactory factory = new AccountFactory();
-		factory.createAccounts(accountManager);
-	}
+	
 }

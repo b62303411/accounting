@@ -23,7 +23,7 @@ public class FiscalYearService {
 	}
 	
 	@Autowired
-	private CompanyProfileService profile;
+	public CompanyProfileService profile;
 	
 	public int getFiscalYear(Date date) {
 		System.out.println("Today's date: " + date);

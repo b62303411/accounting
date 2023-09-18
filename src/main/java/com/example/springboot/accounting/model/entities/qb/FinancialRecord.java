@@ -1,6 +1,12 @@
 package com.example.springboot.accounting.model.entities.qb;
 
+import com.example.springboot.accounting.model.Sequence;
+
 public class FinancialRecord extends Transaction{
+	public FinancialRecord(Sequence seq) {
+		super(seq);
+		// TODO Auto-generated constructor stub
+	}
 	private String transactionType; // Expense, Revenue, etc.
 	private String account; // Associated account for the transaction
 	private String debitOrCredit; // Debit or Credit

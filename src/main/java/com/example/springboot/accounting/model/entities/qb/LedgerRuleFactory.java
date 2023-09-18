@@ -110,6 +110,36 @@ public class LedgerRuleFactory {
 		return rule;
 	}
 
+/**
+ * 
+ * @param keywords
+ * @param vendor
+ * @param debited
+ * @param accountNo
+ * @return
+ */
+	public ClassificationRule makeOfficeEquipementPurchaceRule(List<String> keywords, String vendor,  String debited,String credited) {
+		ClassificationRule rule = new ClassificationRule();
+		rule.setKeyWords(keywords);
+		rule.client_vendor = vendor;
+		Account d = accountManager.getAccountByName(debited);
+		rule.addAccountNumber(d.getAccountNumber());
+		rule.debited = debited;
+		rule.credited = credited;
+	
+		return rule;
+	}
+
+public ClassificationRule makeTrainingRule(List<String> keywords, String vendor, String accountNo) {
+	ClassificationRule rule = new ClassificationRule();
+	rule.setKeyWords(keywords);
+	rule.client_vendor = vendor;
+	rule.debited = "Training";
+	rule.credited = accountManager.getAccountByAccountNo(accountNo).getName();
+	rule.addAccountNumber(accountNo);
+	return rule;
+}
+
 
 
 	

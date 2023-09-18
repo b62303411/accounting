@@ -14,6 +14,7 @@ public class TransactionEntry {
 	private String vendor_client;
 	private Date date;
 	private UUID id;
+	private long sequence;
 
 	/**
 	 * 
@@ -77,6 +78,10 @@ public class TransactionEntry {
 
 	public Date getDate() {
 		return date;
+	}
+
+	protected long getSequence() {
+		return sequence;
 	}
 
 	public void setDate(Date date) {
@@ -176,6 +181,11 @@ public class TransactionEntry {
 
 	public Double getBalance() {
 		return balance;
+	}
+
+	public void setSequence(long sequence) {
+	this.sequence=sequence;
+		
 	}
 
 //	public void setBalance(Double balance) {

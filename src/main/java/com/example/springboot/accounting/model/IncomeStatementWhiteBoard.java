@@ -17,7 +17,7 @@ public class IncomeStatementWhiteBoard {
 	public DateBoundaries boundaries;
 	private Set<Transaction> fy_transactions = new HashSet<Transaction>();
 	private Map<UUID, TransactionEntry> entries = new HashMap<UUID, TransactionEntry>();
-	public Set<TransactionEntry> entriesSet = new HashSet();
+	public Set<TransactionEntry> entriesSet = new HashSet<TransactionEntry>();
 	public List<Account> allAccounts = null;
 	public List<Account> revenueAccounts = new ArrayList<Account>();
 	public List<Account> assetAccounts = new ArrayList<Account>();
@@ -28,6 +28,10 @@ public class IncomeStatementWhiteBoard {
 	public List<Account> liabilityAccounts = new ArrayList<Account>();
 	public Map<String, Account> accountMap = new HashMap<>();
 	public int fiscal_year;
+	public double beforeTaxIncome;
+	public double totalTaxes;
+	public double adjustedBeforeTaxIncome;
+	public double adjustedIncomeTax;
 
 	public Account getAccountByNo(String no) {
 		return accountMap.get(no);
@@ -84,6 +88,17 @@ public class IncomeStatementWhiteBoard {
 			
 		}
 		return false;
+	}
+
+	public void setBeforeTaxIncome(double beforeTaxIncome) {
+		this.beforeTaxIncome=beforeTaxIncome;
+		this.adjustedBeforeTaxIncome=beforeTaxIncome;
+		
+	}
+	public void setTotalTaxes(double tax) 
+	{
+		this.totalTaxes=tax;
+		this.adjustedIncomeTax=tax;
 	}
 
 }

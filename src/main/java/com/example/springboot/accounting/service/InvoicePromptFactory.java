@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import com.example.springboot.accounting.model.AiFileResult;
 import com.example.springboot.accounting.model.AssistantAnswer;
 import com.example.springboot.accounting.model.dto.InvoiceDto;
+import com.example.springboot.accounting.service.util.OpenAiRequestService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
