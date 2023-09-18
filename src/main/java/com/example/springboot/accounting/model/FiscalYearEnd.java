@@ -100,23 +100,55 @@ public class FiscalYearEnd {
 	}
 
 	public int getFiscalYear(Date date) {
+
 		LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+		int local_date_year = localDate.getYear();
+
+		Map<String, LocalDate> before = getFiscalYearBoundaries(local_date_year - 1);
+		Map<String, LocalDate> current = getFiscalYearBoundaries(local_date_year);
+		Map<String, LocalDate> after = getFiscalYearBoundaries(local_date_year + 1);
+
+		if (isInbound(localDate, before)) {
+			return local_date_year - 1;
+		}
+		else if (isInbound(localDate, current)) 
+		{
+			return local_date_year;
+		}
+		else if (isInbound(localDate, after)) 
+		{
+			return local_date_year +1 ;
+		}
+		return -1;
+	}
+
+	/**
+	 * 
+	 * @param localDate
+	 * @param before
+	 * @return
+	 */
+	private boolean isInbound(LocalDate localDate, Map<String, LocalDate> before) {
+		
+		LocalDate start = before.get("start");
+		LocalDate end = before.get("end");
+		boolean isInBound= 
+				(localDate.isAfter(start)|| 
+				localDate.isEqual(start)) && 
+				(localDate.isBefore(end)|| 
+				localDate.isEqual(end));
+		return isInBound;
+	}
+
+	private Month getFiscalEndMonth() {
 		Month fiscalStartMonth;
 		if (monthMap.containsKey(month)) {
 			fiscalStartMonth = Month.valueOf(monthMap.get(month));
 		} else {
 			fiscalStartMonth = Month.valueOf(month);
 		}
-
-		LocalDate fiscalStart = LocalDate.of(localDate.getYear(), fiscalStartMonth, day);
-		if (localDate.isBefore(fiscalStart)) {
-			// If the date is before the start of the fiscal year, it belongs to the
-			// previous fiscal year.
-			return localDate.getYear() - 1;
-		} else {
-			return localDate.getYear();
-		}
-
+		return fiscalStartMonth;
 	}
 
 	public Date getLastDayDate(int fy) {

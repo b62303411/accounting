@@ -1,8 +1,10 @@
 package com.example.springboot.accounting.service;
 
+import java.sql.SQLSyntaxErrorException;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -10,17 +12,25 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.xml.stream.events.EndDocument;
+
 import org.springframework.stereotype.Service;
+
+import com.example.springboot.accounting.model.TransactionNature;
+import com.example.springboot.accounting.model.TransactionType;
+import com.example.springboot.accounting.model.dto.TransactionRequest;
+import com.example.springboot.accounting.model.entities.Transaction;
 
 @Service
 public class DataParsingService {
 
 	Map<String, String> monthConversion = new HashMap<>();
-	public DataParsingService() 
-	{
+
+	public DataParsingService() {
 		monthConversion.put("Jan", "Jan");
 		monthConversion.put("Fév", "Feb");
 		monthConversion.put("Mar", "Mar");
@@ -60,6 +70,7 @@ public class DataParsingService {
 		monthConversion.put("NOV", "Nov");
 		monthConversion.put("DEC", "Dec");
 	}
+
 	/**
 	 * 
 	 * @param numberString
@@ -81,7 +92,7 @@ public class DataParsingService {
 
 		return num;
 	}
-	
+
 	/**
 	 * 
 	 * @param here
@@ -103,7 +114,7 @@ public class DataParsingService {
 		}
 		return date;
 	}
-	
+
 	public Date parseDate(String day_str, String month, int year) {
 		Date date = null;
 		SimpleDateFormat formatter = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH); // date format
@@ -174,7 +185,120 @@ public class DataParsingService {
 		String cleanedAmountString = ammount.replaceAll("[^0-9.-]", "");
 		return cleanedAmountString;
 	}
+
+	public Map<String, LocalDate> getBoundaries(String start_date_str, String end_date_str, String operation_date_str) {
+		Map<String, LocalDate> boundaries = new HashMap<>();
+		LocalDate start_date = parseDateString(start_date_str);
+		LocalDate end_date = parseDateString(end_date_str);
+		boundaries.put("start", start_date);
+		boundaries.put("end", end_date);
+		return boundaries;
+	}
 	
+	public Date getDate(String date_str, Map<String, LocalDate> b) {
+		LocalDate start_date = b.get("start");
+		LocalDate end_date = b.get("end");
+		
+		Pattern pattern = Pattern.compile("(\\d{1,2})([a-zA-Zàâéêèìôùûç]+)");
+        Matcher matcher = pattern.matcher(date_str);
+        if (matcher.find()) {
+            int day = Integer.parseInt(matcher.group(1));
+            String monthStr = matcher.group(2).toLowerCase();  // Taking the first 3 letters of the month
+            
+            Map<String, Integer> monthMap = getMonths();
+            if(!monthMap.containsKey(monthStr))
+    			System.err.println(monthStr);
+    		int month = monthMap.get(monthStr);
+    		int year = 0;
+    		if(start_date.getMonthValue() < end_date.getMonthValue()) 
+    		{
+    			year = start_date.getYear();
+    			LocalDate ld = LocalDate.of(year, month, day);
+    			return getDateFromLocal(ld);
+    		}
+    		else 
+    		{
+    			if(month >=  start_date.getMonthValue())
+    			{
+    				year=start_date.getYear();
+    				LocalDate ld = LocalDate.of(year, month, day);
+    				return getDateFromLocal(ld);
+    			}
+    			else  
+    			{
+    				year=end_date.getYear();
+    				LocalDate ld = LocalDate.of(year, month, day);
+    				return getDateFromLocal(ld);
+    			}
+    		
+    		}
+        }
+ 	
+		return null;
+	}
+
+	private Date getDateFromLocal(LocalDate ld) {
+		return Date.from(ld.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+	}
+	
+	public LocalDate parseDateString(String date_str) {
+	
+		int day;
+		int year;
+		String monthStr;
+		Pattern pattern = Pattern.compile("(\\d{1,2})([a-zA-Zûé]+)?(\\d{4})");
+        Matcher matcher = pattern.matcher(date_str);
+        if (matcher.find()) {
+             day = Integer.parseInt(matcher.group(1));
+             monthStr = matcher.group(2).toLowerCase(); // Taking the first 3 letters of the month
+             year = Integer.parseInt(matcher.group(3));
+         	 Map<String, Integer> monthMap = getMonths();
+         	if(!monthMap.containsKey(monthStr))
+    			System.err.println(monthStr);
+    		int month = monthMap.get(monthStr);
+    		return LocalDate.of(year, month, day);
+        }	
+		return null;
+		
+	}
+
+	private Map<String, Integer> getMonths() {
+		Map<String, Integer> monthMap = new HashMap<>();
+		monthMap.put("jan", 1);
+		monthMap.put("feb", 2);
+		monthMap.put("fév", 2);		
+		monthMap.put("mar", 3);
+		monthMap.put("apr", 4);
+		monthMap.put("avr", 4);
+		monthMap.put("may", 5);
+		monthMap.put("mai", 5);	
+		monthMap.put("jun", 6);
+		monthMap.put("juin", 6);
+		monthMap.put("jul", 7);
+		monthMap.put("juil", 7);
+		monthMap.put("aug", 8);
+		monthMap.put("aoû", 8);
+		monthMap.put("sep", 9);
+		monthMap.put("oct", 10);
+		monthMap.put("nov", 11);
+		monthMap.put("dec", 12);
+		monthMap.put("déc", 12);
+		return monthMap;
+	}
+
+	public Map<String, LocalDate> getBoundaries(String year, String date_str) {
+		Map<String, LocalDate> boundaries = new HashMap<>();
+
+		Date date_ = getDate(date_str, year);
+		LocalDate date = getLocalDateFromDate(date_);
+		LocalDate startBoundary = date.minusMonths(1).withDayOfMonth(date.minusMonths(1).lengthOfMonth());
+		LocalDate endBoundary = date.withDayOfMonth(date.lengthOfMonth());
+		boundaries.put("start", startBoundary);
+		boundaries.put("end", endBoundary);
+		return boundaries;
+
+	}
+
 	/**
 	 * 
 	 * @param dateToConvert
@@ -198,5 +322,62 @@ public class DataParsingService {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM_dd", Locale.ENGLISH);
 		return date.format(formatter);
 	}
+
+	public Double getAmmount(TransactionRequest transaction) {
+		String depots = transaction.getDEPOTS();
+		String retrait = transaction.getRETRAITS();
+		if (null != depots && !depots.isBlank()) {
+			return convertDouble(depots);
+		} else if (null != retrait && !retrait.isBlank()) {
+			return -convertDouble(retrait);
+		}
+		return null;
+	}
+
+	public Double convertDouble(String numberString) {
+		numberString = numberString.replace(" ", "").replace(",", ".");
+		return Double.parseDouble(numberString);
+	}
+
+	public Transaction parseString(String line) {
+		String[] fields = line.split(",");
+		Transaction transaction = new Transaction();
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+		try {
+			transaction.setDate(dateFormat.parse(fields[0]));
+		} catch (ParseException e) {
+			e.printStackTrace();
+
+		}
+
+		transaction.setDescription(fields[1]);
+		switch (fields[2]) {
+		case "Restaurants":
+			transaction.setType(TransactionType.OperatingExpenses);
+			break;
+		default:
+			transaction.setType(TransactionType.Unknown);
+			break;
+
+		}
+
+		// transaction.setType(null);
+		try {
+			transaction.setAmount(Double.parseDouble(fields[3].replace("-", "").replace("$", "")));
+		} catch (Exception e) {
+			System.err.println();
+		}
+		if (transaction.getAmount() > 0) {
+			transaction.setTransactionNature(TransactionNature.Credit);
+		} else {
+			transaction.setTransactionNature(TransactionNature.Debit);
+		}
+		transaction.setAccount(fields[5]);
+
+		return transaction;
+	}
+
+	
 
 }

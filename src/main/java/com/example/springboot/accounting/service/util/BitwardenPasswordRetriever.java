@@ -1,4 +1,4 @@
-package com.example.springboot.accounting.service;
+package com.example.springboot.accounting.service.util;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;

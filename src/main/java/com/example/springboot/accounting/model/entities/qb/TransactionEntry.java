@@ -14,6 +14,7 @@ public class TransactionEntry {
 	private String vendor_client;
 	private Date date;
 	private UUID id;
+	private long sequence;
 
 	/**
 	 * 
@@ -41,6 +42,7 @@ public class TransactionEntry {
 		this.date = entry.getDate();
 		this.amount = entry.getAmount();
 		this.type = entry.getType();
+		this.id=entry.id;
 
 	}
 
@@ -76,6 +78,10 @@ public class TransactionEntry {
 
 	public Date getDate() {
 		return date;
+	}
+
+	protected long getSequence() {
+		return sequence;
 	}
 
 	public void setDate(Date date) {
@@ -147,7 +153,7 @@ public class TransactionEntry {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(account, amount, date, type, vendor_client);
+		return Objects.hash(account.getAccountNumber(), amount, date, type, vendor_client);
 	}
 
 	@Override
@@ -159,7 +165,7 @@ public class TransactionEntry {
 		if (getClass() != obj.getClass())
 			return false;
 		TransactionEntry other = (TransactionEntry) obj;
-		return Objects.equals(account, other.account)
+		return Objects.equals(account.getAccountNumber(), other.account.getAccountNumber())
 				&& Double.doubleToLongBits(amount) == Double.doubleToLongBits(other.amount)
 				&& Objects.equals(date, other.date) && type == other.type
 				&& Objects.equals(vendor_client, other.vendor_client);
@@ -175,6 +181,11 @@ public class TransactionEntry {
 
 	public Double getBalance() {
 		return balance;
+	}
+
+	public void setSequence(long sequence) {
+	this.sequence=sequence;
+		
 	}
 
 //	public void setBalance(Double balance) {

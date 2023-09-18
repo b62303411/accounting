@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.springboot.accounting.model.entities.qb.AccountManager;
 import com.example.springboot.accounting.model.entities.qb.AccountType;
+import com.example.springboot.accounting.service.util.SuffixCount;
 
 @Service
 public class AccountFactory {
@@ -21,13 +22,26 @@ public class AccountFactory {
 
 		// Equity
 		createEquityAccounts(accountManager);
-
+		
+		
 		// Revenue
-		accountManager.addAccount("Consulting Revenue", "R001", AccountType.REVENUE, true);
-		accountManager.addAccount("Miscellaneous Revenue", "R002", AccountType.REVENUE, true);
+		createRevenueAccounts(accountManager);
+		
 
 		// Expenses
 		createExpensesAccounts(accountManager);
+	}
+
+	private void createRevenueAccounts(AccountManager accountManager) {
+		SuffixCount count_rev = new SuffixCount("R");
+		List<String> revenues = List.of(
+				"Consulting Revenue", 
+				"Quick Method Benefit", 
+				"Miscellaneous Revenue"
+				);
+		for (String string : revenues) {
+			accountManager.addAccount(string, count_rev.getNext(), AccountType.REVENUE, true);
+		}
 	}
 
 	private void createExpensesAccounts(AccountManager accountManager) {
@@ -42,7 +56,8 @@ public class AccountFactory {
 				"Travel & Meals",
 				"Loss on Asset Write-off",
 				"Sales Tax Expense",// Using simplified method.
-				"Depreciation Expense"
+				"Depreciation Expense",
+				"Training"
 				);
 	
 		for (String string : taxableExpenses) {
@@ -65,6 +80,8 @@ public class AccountFactory {
 		List<String> liabilities = List.of(
 				"Accounts Payable", 
 				"Taxes Payable", 
+				"Sales Tax Payable",
+				"Sales Tax Collected",
 				"Unearned Revenue");
 		for (String string : liabilities) {
 			accountManager.addAccount(string, count_liab.getNext(), AccountType.LIABILITY, false);
@@ -78,6 +95,7 @@ public class AccountFactory {
 				"Prepaid Expenses", 
 				"Office Equipment", 
 				"Loan to Owner",
+				"Tax Savings from NOL",
 				"Unknown");
 		for (String string : assets) {
 			accountManager.addAccount(string, count_asset.getNext(), AccountType.ASSET, false);

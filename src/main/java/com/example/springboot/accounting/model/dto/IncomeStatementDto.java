@@ -11,18 +11,24 @@ import com.example.springboot.accounting.model.entities.qb.Account;
 public class IncomeStatementDto {
 
 	public List<Account> revenueAccounts;
-	public List<Account> expenseAccounts;
+	public List<Account> operatingExpenseAccounts;
+	public List<Account> otherExpenseAccounts;
 	@NumberFormat(style = NumberFormat.Style.CURRENCY)
 	public BigDecimal totalRevenue;
 	@NumberFormat(style = NumberFormat.Style.CURRENCY)
-	public BigDecimal totalExpenses;
-	@NumberFormat(style = NumberFormat.Style.CURRENCY)
-	public BigDecimal netIncome;
+	public BigDecimal totalOperatingExpenses;
+	public BigDecimal totalOtherExpenses;
+
 	public IncomeStatementWhiteBoard wb;
 	
+	@NumberFormat(style = NumberFormat.Style.CURRENCY)
+	public BigDecimal incomeBeforeTax;
+	public BigDecimal incomeTax;
+	public BigDecimal incomeAfterTax;
 	
-	public void setExpenseAccounts(List<Account> expenseAccountMap) {
-		this.expenseAccounts = expenseAccountMap;
+	
+	public void setOperatingExpenseAccounts(List<Account> expenseAccountMap) {
+		this.operatingExpenseAccounts = expenseAccountMap;
 
 	}
 
@@ -35,8 +41,8 @@ public class IncomeStatementDto {
 
 	}
 
-	public void setTotalExpenses(double sum) {
-		totalExpenses = BigDecimal.valueOf(sum);
+	public void setTotalOperatingExpenses(double sum) {
+		totalOperatingExpenses = BigDecimal.valueOf(sum);
 
 	}
 	@NumberFormat(style = NumberFormat.Style.CURRENCY)
@@ -45,17 +51,17 @@ public class IncomeStatementDto {
 		return totalRevenue;
 	}
 	@NumberFormat(style = NumberFormat.Style.CURRENCY)
-	public BigDecimal getTotalExpenses() {
-		return totalExpenses;
+	public BigDecimal getTotalOperatingExpenses() {
+		return totalOperatingExpenses;
 	}
 
-	public void setNetIncome(double d) {
-		this.netIncome = BigDecimal.valueOf(d);
+	public void setIncomeBeforeTax(double d) {
+		this.incomeBeforeTax = BigDecimal.valueOf(d);
 
 
 	}
-	public void setNetIncome(BigDecimal d) {
-		this.netIncome = d;
+	public void setIncomeBeforeTax(BigDecimal d) {
+		this.incomeBeforeTax = d;
 
 
 	}
@@ -64,12 +70,47 @@ public class IncomeStatementDto {
 		return revenueAccounts;
 	}
 
-	public List<Account> getExpenseAccounts() {
-		return expenseAccounts;
+	public List<Account> getOperatingExpenseAccounts() {
+		return operatingExpenseAccounts;
 	}
 	@NumberFormat(style = NumberFormat.Style.CURRENCY)
-	public BigDecimal getNetIncome() {
-		return netIncome;
+	public BigDecimal getIncomeBeforeTax() {
+		return incomeBeforeTax;
+	}
+
+	public List<Account> getOtherExpenseAccounts() {
+		return otherExpenseAccounts;
+	}
+
+	public void setOtherExpenseAccounts(List<Account> otherExpenseAccounts) {
+		this.otherExpenseAccounts = otherExpenseAccounts;
+	}
+
+	public BigDecimal getTotalOtherExpenses() {
+		return totalOtherExpenses;
+	}
+
+	public void setTotalOtherExpenses(BigDecimal totalOtherExpenses) {
+		this.totalOtherExpenses = totalOtherExpenses;
+	}
+	public void setTotalOtherExpenses(double totalOtherExpenses) {
+		this.totalOtherExpenses = BigDecimal.valueOf(totalOtherExpenses);
+	}
+
+	public IncomeStatementWhiteBoard getWb() {
+		return wb;
+	}
+
+	public void setWb(IncomeStatementWhiteBoard wb) {
+		this.wb = wb;
+	}
+
+	public void setTotalRevenue(BigDecimal totalRevenue) {
+		this.totalRevenue = totalRevenue;
+	}
+
+	public void setTotalOperatingExpenses(BigDecimal totalOperatingExpenses) {
+		this.totalOperatingExpenses = totalOperatingExpenses;
 	}
 
 }

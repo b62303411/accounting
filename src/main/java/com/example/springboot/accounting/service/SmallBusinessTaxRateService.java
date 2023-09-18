@@ -1,10 +1,12 @@
-package com.example.springboot.accounting.model.entities;
+package com.example.springboot.accounting.service;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 
 import org.springframework.stereotype.Service;
+
+import com.example.springboot.accounting.model.entities.Rates;
 
 /**
  * Year Quebec Small Business Tax Rate 2016-2018 8 % 28 Mar - 31 Dec 2018 7 %
@@ -35,6 +37,7 @@ public class SmallBusinessTaxRateService {
 		LocalDate localDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
 		double prov = getQuebecProvincialRate(localDate );
+		rate.setProvintial(prov);
 		return rate;
 	}
 

@@ -56,7 +56,8 @@ public class AdministrationController {
 	public String accounts(Model model) {
 		int currentYear = Calendar.getInstance().get(Calendar.YEAR);
 		// List<Account> accounts = accountRepository.findAll();
-		Ledger l = gls.populateLedger();
+		Ledger l = gls.getLedger();
+		
 		AccountManager am = l.getAccountManager();
 
 		List<Account> accounts = am.getAccounts();

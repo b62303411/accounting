@@ -26,6 +26,18 @@ public class TaxService {
 	
 	/**
 	 * 
+	 * @param total
+	 * @return
+	 */
+	public double getBeforeTaxesValue(double total) 
+	{
+		double TPS_RATE = SalesTaxeRates.TPS_RATE;
+		double TVQ_RATE = SalesTaxeRates.TVQ_RATE;
+		double beforeTaxes = total / (1 + TPS_RATE + TPS_RATE * TVQ_RATE + TVQ_RATE);
+		return beforeTaxes;
+	}
+	/**
+	 * 
 	 * @param changed
 	 * @param exploitationExpense
 	 * @return

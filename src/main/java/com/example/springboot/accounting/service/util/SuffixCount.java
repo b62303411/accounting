@@ -1,4 +1,4 @@
-package com.example.springboot.accounting.service;
+package com.example.springboot.accounting.service.util;
 
 public class SuffixCount {
 	public String suffix;

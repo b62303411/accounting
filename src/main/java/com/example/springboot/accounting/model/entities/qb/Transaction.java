@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
+import com.example.springboot.accounting.model.Sequence;
 import com.example.springboot.accounting.model.TransactionNature;
 
 /**
@@ -14,6 +15,7 @@ import com.example.springboot.accounting.model.TransactionNature;
  */
 public class Transaction {
 
+	private long sequence;
 	private Date date;
 	private String description;
 	private double amount;
@@ -23,7 +25,16 @@ public class Transaction {
 	private Set<TransactionEntry> entries = new HashSet();
 	private String message;
 
-	public Transaction() {
+	protected Long getSequence() {
+		return sequence;
+	}
+
+	protected void setSequence(long sequence) {
+		this.sequence = sequence;
+	}
+
+	public Transaction(Sequence seq) {
+		sequence=seq.getNext();
 		this.id = UUID.randomUUID().toString();
 		this.status = TransactionStatus.UNPOSTED;
 	}
@@ -32,7 +43,8 @@ public class Transaction {
 	  this.date=transaction.getDate();
 	  this.id=transaction.getId();
 	  this.nature=transaction.getNature();
-	  
+	  this.description=transaction.getDescription();
+	  this.message=transaction.message;
 	}
 
 	public Date getDate() {
@@ -68,6 +80,7 @@ public class Transaction {
 	}
 
 	public void addEntry(TransactionEntry entry) {
+		entry.setSequence(this.sequence);
 		entries.add(entry);
 	}
 

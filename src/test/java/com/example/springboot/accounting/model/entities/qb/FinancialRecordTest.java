@@ -4,18 +4,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import com.example.springboot.accounting.TestFixture;
+import com.example.springboot.accounting.model.Sequence;
 import com.example.springboot.accounting.service.AccountFactory;
 
 class FinancialRecordTest {
-
-
 
 	/**
 	 * Yes, in the context of accounting and financial record-keeping, an expense is
@@ -279,22 +278,21 @@ class FinancialRecordTest {
 	 * 
 	 * 
 	 */
-	
+
 	String checking = "TD_EVERY_DAY_A_BUSINESS_PLAN";
 	String credit = "TD BUSINESS VISA";
-	
-	
+
 	@Test
 	void test() {
 
 		// Creating a bank transaction
-		BankTransaction bankTransaction = new BankTransaction();
+		BankTransaction bankTransaction = new BankTransaction(null);
 		bankTransaction.setDate(Date.from(Instant.now()));
 		bankTransaction.setDescription("Withdrawal for dividend payment");
 		bankTransaction.setAmount(-1000.0); // Negative amount for withdrawals
 
 		// Creating a financial record for an expense transaction
-		FinancialRecord expenseRecord = new FinancialRecord();
+		FinancialRecord expenseRecord = new FinancialRecord(null);
 		expenseRecord.setTransactionType("Expense");
 		expenseRecord.setDate(Date.from(Instant.now()));
 		expenseRecord.setDescription("Dividend payment to owner");
@@ -308,11 +306,11 @@ class FinancialRecordTest {
 	public void testBalancedBooksAfterDividendPayment() {
 		AccountManager accountManager = new AccountManager();
 
-		accountManager.addAccount("CREDIT_CARD", "003", AccountType.LIABILITY,false);
-		accountManager.addAccount("CHECKING", "002", AccountType.ASSET,false);
-		accountManager.addAccount("INVESTMENT", "004", AccountType.ASSET,false);
+		accountManager.addAccount("CREDIT_CARD", "003", AccountType.LIABILITY, false);
+		accountManager.addAccount("CHECKING", "002", AccountType.ASSET, false);
+		accountManager.addAccount("INVESTMENT", "004", AccountType.ASSET, false);
 		// Simulate a dividend payment
-		FinancialRecord dividendRecord = new FinancialRecord();
+		FinancialRecord dividendRecord = new FinancialRecord(null);
 		dividendRecord.setTransactionType("Expense");
 		dividendRecord.setDate(Date.from(Instant.now()));
 		dividendRecord.setDescription("Dividend payment to owner");
@@ -320,13 +318,13 @@ class FinancialRecordTest {
 		dividendRecord.setAccount("Dividends Paid");
 
 		// Simulate a corresponding bank withdrawal
-		BankTransaction bankWithdrawal = new BankTransaction();
+		BankTransaction bankWithdrawal = new BankTransaction(null);
 		bankWithdrawal.setDate(Date.from(Instant.now()));
 		bankWithdrawal.setDescription("Withdrawal for dividend payment");
 		bankWithdrawal.setAmount(-1000.0); // Negative amount for withdrawals
 
 		// Simulate an offsetting bank deposit
-		BankTransaction bankDeposit = new BankTransaction();
+		BankTransaction bankDeposit = new BankTransaction(null);
 		bankDeposit.setDate(Date.from(Instant.now()));
 		bankDeposit.setDescription("Offsetting deposit for dividend payment");
 		bankDeposit.setAmount(1000.0); // Positive amount for deposits
@@ -348,6 +346,8 @@ class FinancialRecordTest {
 		// Additional validation or business logic checks can be added here
 	}
 
+	
+
 	/**
 	 * Purchasing Items with a Split Payment: Suppose a business buys equipment
 	 * worth $1,000 and decides to pay $700 in cash and put $300 on credit. This
@@ -357,37 +357,28 @@ class FinancialRecordTest {
 	 */
 	@Test
 	void testSplitPaymentTransaction() {
-		AccountManager accountManager = new AccountManager();
-		LedgerRuleFactory fac = new LedgerRuleFactory(accountManager);
-		Ledger ledger = new Ledger(accountManager,fac);
-		Date date=Date.from(Instant.now());
-		Account equipment = new Account("Equipment", "001", AccountType.ASSET,false);
-		Account cash = new Account("Cash", "002", AccountType.ASSET,false);
-		Account payable = new Account("Accounts Payable", "003", AccountType.LIABILITY,false);
-
-		accountManager.addAccount(equipment);
-		accountManager.addAccount(cash);
-		accountManager.addAccount(payable);
-
+		TestFixture f = new TestFixture();
+		Date date = Date.from(Instant.now());
+		Sequence seq = new Sequence();
 		// Creating a split payment transaction
-		Transaction purchaseEquipment = new Transaction();
+		Transaction purchaseEquipment = new Transaction(seq);
 
-		String vendor_client="";
+		String vendor_client = "";
 		// Equipment is increased by $1,000
-		purchaseEquipment.addEntry(new TransactionEntry(equipment,vendor_client,date,1000, EntryType.DEBIT));
+		purchaseEquipment.addEntry(new TransactionEntry(f.equipment, vendor_client, date, 1000, EntryType.DEBIT));
 
 		// Cash is decreased by $700
-		purchaseEquipment.addEntry(new TransactionEntry(cash,vendor_client,date, 700, EntryType.CREDIT));
+		purchaseEquipment.addEntry(new TransactionEntry(f.cash, vendor_client, date, 700, EntryType.CREDIT));
 
 		// Accounts Payable (liability) is increased by $300
-		purchaseEquipment.addEntry(new TransactionEntry(payable,vendor_client,date, 300, EntryType.CREDIT));
+		purchaseEquipment.addEntry(new TransactionEntry(f.payable, vendor_client, date, 300, EntryType.CREDIT));
 
-		ledger.postTransaction(purchaseEquipment);
+		f.ledger.postTransaction(purchaseEquipment);
 
 		// Asserting the final balances
-		assertEquals(1000, equipment.getBalance());
-		assertEquals(-700, cash.getBalance()); // Cash is reduced
-		assertEquals(300, payable.getBalance()); // Liability is increased
+		assertEquals(1000, f.equipment.getBalance());
+		assertEquals(-700, f.cash.getBalance()); // Cash is reduced
+		assertEquals(300, f.payable.getBalance()); // Liability is increased
 	}
 
 	/**
@@ -401,37 +392,28 @@ class FinancialRecordTest {
 	 */
 	@Test
 	void testSalesWithSalesTaxTransaction() {
-		AccountManager accountManager = new AccountManager();
-		LedgerRuleFactory fac = new LedgerRuleFactory(accountManager);
-		Ledger ledger = new Ledger(accountManager,fac );
-		Account cash = new Account("Cash", "001", AccountType.ASSET,false);
-		Account salesRevenue = new Account("Sales Revenue", "002", AccountType.REVENUE,true);
-		Account salesTaxPayable = new Account("Sales Tax Payable", "003", AccountType.LIABILITY,false);
-
-		accountManager.addAccount(cash);
-		accountManager.addAccount(salesRevenue);
-		accountManager.addAccount(salesTaxPayable);
-
+		TestFixture f = new TestFixture();
+		Sequence seq = new Sequence();
 		// Creating a sales with sales tax transaction
-		Transaction salesTransaction = new Transaction();
+		Transaction salesTransaction = new Transaction(seq);
 
-		Date date=Date.from(Instant.now());
-		String vendor_client="";
+		Date date = Date.from(Instant.now());
+		String vendor_client = "";
 		// Cash is increased by the total amount including tax: $530
-		salesTransaction.addEntry(new TransactionEntry(cash,vendor_client, date,530, EntryType.DEBIT));
+		salesTransaction.addEntry(new TransactionEntry(f.cash, vendor_client, date, 530, EntryType.DEBIT));
 
 		// Sales Revenue is credited by the product's price: $500
-		salesTransaction.addEntry(new TransactionEntry(salesRevenue,vendor_client,date, 500, EntryType.CREDIT));
+		salesTransaction.addEntry(new TransactionEntry(f.salesRevenue, vendor_client, date, 500, EntryType.CREDIT));
 
 		// Sales Tax Payable is credited by the tax amount: $30
-		salesTransaction.addEntry(new TransactionEntry(salesTaxPayable,vendor_client,date, 30, EntryType.CREDIT));
+		salesTransaction.addEntry(new TransactionEntry(f.salesTaxPayable, vendor_client, date, 30, EntryType.CREDIT));
 
-		ledger.postTransaction(salesTransaction);
+		f.ledger.postTransaction(salesTransaction);
 
 		// Asserting the final balances
-		assertEquals(530, cash.getBalance());
-		assertEquals(500, salesRevenue.getBalance()); // Sales Revenue is credited
-		assertEquals(30, salesTaxPayable.getBalance()); // Sales Tax Payable is credited
+		assertEquals(530, f.cash.getBalance());
+		assertEquals(500, f.salesRevenue.getBalance()); // Sales Revenue is credited
+		assertEquals(30, f.salesTaxPayable.getBalance()); // Sales Tax Payable is credited
 	}
 
 	/**
@@ -462,145 +444,117 @@ class FinancialRecordTest {
 
 	@Test
 	public void testDividendPaymentToString() {
-		AccountManager accountManager = new AccountManager();
-		LedgerRuleFactory fac = new LedgerRuleFactory(accountManager);
-		Ledger ledger = new Ledger(accountManager,fac );
-		Account retainedEarnings = new Account("Retained Earnings", "001", AccountType.EQUITY,false);
-		Account dividendsDeclared = new Account("Dividends Declared", "002", AccountType.EQUITY,false);
-		Account cash = new Account("Cash", "003", AccountType.ASSET,false);
-
-		accountManager.addAccount(retainedEarnings);
-		accountManager.addAccount(dividendsDeclared);
-		accountManager.addAccount(cash);
-
+		TestFixture f = new TestFixture();
+		Sequence seq = new Sequence();
 		// Step 1: Declaring the Dividends
-		Transaction declareDividends = new Transaction();
+		Transaction declareDividends = new Transaction(seq);
 
-		Date date=Date.from(Instant.now());
-		String vendor_client="";
+		Date date = Date.from(Instant.now());
+		String vendor_client = "";
 		// Retained Earnings is decreased by the declared dividend amount
-		declareDividends.addEntry(new TransactionEntry(retainedEarnings,vendor_client, date,300, EntryType.DEBIT));
+		declareDividends.addEntry(new TransactionEntry(f.retainedEarnings, vendor_client, date, 300, EntryType.DEBIT));
 
 		// Dividends Declared (liability) is increased by the declared amount
-		declareDividends.addEntry(new TransactionEntry(dividendsDeclared,vendor_client,date, 300, EntryType.CREDIT));
+		declareDividends
+				.addEntry(new TransactionEntry(f.dividendsDeclared, vendor_client, date, 300, EntryType.CREDIT));
 
-		ledger.postTransaction(declareDividends);
+		f.ledger.postTransaction(declareDividends);
 
 		// Asserting balances after declaring dividends
-		assertEquals(-300, retainedEarnings.getBalance()); // Retained Earnings is debited
-		assertEquals(300, dividendsDeclared.getBalance()); // Dividends Declared is credited
+		assertEquals(-300, f.retainedEarnings.getBalance()); // Retained Earnings is debited
+		assertEquals(300, f.dividendsDeclared.getBalance()); // Dividends Declared is credited
 
 		// Step 2: Paying the Dividends
-		Transaction payDividends = new Transaction();
+		Transaction payDividends = new Transaction(seq);
 
 		// Dividends Declared (liability) is decreased by the payment amount
-		payDividends.addEntry(new TransactionEntry(dividendsDeclared,vendor_client,date, 300, EntryType.DEBIT));
+		payDividends.addEntry(new TransactionEntry(f.dividendsDeclared, vendor_client, date, 300, EntryType.DEBIT));
 
 		// Cash is decreased by the payment amount
-		payDividends.addEntry(new TransactionEntry(cash,vendor_client,date, 300, EntryType.CREDIT));
+		payDividends.addEntry(new TransactionEntry(f.cash, vendor_client, date, 300, EntryType.CREDIT));
 
-		ledger.postTransaction(payDividends);
+		f.ledger.postTransaction(payDividends);
 
 		// Asserting balances after paying dividends
-		assertEquals(0, dividendsDeclared.getBalance()); // Dividends Declared is back to zero
-		assertEquals(-300, cash.getBalance()); // Cash is reduced
+		assertEquals(0, f.dividendsDeclared.getBalance()); // Dividends Declared is back to zero
+		assertEquals(-300, f.cash.getBalance()); // Cash is reduced
 	}
 
 	@Test
 	public void testReal() {
-		Account checking = new Account("Checking", "001", AccountType.ASSET,false);
-		// Account savings = new Account("Savings", "002", AccountType.ASSET);
-		Account creditCard = new Account("Credit Card", "003", AccountType.LIABILITY,false);
-		Account investment = new Account("Investment", "004", AccountType.ASSET,false);
 
-		Account amazon = new Account("Amazon", "005", AccountType.LIABILITY,false); // Assuming Amazon's invoice would be a
-																				// liability until paid.
-		Account lawyer = new Account("Lawyer", "006", AccountType.LIABILITY,false);
-		Account accountant = new Account("Accountant", "007", AccountType.LIABILITY,false);
-		Account government = new Account("Government", "008", AccountType.LIABILITY,false);
-
-		Transaction depositToChecking = new Transaction();
-		Date date=Date.from(Instant.now());
-		depositToChecking.addEntry(new TransactionEntry(checking,"",date, 1000, EntryType.DEBIT));
+		TestFixture f = new TestFixture();
+		Sequence seq = new Sequence();
+		Transaction depositToChecking = new Transaction(seq);
+		Date date = Date.from(Instant.now());
+		depositToChecking.addEntry(new TransactionEntry(f.checking, "", date, 1000, EntryType.DEBIT));
 
 //		Transaction transferToSavings = new Transaction();
 //		transferToSavings.addEntry(new TransactionEntry(checking, 500, "Credit"));
 //		transferToSavings.addEntry(new TransactionEntry(savings, 500, "Debit"));
 
-		Transaction payCreditCard = new Transaction();
-		payCreditCard.addEntry(new TransactionEntry(checking,"",date,  200, EntryType.CREDIT));
-		payCreditCard.addEntry(new TransactionEntry(creditCard,"",date,  200, EntryType.DEBIT));
+	
+		Transaction payCreditCard = new Transaction(seq );
+		payCreditCard.addEntry(new TransactionEntry(f.checking, "", date, 200, EntryType.CREDIT));
+		payCreditCard.addEntry(new TransactionEntry(f.creditCard, "", date, 200, EntryType.DEBIT));
 
-		Transaction earnInvestment = new Transaction();
-		earnInvestment.addEntry(new TransactionEntry(investment,"",date,  100, EntryType.DEBIT));
+		Transaction earnInvestment = new Transaction(seq);
+		earnInvestment.addEntry(new TransactionEntry(f.investment, "", date, 100, EntryType.DEBIT));
 
-		Transaction amazonInvoice = new Transaction();
-		amazonInvoice.addEntry(new TransactionEntry(amazon,"",date,  200, EntryType.CREDIT));
-		amazonInvoice.addEntry(new TransactionEntry(checking,"",date,  200, EntryType.DEBIT));
+		Transaction amazonInvoice = new Transaction(seq);
+		amazonInvoice.addEntry(new TransactionEntry(f.amazon, "", date, 200, EntryType.CREDIT));
+		amazonInvoice.addEntry(new TransactionEntry(f.checking, "", date, 200, EntryType.DEBIT));
 
-		Transaction lawyerInvoice = new Transaction();
-		lawyerInvoice.addEntry(new TransactionEntry(lawyer,"",date,  500, EntryType.CREDIT));
-		lawyerInvoice.addEntry(new TransactionEntry(checking,"",date,  500, EntryType.DEBIT));
+		Transaction lawyerInvoice = new Transaction(seq);
+		lawyerInvoice.addEntry(new TransactionEntry(f.lawyer, "", date, 500, EntryType.CREDIT));
+		lawyerInvoice.addEntry(new TransactionEntry(f.checking, "", date, 500, EntryType.DEBIT));
 
-		Transaction accountantInvoice = new Transaction();
-		accountantInvoice.addEntry(new TransactionEntry(accountant,"",date,  300, EntryType.CREDIT));
-		accountantInvoice.addEntry(new TransactionEntry(checking,"",date,  300, EntryType.DEBIT));
+		Transaction accountantInvoice = new Transaction(seq);
+		accountantInvoice.addEntry(new TransactionEntry(f.accountant, "", date, 300, EntryType.CREDIT));
+		accountantInvoice.addEntry(new TransactionEntry(f.checking, "", date, 300, EntryType.DEBIT));
 
-		Transaction governmentTaxDue = new Transaction();
-		String vendor_client="";
-		governmentTaxDue.addEntry(new TransactionEntry(government,vendor_client,date, 1500, EntryType.CREDIT));
-		governmentTaxDue.addEntry(new TransactionEntry(checking,vendor_client,date, 1500, EntryType.DEBIT));
+		Transaction governmentTaxDue = new Transaction(seq);
+		String vendor_client = "";
+		governmentTaxDue.addEntry(new TransactionEntry(f.government, vendor_client, date, 1500, EntryType.CREDIT));
+		governmentTaxDue.addEntry(new TransactionEntry(f.checking, vendor_client, date, 1500, EntryType.DEBIT));
 
-		Transaction payAmazonInvoice = new Transaction();
-		payAmazonInvoice.addEntry(new TransactionEntry(amazon,vendor_client,date, 200, EntryType.DEBIT)); // Invoice is settled.
-		payAmazonInvoice.addEntry(new TransactionEntry(checking,vendor_client,date, 200, EntryType.CREDIT));
+		Transaction payAmazonInvoice = new Transaction(seq);
+		payAmazonInvoice.addEntry(new TransactionEntry(f.amazon, vendor_client, date, 200, EntryType.DEBIT)); // Invoice
+																												// is
+																												// settled.
+		payAmazonInvoice.addEntry(new TransactionEntry(f.checking, vendor_client, date, 200, EntryType.CREDIT));
 
-		AccountManager accountManager = new AccountManager();
-		LedgerRuleFactory fac = new LedgerRuleFactory(accountManager);
-		Ledger ledger = new Ledger(accountManager,fac );
-		accountManager.addAccount(checking);
-		// ledger.addAccount(savings);
-		accountManager.addAccount(creditCard);
-		accountManager.addAccount(investment);
-		accountManager.addAccount(amazon);
-		accountManager.addAccount(lawyer);
-		accountManager.addAccount(accountant);
-		accountManager.addAccount(government);
+		f.ledger.postTransaction(amazonInvoice);
+		f.ledger.postTransaction(lawyerInvoice);
+		f.ledger.postTransaction(accountantInvoice);
+		f.ledger.postTransaction(governmentTaxDue);
+		f.ledger.postTransaction(payAmazonInvoice);
 
-		ledger.postTransaction(amazonInvoice);
-		ledger.postTransaction(lawyerInvoice);
-		ledger.postTransaction(accountantInvoice);
-		ledger.postTransaction(governmentTaxDue);
-		ledger.postTransaction(payAmazonInvoice);
-
-		ledger.postTransaction(depositToChecking);
+		f.ledger.postTransaction(depositToChecking);
 		// ledger.postTransaction(transferToSavings);
-		ledger.postTransaction(payCreditCard);
-		ledger.postTransaction(earnInvestment);
+		f.ledger.postTransaction(payCreditCard);
+		f.ledger.postTransaction(earnInvestment);
 
 		// assertEquals(300, checking.getBalance());
 		// assertEquals(500, savings.getBalance());
-		assertEquals(-200, creditCard.getBalance());
-		assertEquals(100, investment.getBalance());
+		assertEquals(-200, f.creditCard.getBalance());
+		assertEquals(100, f.investment.getBalance());
 
-		assertEquals(-2500, checking.getBalance()); // Assuming we're starting from zero.
-		assertEquals(0, amazon.getBalance());
-		assertEquals(500, lawyer.getBalance());
-		assertEquals(300, accountant.getBalance());
-		assertEquals(1500, government.getBalance());
+		assertEquals(-2500, f.checking.getBalance()); // Assuming we're starting from zero.
+		assertEquals(0, f.amazon.getBalance());
+		assertEquals(500, f.lawyer.getBalance());
+		assertEquals(300, f.accountant.getBalance());
+		assertEquals(1500, f.government.getBalance());
 
 	}
 
 	@Test
 	public void liability() {
-		AccountManager accountManager = new AccountManager();
-		LedgerRuleFactory fac = new LedgerRuleFactory(accountManager);
-		Ledger ledger = new Ledger(accountManager,fac );
-		createAccounts(accountManager);
-	
+		TestFixture f = new TestFixture();
+		
 		// Initial balances
-		assertEquals(0, accountManager.getBalance(checking));
-		assertEquals(0, accountManager.getBalance("Bank Fees"));
+		assertEquals(0, f.accountManager.getBalance(checking));
+		assertEquals(0, f.accountManager.getBalance("Bank Fees"));
 //		+------------+-----------+--------------------------+-----+--------------+---------+--------+
 //		| Date       | Type      | Name                     | No  | Vendor/Client|  Debit  | Credit |
 //		+------------+-----------+--------------------------+-----+--------------+---------+--------+
@@ -608,55 +562,54 @@ class FinancialRecordTest {
 //		| 15/06/2023 | ASSET     | Loan to Owner            | 100 | Your Name    |   -     | $2,000.00|
 //		+------------+-----------+--------------------------+-----+--------------+---------+--------+
 
-		ledger.addTransaction( "5/31/2018", "Cloutier & Longtin", "Cloutier & Longtin", "19.00", "credit",
-				"Liability", "1",0.0);
-		//The amount that you owe to the company also reduces, so the asset account "Loan to Owner" (the loan from the company to you) is credited.
-		assertEquals(-19, accountManager.getBalance("Loan to Owner"));
-		//The company's liability (what it owes to Cloutier Longtin) reduces, so we debit "Accounts Payable".
-		assertEquals(-19, accountManager.getBalance("Accounts Payable"));
-		ledger.printLedger();
+		f.ledger.addTransaction("5/31/2018", "Cloutier & Longtin", "Cloutier & Longtin", "19.00", "credit", "Liability",
+				"1", 0.0);
+		// The amount that you owe to the company also reduces, so the asset account
+		// "Loan to Owner" (the loan from the company to you) is credited.
+		assertEquals(-19, f.accountManager.getBalance("Loan to Owner"));
+		// The company's liability (what it owes to Cloutier Longtin) reduces, so we
+		// debit "Accounts Payable".
+		assertEquals(-19, f.accountManager.getBalance("Accounts Payable"));
+		f.ledger.printLedger();
 	}
 
 	@Test
 	public void ok() {
-		AccountManager accountManager = new AccountManager();
-		LedgerRuleFactory fac = new LedgerRuleFactory(accountManager);
-		Ledger ledger = new Ledger(accountManager,fac );
-		createAccounts(accountManager);
+		TestFixture f = new TestFixture();
 
 		// Initial balances
-		assertEquals(0, accountManager.getBalance(checking));
-		assertEquals(0, accountManager.getBalance("Bank Fees"));
+		assertEquals(0, f.accountManager.getBalance(checking));
+		assertEquals(0, f.accountManager.getBalance("Bank Fees"));
 
-		ledger.addTransaction( "5/31/2018", "Frais Mens Plan", "FRAIS MENS PLAN SERV", "19.00", "debit",
-				"Bank Fee", "TD EVERY DAY A BUSINESS PLAN",0.0);
+		f.ledger.addTransaction("5/31/2018", "Frais Mens Plan", "FRAIS MENS PLAN SERV", "19.00", "debit", "Bank Fee",
+				"TD EVERY DAY A BUSINESS PLAN", 0.0);
 
 		// After bank fee is charged
-		assertEquals(-19, accountManager.getBalance(checking));
-		assertEquals(19, accountManager.getBalance("Bank Fees"));
+		assertEquals(-19, f.accountManager.getBalance(checking));
+		assertEquals(19, f.accountManager.getBalance("Bank Fees"));
 
 		// After bank fee is refunded
-		ledger.addTransaction( "5/31/2018", "Red Solde", "Cpte	RED SOLDE CPTE", "19.00", "credit",
-				"Income", "TD EVERY DAY A BUSINESS PLAN",0.0);
+		f.ledger.addTransaction("5/31/2018", "Red Solde", "Cpte	RED SOLDE CPTE", "19.00", "credit", "Income",
+				"TD EVERY DAY A BUSINESS PLAN", 0.0);
 
-		assertEquals(0, accountManager.getBalance(checking));
-		assertEquals(0, accountManager.getBalance("Bank Fees"));
+		assertEquals(0,f. accountManager.getBalance(checking));
+		assertEquals(0,f. accountManager.getBalance("Bank Fees"));
 
-		ledger.printAccounts();
+		f.ledger.printAccounts();
 
-		assertEquals(0, accountManager.getBalance(credit));
+		assertEquals(0, f.accountManager.getBalance(credit));
 
-		ledger.addTransaction("5/28/2018", "Transfer to TD BUSINESS VISA", "PMT PREAUTOR VISA TD",
-				"276.72", "debit", "Credit Card Payment", "TD EVERY DAY A BUSINESS PLAN",0.0);
+		f.ledger.addTransaction("5/28/2018", "Transfer to TD BUSINESS VISA", "PMT PREAUTOR VISA TD", "276.72", "debit",
+				"Credit Card Payment", "TD EVERY DAY A BUSINESS PLAN", 0.0);
 
-		assertEquals(-276.72, accountManager.getBalance(checking));
-		assertEquals(-276.72, accountManager.getBalance(credit));
+		assertEquals(-276.72, f.accountManager.getBalance(checking));
+		assertEquals(-276.72, f.accountManager.getBalance(credit));
 
-		assertEquals(0, accountManager.getBalance("Owner's Draw"));
-		ledger.addTransaction( "5/22/2018", "View Cheque Chq", "View Cheque CHQ#00037-3000249272",
-				"4000.00	", "debit", "Dividend & Cap Gains", "TD EVERY DAY A BUSINESS PLAN",0.0);
-		assertEquals(-4000.00, accountManager.getBalance("Owner's Draw"));
-		assertEquals(-4276.72, accountManager.getBalance(checking));
+		assertEquals(0, f.accountManager.getBalance("Owner's Draw"));
+		f.ledger.addTransaction("5/22/2018", "View Cheque Chq", "View Cheque CHQ#00037-3000249272", "4000.00	", "debit",
+				"Dividend & Cap Gains", "TD EVERY DAY A BUSINESS PLAN", 0.0);
+		assertEquals(-4000.00, f.accountManager.getBalance("Owner's Draw"));
+		assertEquals(-4276.72, f.accountManager.getBalance(checking));
 
 		/// Ok so there we need to divide this is a total of 8 entry.
 		// Accounts Receivable
@@ -664,24 +617,24 @@ class FinancialRecordTest {
 		// Type , Name ,Client , Debit , Credit.
 		// Asset , Accounts Receivable,Incloud Solutio Fac, 5472.81, -
 		// Revenue , Sales ,Incloud Solutio Fac, - , 5472.81
-		ledger.addTransaction( "5/14/2018", "Incloud Solutio Fac", "INCLOUD SOLUTIO FAC", "5472.81	",
-				"debit", "Invoice", "TD EVERY DAY A BUSINESS PLAN",0.0);
-		ledger.printLedger();
+		f.ledger.addTransaction("5/14/2018", "Incloud Solutio Fac", "INCLOUD SOLUTIO FAC", "5472.81	", "debit",
+				"Invoice", "TD EVERY DAY A BUSINESS PLAN", 0.0);
+		f.ledger.printLedger();
 
-		assertEquals(5472.81, accountManager.getBalance("Accounts Receivable"), 0.001);
-		assertEquals(5472.81, accountManager.getBalance("Consulting Revenue"), 0.001);
+		assertEquals(5472.81, f.accountManager.getBalance("Accounts Receivable"), 0.001);
+		assertEquals(5472.81, f.accountManager.getBalance("Consulting Revenue"), 0.001);
 
 		// (Payment Received from Client A)
 		// Type , Name ,Client , Debit , Credit.
 		// Asset , Check ,Incloud Solutio Fac, 5472.81, -
 		// Revenue , Accounts Receivable,Incloud Solutio Fac, - , 5472.81
-		ledger.addTransaction("5/14/2018", "Incloud Solutio Fac", "INCLOUD SOLUTIO FAC", "5472.81	",
-				"debit", "Income", "TD EVERY DAY A BUSINESS PLAN",0.0);
+		f.ledger.addTransaction("5/14/2018", "Incloud Solutio Fac", "INCLOUD SOLUTIO FAC", "5472.81	", "debit",
+				"Income", "TD EVERY DAY A BUSINESS PLAN", 0.0);
 
-		ledger.printLedger();
+		f.ledger.printLedger();
 
-		assertEquals(1196.09, accountManager.getBalance(checking), 0.001);
-		assertEquals(5472.81, accountManager.getBalance("Consulting Revenue"), 0.001);
+		assertEquals(1196.09, f.accountManager.getBalance(checking), 0.001);
+		assertEquals(5472.81, f.accountManager.getBalance("Consulting Revenue"), 0.001);
 
 //		addTransaction(ledger,accountManager, "4/30/2018", "Frais Mens Plan", "FRAIS MENS PLAN SERV", "19.00", "debit",
 //				"Bank Fee", "TD EVERY DAY A BUSINESS PLAN");
@@ -695,172 +648,157 @@ class FinancialRecordTest {
 
 	}
 
-	
-
 	@Test
-	public void testBankFees() 
-	{
-		AccountManager accountManager = new AccountManager();
-		LedgerRuleFactory fac = new LedgerRuleFactory(accountManager);
-		Ledger ledger = new Ledger(accountManager,fac );
-		createAccounts(accountManager);
+	public void testBankFees() {
+		TestFixture f = new TestFixture();
+		AccountManager accountManager = f.accountManager;
+		Ledger ledger = f.ledger;
 		// Initial balances
 		assertEquals(0, accountManager.getBalance(checking));
 		assertEquals(0, accountManager.getBalance("Bank Fees"));
 
 		// Entry from TD bank Account
-		ledger.addTransaction( "5/31/2018", "Frais Mens Plan", "FRAIS MENS PLAN SERV", "19.00", "debit",
-				"Bank Fee", "TD EVERY DAY A BUSINESS PLAN",0.0);
+		ledger.addTransaction("5/31/2018", "Frais Mens Plan", "FRAIS MENS PLAN SERV", "19.00", "debit", "Bank Fee",
+				"TD EVERY DAY A BUSINESS PLAN", 0.0);
 
 		// After bank fee is charged
 		assertEquals(-19, accountManager.getBalance(checking));
 		assertEquals(19, accountManager.getBalance("Bank Fees"));
-		
+
 		// After bank fee is refunded
-		ledger.addTransaction( "5/31/2018", "Red Solde", "Cpte	RED SOLDE CPTE", "19.00", "credit",
-				"Income", "TD EVERY DAY A BUSINESS PLAN",0.0);
+		ledger.addTransaction("5/31/2018", "Red Solde", "Cpte	RED SOLDE CPTE", "19.00", "credit", "Income",
+				"TD EVERY DAY A BUSINESS PLAN", 0.0);
 
 		assertEquals(0, accountManager.getBalance(checking));
 		assertEquals(0, accountManager.getBalance("Bank Fees"));
 
 		ledger.printAccounts();
 		ledger.printLedger();
-		
-		
+
 	}
+
 	@Test
-	public void testDividend() 
-	{
-		AccountManager accountManager = new AccountManager();
-		LedgerRuleFactory fac = new LedgerRuleFactory(accountManager);
-		Ledger ledger = new Ledger(accountManager,fac );
-		createAccounts(accountManager);
+	public void testDividend() {
+		TestFixture f = new TestFixture();
+		AccountManager accountManager = f.accountManager;
+		Ledger ledger = f.ledger;
 		assertEquals(0, accountManager.getBalance(checking));
 		assertEquals(0, accountManager.getBalance("Owner's Draw"));
-		
-		ledger.addTransaction( "5/22/2018", "View Cheque Chq", "View Cheque CHQ#00037-3000249272",
-				"4000.00", "debit", "Dividend & Cap Gains", "TD EVERY DAY A BUSINESS PLAN",0.0);
+
+		ledger.addTransaction("5/22/2018", "View Cheque Chq", "View Cheque CHQ#00037-3000249272", "4000.00", "debit",
+				"Dividend & Cap Gains", "TD EVERY DAY A BUSINESS PLAN", 0.0);
 		double amount = 4000.00;
 		/**
-		 * Debit (Dr) to Owner's Draw or Dividends (an Equity account): 
-		 * This represents the amount of money or profit being distributed to the owner. 
-		 * Debiting this account decreases the equity of the business since the owner is taking money out
+		 * Debit (Dr) to Owner's Draw or Dividends (an Equity account): This represents
+		 * the amount of money or profit being distributed to the owner. Debiting this
+		 * account decreases the equity of the business since the owner is taking money
+		 * out
 		 */
 		assertEquals(-amount, accountManager.getBalance("Owner's Draw"));
 		assertEquals(-amount, accountManager.getBalance(checking));
 		ledger.printAccounts();
 		ledger.printLedger();
 	}
-	
-	
+
 	@Test
-	public void testRevenueSales() 
-	{
-		AccountManager accountManager = new AccountManager();
-		LedgerRuleFactory fac = new LedgerRuleFactory(accountManager);
-		Ledger ledger = new Ledger(accountManager,fac );
-		createAccounts(accountManager);
-		
+	public void testRevenueSales() {
+		TestFixture f = new TestFixture();
+		AccountManager accountManager = f.accountManager;
+		Ledger ledger = f.ledger;
+
 		assertEquals(0, accountManager.getBalance(checking));
 		assertEquals(0, accountManager.getBalance("Accounts Receivable"));
 		assertEquals(0, accountManager.getBalance("Consulting Revenue"));
 		// Type , Name ,Client , Debit , Credit.
 		// Asset , Accounts Receivable,Incloud Solutio Fac, 5472.81, -
 		// Revenue , Sales ,Incloud Solutio Fac, - , 5472.81
-		ledger.addTransaction( "5/14/2018", "Incloud Solutio Fac", "INCLOUD SOLUTIO FAC", "5472.81	",
-				"debit", "Invoice", "TD EVERY DAY A BUSINESS PLAN",0.0);
+		ledger.addTransaction("5/14/2018", "Incloud Solutio Fac", "INCLOUD SOLUTIO FAC", "5472.81	", "debit",
+				"Invoice", "TD EVERY DAY A BUSINESS PLAN", 0.0);
 		ledger.printLedger();
 
 		double invoiceAmount = 5472.81;
 		assertEquals(0, accountManager.getBalance(checking));
 		/**
-		 * Your Accounts Receivable (an asset account) increases by $5472 because someone owes you this amount.
+		 * Your Accounts Receivable (an asset account) increases by $5472 because
+		 * someone owes you this amount.
 		 */
 		assertEquals(invoiceAmount, accountManager.getBalance("Accounts Receivable"), 0.001);
 		/**
-		 *Your Sales/Revenue (a revenue account) also increases by $5472, recognizing that you've made a sale/earned this revenue.
+		 * Your Sales/Revenue (a revenue account) also increases by $5472, recognizing
+		 * that you've made a sale/earned this revenue.
 		 */
 		assertEquals(invoiceAmount, accountManager.getBalance("Consulting Revenue"), 0.001);
-		
+
 //		assertEquals(0, accountManager.getBalance(checking));
 //		assertEquals(-invoiceAmount, accountManager.getBalance("Accounts Receivable"),0.001);
 //		assertEquals(invoiceAmount, accountManager.getBalance("Consulting Revenue"),0.001);
-		
-		//Your Accounts Receivable decreases by $5472.81 because the client no longer owes you this amount.
-		ledger.addTransaction("5/14/2018", "Incloud Solutio Fac", "INCLOUD SOLUTIO FAC", "5472.81	",
-				"debit", "Income", "TD EVERY DAY A BUSINESS PLAN",0.0);
+
+		// Your Accounts Receivable decreases by $5472.81 because the client no longer
+		// owes you this amount.
+		ledger.addTransaction("5/14/2018", "Incloud Solutio Fac", "INCLOUD SOLUTIO FAC", "5472.81	", "debit",
+				"Income", "TD EVERY DAY A BUSINESS PLAN", 0.0);
 		assertEquals(0, accountManager.getBalance("Accounts Receivable"), 0.001);
 		assertEquals(invoiceAmount, accountManager.getBalance(checking), 0.001);
 		assertEquals(invoiceAmount, accountManager.getBalance("Consulting Revenue"), 0.001);
 		ledger.printAccounts();
 		ledger.printLedger();
 	}
-	
+
 	@Test
-	public void testVisaPayment() 
-	{
-		AccountManager accountManager = new AccountManager();
-		LedgerRuleFactory fac = new LedgerRuleFactory(accountManager);
-		Ledger ledger = new Ledger(accountManager,fac );
-		createAccounts(accountManager);
-		
+	public void testVisaPayment() {
+		TestFixture f = new TestFixture();
+		AccountManager accountManager = f.accountManager;
+		Ledger ledger = f.ledger;
+
 		assertEquals(0, accountManager.getBalance(credit));
 		assertEquals(0, accountManager.getBalance(checking));
 
-		ledger.addTransaction("5/28/2018", "amazon", "TD BUSINESS VISA",
-				"276.72", "credit", "OperatingExpenses", "TD BUSINESS VISA",0.0);
-		
+		ledger.addTransaction("5/28/2018", "amazon", "TD BUSINESS VISA", "276.72", "credit", "OperatingExpenses",
+				"TD BUSINESS VISA", 0.0);
+
 		ledger.printAccounts();
 		ledger.printLedger();
 		/**
-	
-		 *  Credit Card Payable (a liability account) 
-		 * increases by $276 because you owe this amount to the credit card company.
+		 * 
+		 * Credit Card Payable (a liability account) increases by $276 because you owe
+		 * this amount to the credit card company.
 		 */
 		assertEquals(276.72, accountManager.getBalance(credit));
 		assertEquals(0, accountManager.getBalance(checking));
 		/**
-		 * Office Supplies Expense (an expense account) 
-		 * increases by $276 because you've incurred an expense.
+		 * Office Supplies Expense (an expense account) increases by $276 because you've
+		 * incurred an expense.
 		 */
 		assertEquals(276.72, accountManager.getBalance("Office Supplies"));
-		
-		ledger.addTransaction("5/28/2018", "Transfer to TD BUSINESS VISA", "PMT PREAUTOR VISA TD",
-				"276.72", "debit", "Credit Card Payment", "TD EVERY DAY A BUSINESS PLAN",0.0);
+
+		ledger.addTransaction("5/28/2018", "Transfer to TD BUSINESS VISA", "PMT PREAUTOR VISA TD", "276.72", "debit",
+				"Credit Card Payment", "TD EVERY DAY A BUSINESS PLAN", 0.0);
 
 		assertEquals(-276.72, accountManager.getBalance(checking), 0.001);
 		assertEquals(0.0, accountManager.getBalance(credit), 0.001);
-		
+
 		ledger.printAccounts();
 		ledger.printLedger();
 	}
 
 	@Test
-	void testSales() 
-	{
-		AccountManager accountManager = new AccountManager();
-		LedgerRuleFactory fac = new LedgerRuleFactory(accountManager);
-		Ledger ledger = new Ledger(accountManager,fac );
-		createAccounts(accountManager);
+	void testSales() {
+		TestFixture f = new TestFixture();
+		AccountManager accountManager = f.accountManager;
+		Ledger ledger = f.ledger;
 		
+
 		assertEquals(0, accountManager.getBalance("Accounts Receivable"));
 		assertEquals(0, accountManager.getBalance(checking));
-		
-		ledger.addTransaction("5/14/2018", "Incloud Solutio Fac", "INCLOUD SOLUTIO FAC", "5472.81",
-				"debit", "Income", "TD EVERY DAY A BUSINESS PLAN",0.0);
-		
+
+		ledger.addTransaction("5/14/2018", "Incloud Solutio Fac", "INCLOUD SOLUTIO FAC", "5472.81", "debit", "Income",
+				"TD EVERY DAY A BUSINESS PLAN", 0.0);
+
 		assertEquals(5472.81, accountManager.getBalance("Consulting Revenue"), 0.001);
 		assertEquals(0, accountManager.getBalance(credit));
 		assertEquals(0, accountManager.getBalance("Accounts Receivable"));
-		
+
 	}
+
 	
-	
-	private void createAccounts(AccountManager accountManager) {
-		// Assets
-		accountManager.addAccount(checking, "A001", AccountType.ASSET,false);
-		accountManager.addAccount(credit, "L004", AccountType.LIABILITY,false);
-		AccountFactory factory = new AccountFactory();
-		factory.createAccounts(accountManager);
-	}
 }
