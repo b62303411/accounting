@@ -1,4 +1,4 @@
-package com.example.springboot.accounting.service;
+package com.example.springboot.accounting.service.util;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import com.example.springboot.accounting.model.AiFileResult;
 import com.example.springboot.accounting.model.AssistantAnswer;
 import com.example.springboot.accounting.model.dto.InvoiceDto;
-import com.example.springboot.accounting.service.util.OpenAiRequestService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -29,7 +28,7 @@ public class InvoicePromptFactory {
 					+ " Can you please extract the relevant information and present it in aJSON format?";
 			
 					
-			AssistantAnswer answer =service.reallyRun(message1);
+			AssistantAnswer answer =service.reallyRun(message1,null);
 			
 			result.firstMetaData=answer;
 			
@@ -38,7 +37,7 @@ public class InvoicePromptFactory {
 					+ " Can you please extract the relevant information and present it in the following JSON format?:\n"
 					+ invoiceJsonTemplate+ " Also make sure the amounts are stripped of any dolar sign they will be parsed as double";
 			
-			AssistantAnswer answer2 =service.reallyRun(message2);
+			AssistantAnswer answer2 =service.reallyRun(message2,null);
 			//message2 += "/n Take as context that my name is Samuel Audet-Arsenault, and im doing my accounting for my incorporation named:9321-0474 Québec Inc. Also recipient and origin canot be the same";
 			// prompt+="/n Please make sure the Description is not empty";
 

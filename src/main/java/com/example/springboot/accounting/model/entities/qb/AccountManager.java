@@ -8,6 +8,8 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.example.springboot.accounting.model.entities.AccountInfo;
+
 @Service
 public class AccountManager {
 	private Map<String, Account> accounts;
@@ -23,7 +25,11 @@ public class AccountManager {
 	 * @param type
 	 * @param isDeductable
 	 */
-	public void addAccount(String name, String accountNumber, AccountType type, boolean isTaxable) {
+	public void addAccount(
+			String name, 
+			String accountNumber, 
+			AccountType type, 
+			boolean isTaxable) {
 		accounts.put(name, new Account(name, accountNumber, type, isTaxable));
 	}
 
@@ -51,7 +57,14 @@ public class AccountManager {
 	}
 
 	public double getBalance(String accountName) {
-		return accounts.get(accountName).getBalance();
+		if(!accounts.containsKey(accountName)) 
+		{
+			System.err.println();
+		}
+		
+		Account account = accounts.get(accountName);
+		
+		return account.getBalance();
 	}
 
 	/**
@@ -100,5 +113,10 @@ public class AccountManager {
 			}
 		}
 		return list;
+	}
+
+	public void addAccount(AccountInfo info, AccountType type, boolean b) {
+		addAccount(info.accountName,info.accountNo,type,b);
+		
 	}
 }

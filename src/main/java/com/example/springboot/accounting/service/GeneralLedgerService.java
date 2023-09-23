@@ -1,5 +1,7 @@
 package com.example.springboot.accounting.service;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,55 +13,62 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.springboot.accounting.model.dto.LedgerEntryDTO;
-import com.example.springboot.accounting.model.entities.Account;
 import com.example.springboot.accounting.model.entities.Amortisation;
 import com.example.springboot.accounting.model.entities.AmortisationLeg;
 import com.example.springboot.accounting.model.entities.Asset;
+import com.example.springboot.accounting.model.entities.FixAccountInfo;
 import com.example.springboot.accounting.model.entities.Invoice;
 import com.example.springboot.accounting.model.entities.qb.AccountManager;
 import com.example.springboot.accounting.model.entities.qb.AccountType;
 import com.example.springboot.accounting.model.entities.qb.Ledger;
 import com.example.springboot.accounting.model.entities.qb.LedgerRuleFactory;
-import com.example.springboot.accounting.repository.AccountRepository;
 import com.example.springboot.accounting.repository.AssetRepository;
 import com.example.springboot.accounting.repository.InvoiceRepository;
+import com.example.springboot.accounting.repository.RuleRepository;
 import com.example.springboot.accounting.repository.TransactionRepository;
+import com.example.springboot.accounting.service.ledger.GeneralLedgerFactory;
+import com.example.springboot.accounting.service.ledger.MutualFundStrategy;
+import com.example.springboot.accounting.service.util.RuleStatementPromptFactory;
 
 @Service
-public class GeneralLedgerService {
+public class GeneralLedgerService implements PropertyChangeListener {
+
 
 	@Autowired
-	public InvoiceRepository i_repo;
+	private InvoiceRepository i_repo;
 
 	@Autowired
-	public TransactionRepository t_repo;
+	private TransactionRepository t_repo;
 
 	@Autowired
-	public AccountRepository a_repo;
+	private AccountFactory accountFactory;
 
 	@Autowired
-	public AccountFactory accountFactory;
+	private AccountManager accountManager;
 
 	@Autowired
-	public LedgerRuleFactory ruleFactory;
+	private AssetRepository assetRepository;
 
 	@Autowired
-	public AccountManager accountManager;
-
-	@Autowired
-	public AssetRepository assetRepository;
-
-	@Autowired
-	public CompanyProfileService profileService;
+	private CompanyProfileService profileService;
 	
 	@Autowired
-	public LedgerTransactionToDto dtoParser;
+	private LedgerTransactionToDto dtoParser;
 	
 	@Autowired
-	public TaxService taxService;
+	private SimplifiedSalesTaxesService ssts;
 	
 	@Autowired
-	public SimplifiedSalesTaxesService ssts;
+	private RuleRepository ruleRepo;
+		
+	@Autowired
+	private FixAccountInfo fixAccountInfo;
+	
+	@Autowired
+	private GeneralLedger gl;
+	
+	@Autowired
+	private IncomeStatementFromLedgerService isfls;
 	
 	private Ledger ledger;
 
@@ -73,6 +82,7 @@ public class GeneralLedgerService {
 	{
 		if(null == ledger) 
 		{
+			
 			populateLedger();
 		}
 		ledger.recalculateLedger();
@@ -94,17 +104,12 @@ public class GeneralLedgerService {
 	
 	public Ledger populateLedger() {
 		createAccounts(accountManager);
-		ledger = new Ledger(accountManager, ruleFactory,taxService);
+	
+		ledger = gl.getLedger();
 
-		List<Account> acounts = a_repo.findAll();
-		for (Account account : acounts) {
-			if (account.getAccountName().contains("TD_EVERY_DAY"))
-				accountManager.addAccount(account.getAccountName(), account.getAccountNo(), AccountType.ASSET, false);
-			if (account.getAccountName().contains("VISA"))
-				accountManager.addAccount(account.getAccountName(), account.getAccountNo(), AccountType.LIABILITY,
-						false);
-		}
-		ledger.createRules();
+		ledger.addObserver(this);
+		
+		ruleRepo.createRules();
 
 		populateFromTransaction();
 
@@ -113,8 +118,14 @@ public class GeneralLedgerService {
 		populateFromInvoices();
 		
 		populateFromSimplifiedMethod();
+		
+		populateFromIncomeTaxes();
 
 		return ledger;
+	}
+
+	private void populateFromIncomeTaxes() {
+		isfls.populateMap();
 	}
 
 	private void populateFromSimplifiedMethod() {
@@ -143,7 +154,8 @@ public class GeneralLedgerService {
 			String type = "Debit";
 			String cath = "Invoice";
 
-			String acc = "5235425";
+			String acc = fixAccountInfo.checkingAccount.accountNo;
+			
 			ledger.addTransaction(d , message, mo, amount, type, cath, acc,null);
 		}
 	}
@@ -167,14 +179,14 @@ public class GeneralLedgerService {
 				String type = "Debit";
 				String cath = "Depreciation";
 
-				String acc = "5235425";
+				String acc = fixAccountInfo.checkingAccount.accountNo;
 				ledger.addTransaction(d, message, mo, amount, type, cath, acc,null);
 			}
 			if (d != null) {
 				String message = asset.getPurchaceTransaction().getDescription() + ":Lost Of Asset Write Off";
 				String cath = "LostOfAssetWriteOff";
 				String type = "Debit";
-				String acc = "5235425";
+				String acc = fixAccountInfo.checkingAccount.accountNo;
 				String amount = asset.getCurrentValue() + "";
 				String mo = "";
 				//String date = sdf.format(d);
@@ -243,7 +255,10 @@ public class GeneralLedgerService {
 
 	private void createAccounts(AccountManager accountManager) {
 		// Assets
-		accountManager.addAccount("FONDS MUTUELS TD", "9115997", AccountType.ASSET, false);
+		
+		accountManager.addAccount(
+				fixAccountInfo.investmentAccount.accountName, 
+				fixAccountInfo.investmentAccount.accountNo, AccountType.ASSET, false);
 
 		accountFactory.createAccounts(accountManager);
 
@@ -251,6 +266,12 @@ public class GeneralLedgerService {
 
 	public void clearCashedLedger() {
 		this.cashedLedger.clear();
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		clearCashedLedger();
+		
 	}
 
 

@@ -70,6 +70,8 @@ dependencies {
 	
     // https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml
 	implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '5.2.3'
+    // https://mvnrepository.com/artifact/org.webjars/font-awesome
+	implementation group: 'org.webjars', name: 'font-awesome', version: '6.4.2'
     
 }
 

@@ -30,6 +30,8 @@ public class AccountFactory {
 
 		// Expenses
 		createExpensesAccounts(accountManager);
+		
+		createSommationAccounts(accountManager);
 	}
 
 	private void createRevenueAccounts(AccountManager accountManager) {
@@ -37,7 +39,8 @@ public class AccountFactory {
 		List<String> revenues = List.of(
 				"Consulting Revenue", 
 				"Quick Method Benefit", 
-				"Miscellaneous Revenue"
+				"Miscellaneous Revenue",
+				"Realized Gain on Sale of Investments"
 				);
 		for (String string : revenues) {
 			accountManager.addAccount(string, count_rev.getNext(), AccountType.REVENUE, true);
@@ -73,6 +76,7 @@ public class AccountFactory {
 		accountManager.addAccount("Owner's Draw", count_eq.getNext(), AccountType.EQUITY, false);
 		accountManager.addAccount("Owner's Equity",count_eq.getNext(), AccountType.EQUITY, false);
 		accountManager.addAccount("Retained Earnings", count_eq.getNext(), AccountType.EQUITY, false);
+		accountManager.addAccount("Owner's Contributions", count_eq.getNext(), AccountType.EQUITY, false);
 	}
 
 	private void createLiabilitiesAccounts(AccountManager accountManager) {
@@ -95,10 +99,20 @@ public class AccountFactory {
 				"Prepaid Expenses", 
 				"Office Equipment", 
 				"Loan to Owner",
-				"Tax Savings from NOL",
 				"Unknown");
 		for (String string : assets) {
 			accountManager.addAccount(string, count_asset.getNext(), AccountType.ASSET, false);
+		}
+	}
+	
+	private void createSommationAccounts(AccountManager accountManager) 
+	{
+		SuffixCount count_asset = new SuffixCount("S");
+		List<String> assets = List.of(
+				"Tax Savings from NOL", 
+				"Ca");
+		for (String string : assets) {
+			accountManager.addAccount(string, count_asset.getNext(), AccountType.SOMMATION, false);
 		}
 	}
 }

@@ -17,7 +17,7 @@ import com.example.springboot.accounting.model.Sequence;
 import com.example.springboot.accounting.model.dto.IncomeStatementDto;
 import com.example.springboot.accounting.model.entities.Rates;
 import com.example.springboot.accounting.model.entities.qb.Account;
-import com.example.springboot.accounting.model.entities.qb.AccountManager;
+import com.example.springboot.accounting.model.entities.qb.Ledger;
 import com.example.springboot.accounting.model.entities.qb.Transaction;
 import com.example.springboot.accounting.model.entities.qb.TransactionEntry;
 import com.example.springboot.accounting.service.FiscalYearService.DateBoundaries;
@@ -26,19 +26,13 @@ import com.example.springboot.accounting.service.FiscalYearService.DateBoundarie
 public class IncomeStatementFromLedgerService implements IBoardRepository {
 
 	@Autowired
-	private FinancialStatementLineFactory fsf;
-
-	@Autowired
 	private FiscalYearService fys;
-
-	@Autowired
-	private AccountManager accountManager;
-
+	
 	@Autowired
 	private SimplifiedSalesTaxesStrategy simplifiedSalesTaxesStrategy;
 
 	@Autowired
-	GeneralLedgerService gls;
+	GeneralLedger gl;
 
 	@Autowired
 	SmallBusinessTaxRateService smallBusinessTaxRateService;
@@ -64,7 +58,7 @@ public class IncomeStatementFromLedgerService implements IBoardRepository {
 	}
 
 	public void populateMap() {
-
+		Ledger ledger = gl.getLedger();
 		for (int fiscal_year = 2014; fiscal_year < 2026; fiscal_year++) {
 			IncomeStatementWhiteBoard wb = wbBoards.get(fiscal_year);
 			if (null == wb) {
@@ -75,8 +69,8 @@ public class IncomeStatementFromLedgerService implements IBoardRepository {
 				temp_transactions_per_year.put(fiscal_year, new HashSet<Transaction>());
 			}
 		}
-		Sequence seq = this.gls.getLedger().getSeq();
-		Set<Transaction> transactions = this.gls.getLedger().getTransactions();
+		Sequence seq = ledger.getSeq();
+		Set<Transaction> transactions = ledger.getTransactions();
 		for (Transaction t : transactions) {
 			if (t.getDate() != null) {
 				translateTransaction(t);
@@ -315,7 +309,7 @@ public class IncomeStatementFromLedgerService implements IBoardRepository {
 	 * @return
 	 */
 	public IncomeStatementDto generateIncomeStatement(int fiscal_year, Sequence seq) {
-		Set<Transaction> transactions = this.gls.getLedger().getTransactions();
+		Set<Transaction> transactions = this.gl.getLedger().getTransactions();
 		populateMap();
 		IncomeStatementWhiteBoard wb = wbBoards.get(fiscal_year);
 		DateBoundaries boundaries = fys.getBoundaries(fiscal_year);

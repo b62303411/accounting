@@ -1,5 +1,5 @@
 {
-    "transactionTypes": [
+    "accountTypes": [
         {
             "name": "Sales Revenue",
             "description": "Income from sales of goods and services."
