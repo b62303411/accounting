@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.springboot.accounting.model.TransactionNature;
 import com.example.springboot.accounting.model.entities.FixAccountInfo;
 import com.example.springboot.accounting.model.entities.qb.Account;
 import com.example.springboot.accounting.model.entities.qb.AccountManager;
@@ -26,7 +27,17 @@ public class MutualFundStrategy implements TransactionStrategy{
 	//	| 01/03/2023 | ASSET   | Checking Account         | 032 | Mutual Fund Co. | $10,000.00|   -       |
 	//	| 01/03/2023 | ASSET   | Investment in Mutual Fund| 033 | Mutual Fund Co. |   -       | $10,000.00|
 	//	+------------+---------+--------------------------+-----+-----------------+-----------+-----------+
-	public void handleMutualFundPurchace(double amount, Account transactionAccount, TransactionAccount cardinality, String type,
+	/**
+	 * 
+	 * @param amount
+	 * @param transactionAccount
+	 * @param cardinality
+	 * @param balence
+	 */
+	public void handleMutualFundPurchace(
+			double amount,
+			Account transactionAccount,
+			TransactionAccount cardinality,
 			Double balence)
 	{
 		Account font_mutuel = getMutualFundAccount();
@@ -44,7 +55,10 @@ public class MutualFundStrategy implements TransactionStrategy{
     //	| 01/03/2023 | ASSET   | Unrealized Gain          | 034 | Mutual Fund Co. | -         | $1,000.00 |
 	//	| 01/03/2023 | ASSET   | Capital Gain             | 035 | Mutual Fund Co. | $1,000.00 | -         |
 	//	+------------+---------+--------------------------+-----+-----------------+-----------+-----------+
-	public void handleMutualFundSold(double amount, Account transactionAccount, TransactionAccount cardinality, String type,
+	public void handleMutualFundSold(
+			double amount,
+			Account transactionAccount,
+			TransactionAccount cardinality, 
 			Double balence)
 	{
 		Account font_mutuel = getMutualFundAccount();
@@ -80,16 +94,16 @@ public class MutualFundStrategy implements TransactionStrategy{
 			double amount, 
 			Account transactionAccount, 
 			TransactionAccount cardinality, 
-			String type,
+			TransactionNature type,
 			Double balence) {
 		if(transactionAccount.getAccountNumber().equals(accounts.checkingAccount.accountNo)) 
 		{
 			switch (type) {
-			case "Credit":
-				handleMutualFundPurchace(amount,transactionAccount,cardinality,type,balence);
+			case Credit:
+				handleMutualFundPurchace(amount,transactionAccount,cardinality,balence);
 				break;
-			case "Debit":
-				handleMutualFundSold(amount,transactionAccount,cardinality,type,balence);
+			case Debit:
+				handleMutualFundSold(amount,transactionAccount,cardinality,balence);
 				break;
 			}
 		}
@@ -113,6 +127,8 @@ public class MutualFundStrategy implements TransactionStrategy{
 		Account font_mutuel = accountManager.getAccountByName("FONDS MUTUELS TD");
 		return font_mutuel;
 	}
+
+
 
 
 }

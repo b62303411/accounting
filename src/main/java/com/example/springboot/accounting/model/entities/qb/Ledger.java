@@ -9,16 +9,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import com.example.springboot.accounting.model.Sequence;
+import com.example.springboot.accounting.model.TransactionNature;
+import com.example.springboot.accounting.model.TransactionType;
 import com.example.springboot.accounting.model.dto.TransactionDTO;
 import com.example.springboot.accounting.model.entities.FixAccountInfo;
 import com.example.springboot.accounting.repository.RuleRepository;
 import com.example.springboot.accounting.service.TaxService;
 import com.example.springboot.accounting.service.ledger.MutualFundStrategy;
+import com.example.springboot.accounting.service.ledger.TransactionStrategy;
 
 public class Ledger {
 	private RuleRepository ruleRepo;
@@ -26,16 +30,19 @@ public class Ledger {
 	private AccountManager accountManager;
 	private Set<String> postedTransactionIds;
 	private Set<Transaction> transactions;
-	private ClassificationRule taxes_rule;
+	private ClassificationRule revenueTaxrule;
 	private ClassificationRule amazon_rule;
 	private ClassificationRule cashDepositRule;
+	private ClassificationRule creditCardPaymentRule;
+	private ClassificationRule tpsTvqPaymentRule;
 	private List<String> vendors;
 	private TaxService taxService;
-	PropertyChangeSupport pcs = new  PropertyChangeSupport(this);
-	
-	
-	FixAccountInfo fixAccountInfo = new FixAccountInfo();
 
+	private HashMap<AccountType, TransactionStrategy> strategies;
+
+	PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+
+	FixAccountInfo fixAccountInfo = new FixAccountInfo();
 
 	private Sequence seq;
 	private MutualFundStrategy mutual;
@@ -43,9 +50,11 @@ public class Ledger {
 	public Sequence getSeq() {
 		return seq;
 	}
+
 	public void addObserver(PropertyChangeListener l) {
 		pcs.addPropertyChangeListener("theProperty", l);
 	}
+
 	protected void setSeq(Sequence seq) {
 		this.seq = seq;
 	}
@@ -63,16 +72,16 @@ public class Ledger {
 		vendors.add("Cloutier & Longtin");
 		vendors.add("MTA");
 
-		taxes_rule = new ClassificationRule();
-		taxes_rule.addKeyWord("QUEBEC GOV'T");
-		taxes_rule.addKeyWord("ARC");
-		taxes_rule.addKeyWord("Ministere du revenue");
-		taxes_rule.addKeyWord("Revenue QC");
-		taxes_rule.addKeyWord("MRQ");
-		taxes_rule.addKeyWord("Revenue Quebec");
-		taxes_rule.addKeyWord("CRA");
-		taxes_rule.addAccountNumber(fixAccountInfo.checkingAccount.accountNo);
-		taxes_rule.addAccountNumber("1");
+		revenueTaxrule = new ClassificationRule();
+		revenueTaxrule.addKeyWord("QUEBEC GOV'T");
+		revenueTaxrule.addKeyWord("ARC");
+		revenueTaxrule.addKeyWord("Ministere du revenue");
+		revenueTaxrule.addKeyWord("Revenue QC");
+		revenueTaxrule.addKeyWord("MRQ");
+		revenueTaxrule.addKeyWord("Revenue Quebec");
+		revenueTaxrule.addKeyWord("CRA");
+		revenueTaxrule.addAccountNumber(fixAccountInfo.checkingAccount.accountNo);
+		revenueTaxrule.addAccountNumber("1");
 
 		amazon_rule = new ClassificationRule();
 
@@ -82,12 +91,20 @@ public class Ledger {
 		amazon_rule.addKeyWord("Amazon.ca");
 		amazon_rule.addKeyWord("Amazon*");
 		amazon_rule.addKeyWord("Amazon");
-		
-		
+
 		cashDepositRule = new ClassificationRule();
 		cashDepositRule.addKeyWord("Owner Initial deposit");
 		cashDepositRule.addAccountNumber(fixAccountInfo.checkingAccount.accountNo);
-
+		
+		creditCardPaymentRule = new ClassificationRule();
+		creditCardPaymentRule.addAccountNumber(fixAccountInfo.checkingAccount.accountNo);
+		creditCardPaymentRule.addKeyWord("PMT PREAUTOR VISA TD");
+		creditCardPaymentRule.addKeyWord("PAIEMENTPRÉAUTORISÉ");
+		
+		tpsTvqPaymentRule = new ClassificationRule();
+		tpsTvqPaymentRule.addAccountNumber(fixAccountInfo.checkingAccount.accountNo);
+		tpsTvqPaymentRule.addKeyWord("TPS&TVQ");
+		
 	}
 
 	public AccountManager getAccountManager() {
@@ -167,8 +184,8 @@ public class Ledger {
 	 * @param category
 	 * @param account
 	 */
-	public void addTransaction(Date date, String message, String message_o, String amountStr, String type,
-			String category, String account, Double balence) {
+	public void addTransaction(Date date, String message, String message_o, String amountStr, TransactionNature type,
+			TransactionType category, String account, Double balence) {
 		TransactionAccount cardinality = new TransactionAccount();
 		double amount = Double.parseDouble(amountStr);
 
@@ -176,8 +193,8 @@ public class Ledger {
 
 		Account receivable = accountManager.getAccount("Accounts Receivable");
 
-		Account checkingAccount =getCheckingAccount();
-		
+		Account checkingAccount = getCheckingAccount();
+
 		Account transactionAccount = accountManager.getAccountByAccountNo(account);
 
 		String vendor_client = "";
@@ -187,62 +204,23 @@ public class Ledger {
 			words.add(message_o);
 
 		switch (category) {
-		case "Transfer":
+		case Transfer:
 			handleTransfer(message, type, account, balence, amount, checkingAccount, cardinality);
 			break;
-		case "Bank Fee":
-			handleBankFee(amount, checkingAccount, cardinality, balence);
-			break;
-		case "Income":
+		case Income:
 			handleIncome(message, message_o, account, cardinality, amount, receivable, checkingAccount);
-
-			// postTransaction(ledger, checkingAccount, relatedAccount, amount, type);
-
 			break;
-		case "Credit Card Payment":
-			handleCreditCardPayment(amount, checkingAccount, cardinality, balence);
-			break;
-		case "Dividend & Cap Gains":
-			handleDividend(amount, checkingAccount, cardinality, balence);
-			break;
-		case "Invoice":
-			handleInvoice(message, message_o, type, receivable, amount, cardinality, balence);
-			break;
-		case "OperatingExpenses":
+		case OperatingExpenses:
 			handleOperatingExpense(message, message_o, words, account, amount, checkingAccount, cardinality,
 					vendor_client, balence);
-
 			break;
-		case "Investment":
-			populateFontMutuel(amount, transactionAccount, cardinality, type, balence);
+		case Dividend:
+			handleDividend(amount, checkingAccount, cardinality, balence);
 			break;
-		case "AssetPurchased":
-			handleAssetPurchaced(message, words, account, amount, cardinality, balence);
-			break;
-		case "DeptRepayment":
-			handleDebtRepayment(message, message_o, account, balence, amount, checkingAccount, cardinality, words);
-
-			break;
-		case "Dividend":
-			if (message.contains("FONDS MUTUELS")) {
-
-				populateFontMutuel(amount, checkingAccount, cardinality, type, balence);
-			} else {
-				if (message.contains("TRAITE $CA 01755011")) {
-					handleLoanToOwner(amount, checkingAccount, cardinality);
-				} else
-					handleDividend(amount, checkingAccount, cardinality, balence);
-			}
-			break;
-		// ... Handle other categories similarly ...
-		case "SalesRevenue":
-			handleSalesRevenue(message, message_o, receivable, amount, checkingAccount, cardinality);
-			break;
-		case "Liability":
+		case Liability:
 			handleLiability(message, account, balence, amount, checkingAccount, cardinality, words);
-
 			break;
-		case "Credit":
+		case Credit:
 			if (message.contains("FONDS MUTUELS TD")) {
 				populateFontMutuel(amount, checkingAccount, cardinality, type, balence);
 			} else if (message.contains("DEPOT")) {
@@ -250,18 +228,17 @@ public class Ledger {
 			} else {
 				populateToClassify(amount, checkingAccount, cardinality, balence);
 			}
-
 			break;
-		case "Cash":
-			handleCash(words,account, cardinality,amount,balence);
-			break;
-		case "Debit":
+		case Debit:
 			handleDebit(message, account, balence, amount, checkingAccount, cardinality, words);
 			break;
-		case "LostOfAssetWriteOff":
-			this.handleLostOfAssetWriteOff(cardinality, amount);
+		case BankFees:
+			handleBankFee(amount, checkingAccount, cardinality, balence);
 			break;
-		case "Depreciation":
+		case Cash:
+			handleCash(words, account, cardinality, amount, type, balence);
+			break;
+		case Depreciation:
 //			+------------+----------+--------------------------+-----+----------------+----------+----------+
 //			| Date       | Type     | Name                     | No  | Vendor/Client  |  Debit   | Credit   |
 //			+------------+----------+--------------------------+-----+----------------+----------+----------+
@@ -273,13 +250,29 @@ public class Ledger {
 			cardinality.amount = Math.abs(amount);
 			cardinality.vendor_client = "Self";
 			break;
-		case "Unknown":
+		case Invoice:
+			handleInvoice(message, message_o, type, receivable, amount, cardinality, balence);
+			break;
+		case Unknown:
 			handleUnknown(message, message_o, type, account, balence, amount, checkingAccount, cardinality,
 					vendor_client, words);
-
+			break;
+		case SalesRevenue:
+			handleSalesRevenue(message, message_o, receivable, amount, checkingAccount, cardinality);
+			break;
+		case DeptRepayment:
+			handleDebtRepayment(message, message_o, account, balence, amount, checkingAccount, cardinality, words);
+			break;
+		case AssetPurchased:
+			handleAssetPurchaced(message, words, account, amount, cardinality, balence);
+			break;
+		case LostOfAssetWriteOff:
+			handleLostOfAssetWriteOff(cardinality, amount);
 			break;
 		default:
-			throw new IllegalArgumentException("Unsupported category: " + category);
+			System.err.println(message);
+			break;
+
 		}
 		if (cardinality.debited == null || cardinality.creditedAccounts.isEmpty()) {
 
@@ -292,6 +285,10 @@ public class Ledger {
 				if (isFromCheq(account)) {
 					populateToClassify(amount, checkingAccount, cardinality, balence);
 					postTransaction(cardinality, date, message);
+				}
+				else 
+				{
+					System.err.println(message);
 				}
 			}
 
@@ -321,6 +318,10 @@ public class Ledger {
 		} else if (account.contains(fixAccountInfo.visaAccount.accountNo)) {
 			if (message.contains("REMISEENARGENTTD") || message.contains("ANNUAL")) {
 				handleCreditCardCashback(amount, cardinality);
+			}
+			else 
+			{
+				System.err.println(message);
 			}
 		}
 	}
@@ -373,7 +374,7 @@ public class Ledger {
 
 	private void handleLiability(String message, String account, Double balence, double amount, Account checkingAccount,
 			TransactionAccount cardinality, List<String> words) {
-		if (this.taxes_rule.keyWordFount(account, words)) {
+		if (this.revenueTaxrule.keyWordFount(account, words)) {
 			switch (account) {
 			case "1":
 //					+----------+------------------+---------------------+----------------+---------+---------+
@@ -424,46 +425,44 @@ public class Ledger {
 	 * @param message
 	 * @param cardinality
 	 * @param amount
+	 * @param type
 	 * @param balence
 	 */
-	private void handleCash(List<String> message,String account, TransactionAccount cardinality, double amount,Double balence) 
-	{
-		if(cashDepositRule.keyWordFount(account, message)) 
-		{
+	private void handleCash(List<String> message, String account, TransactionAccount cardinality, double amount,
+			TransactionNature type, Double balence) {
+		String vendor = "Self";
+		Account check = getCheckingAccount();
+		switch (type) {
+		case Credit:
+				cardinality.debited = getAccountByName("To Classify");
+				cardinality.setCredited(check);
+				cardinality.credited_balence = balence;
+				cardinality.amount = Math.abs(amount);
+				cardinality.vendor_client = vendor;
+		
+			break;
+		case Debit:
 //			Date       Account Title         Debit     Credit
 //			---------- --------------------  -------   -------
 //			XX/XX/XXXX Checking Account      600
 //			           Owner's Contributions           600
-			String vendor = "Self";
-			Account check = getCheckingAccount();
-			cardinality.debited = check;
+			if (cashDepositRule.keyWordFount(account, message)) {
+			cardinality.debited = check;// To Classify
 			cardinality.setCredited(getAccountByName("Owner's Contributions"));
 			cardinality.credited_balence = balence;
 			cardinality.amount = Math.abs(amount);
 			cardinality.vendor_client = vendor;
+			}
+			break;
+			default:
+				System.err.println(type);
 		}
 
 	}
-	
+
 	private void handleDebit(String message, String account, Double balence, double amount, Account checkingAccount,
 			TransactionAccount cardinality, List<String> words) {
-		System.err.println();
-		if(message.contains("Owner Initial deposit")) 
-		{
-//			Date       Account Title         Debit     Credit
-//			---------- --------------------  -------   -------
-//			XX/XX/XXXX Checking Account      600
-//			           Owner's Contributions           600
-			String vendor = "Self";
-			Account check = getCheckingAccount();
-			cardinality.debited = check;
-			cardinality.setCredited(getAccountByName("Owner's Contributions"));
-			cardinality.credited_balence = balence;
-			cardinality.amount = Math.abs(amount);
-			cardinality.vendor_client = vendor;
 
-		}
-		else
 		if (message.contains("View Cheque CHQ")) {
 			if (amount - Math.floor(amount) > 0) {
 				System.out.println("Number has a decimal point.");
@@ -476,11 +475,12 @@ public class Ledger {
 
 		} else if (message.contains("TD investment transfer to")) {
 			// populateFontMutuel(amount, checkingAccount, cardinality, type);
+			System.err.println(message);
 
 		} else {
 			populateToClassify(amount, checkingAccount, cardinality, balence);
 		}
-		if (this.taxes_rule.keyWordFount(account, words)) {
+		if (this.revenueTaxrule.keyWordFount(account, words)) {
 			populateTax(amount, checkingAccount, cardinality, balence);
 
 		} else {
@@ -488,6 +488,7 @@ public class Ledger {
 				populateToClassify(amount, checkingAccount, cardinality, balence);
 		}
 	}
+
 	private boolean isFromCheq(String account) {
 		return account.contains(fixAccountInfo.checkingAccount.accountNo);
 	}
@@ -495,11 +496,11 @@ public class Ledger {
 	private Account getCheckingAccount() {
 		return accountManager.getAccountByName(this.fixAccountInfo.checkingAccount.accountName);
 	}
-	
-	private void handleUnknown(String message, String message_o, String type, String account, Double balence,
+
+	private void handleUnknown(String message, String message_o, TransactionNature type, String account, Double balence,
 			double amount, Account checkingAccount, TransactionAccount cardinality, String vendor_client,
 			List<String> words) {
-		if (this.taxes_rule.keyWordFount(account, words)) {
+		if (this.revenueTaxrule.keyWordFount(account, words)) {
 			populateTax(amount, checkingAccount, cardinality, balence);
 		} else if (message.contains("View Cheque CHQ")) {
 			if (amount - Math.floor(amount) > 0) {
@@ -512,7 +513,7 @@ public class Ledger {
 			handleOperatingExpense(message, message_o, words, account, amount, checkingAccount, cardinality,
 					vendor_client, balence);
 		} else {
-			if (type.contains("Credit")) {
+			if (type.name().contains("Credit")) {
 				if (message.contains("ANNUALCASHBACKCREDIT")) {
 					handleBankFeeRefund(amount, checkingAccount, cardinality);
 				} else {
@@ -548,28 +549,49 @@ public class Ledger {
 
 	private void handleDebtRepayment(String message, String message_o, String account, Double balence, double amount,
 			Account checkingAccount, TransactionAccount cardinality, List<String> words) {
-		if (message.contains("TPS&TVQ") || (null != message_o && message_o.contains("TPS&TVQ"))) {
-			populateSalesTaxPayment(amount, checkingAccount, cardinality, balence);
-		} else if (this.taxes_rule.keyWordFount(account, words)) {
-			populateTax(amount, checkingAccount, cardinality, balence);
-		} else if (message.contains("PMT PREAUTOR VISA TD")) {
+		
+		if(creditCardPaymentRule.keyWordFount(account, words)) 
+		{
 			handleCreditCardPayment(amount, checkingAccount, cardinality, balence);
-		} else if (message.contains("PAIEMENTPRÉAUTORISÉ")) {
-			// handleCreditCardPayment(date, amount, checkingAccount, cardinality);
-		} else if (message.contains("View Cheque CHQ")) {
+		}
+		else if (tpsTvqPaymentRule.keyWordFount(account, words))
+		{
+			populateSalesTaxPayment(amount, checkingAccount, cardinality, balence);
+		} 
+		else if (this.revenueTaxrule.keyWordFount(account, words)) {
+			populateTax(amount, checkingAccount, cardinality, balence);
+		}else if (message.contains("View Cheque CHQ")) {
 			if (amount > 4000)
 				populateTax(amount, checkingAccount, cardinality, balence);
 			else {
 				if (isFromCheq(account))
 					populateToClassify(amount, checkingAccount, cardinality, balence);
+				else 
+				{
+					System.err.println(message);
+				}
 			}
 		} else {
 			if (isFromCheq(account))
 				populateToClassify(amount, checkingAccount, cardinality, balence);
+			else 
+			{
+				System.err.println(message);
+			}
 		}
 	}
 
-	private void handleTransfer(String message, String type, String account, Double balence, double amount,
+	/**
+	 * 
+	 * @param message
+	 * @param type
+	 * @param account
+	 * @param balence
+	 * @param amount
+	 * @param checkingAccount
+	 * @param cardinality
+	 */
+	private void handleTransfer(String message, TransactionNature type, String account, Double balence, double amount,
 			Account checkingAccount, TransactionAccount cardinality) {
 		if (message.equals("TRAITE $CA 01755011")) {
 			handleLoanToOwner(amount, checkingAccount, cardinality);
@@ -579,14 +601,17 @@ public class Ledger {
 			cardinality.amount = amount;
 			cardinality.vendor_client = "self";
 			switch (type) {
-			case "Debit":
+			case Debit:
 				cardinality.debited = checkingAccount;
 				cardinality.setCredited(getAccountByName("Unknown"));
 				break;
-			case "Credit":
+			case Credit:
 				cardinality.debited = getAccountByName("Unknown");
 				cardinality.setCredited(checkingAccount);
 				break;
+				default:
+					System.err.println(type);
+					break;
 
 			}
 
@@ -789,8 +814,8 @@ public class Ledger {
 	 * @param cardinality
 	 * @param type
 	 */
-	private void populateFontMutuel(double amount, Account transactionAccount, TransactionAccount cardinality, String type,
-			Double balence) {
+	private void populateFontMutuel(double amount, Account transactionAccount, TransactionAccount cardinality,
+			TransactionNature type, Double balence) {
 		mutual.populate(amount, transactionAccount, cardinality, type, balence);
 	}
 
@@ -880,8 +905,8 @@ public class Ledger {
 	 * @param cardinality
 	 * @param balence
 	 */
-	private void handleInvoice(String message, String message_o, String type, Account receivable, double amount,
-			TransactionAccount cardinality, Double balence) {
+	private void handleInvoice(String message, String message_o, TransactionNature type, Account receivable,
+			double amount, TransactionAccount cardinality, Double balence) {
 		boolean vendor = false;
 		for (String vendor_str : vendors) {
 			if (message.contains(vendor_str)) {
@@ -1054,15 +1079,11 @@ public class Ledger {
 	}
 
 	public void addTransaction(TransactionDTO dto) {
-		addTransaction(dto.getDate(),
-				       dto.getOriginalDescription(),
-				       dto.getDescription(),
-				       ""+dto.getAmount(),
-				       dto.getTransactionType(),
-				       dto.getCategory(),
-				       dto.getAccountName(),0);
-		
+		addTransaction(dto.getDate(), dto.getOriginalDescription(), dto.getDescription(), "" + dto.getAmount(),
+				dto.getTransactionType(), dto.getCategory(), dto.getAccountName(), 0);
+
 	}
+
 	/**
 	 * 
 	 * @param dateString
@@ -1074,29 +1095,23 @@ public class Ledger {
 	 * @param account_name
 	 * @param balence
 	 */
-	public void addTransaction(
-			String dateString, 
-			String message, 
-			String note, 
-			String amountStr, 
-			String type,
-			String category, 
-			String account_name, 
-			double balence) {
-		
+	public void addTransaction(String dateString, String message, String note, String amountStr, String type,
+			String category, String account_name, double balence) {
+
 		Date date;
 
 		// Create a DateTimeFormatter with the correct pattern
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yyyy");
-		
+
 		Account transaction_account = getAccountByName(account_name);
 		// Parse the dateString using the formatter
 		LocalDate ldate = LocalDate.parse(dateString, formatter);
 
 		Double balenced = 0.0;
 		date = Date.from(ldate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-
-		addTransaction(date, message, note, amountStr, type, category, transaction_account.getAccountNumber(), balenced);
+		TransactionType c = TransactionType.valueOf(category);
+		TransactionNature n = TransactionNature.valueOf(type);
+		addTransaction(date, message, note, amountStr, n, c, transaction_account.getAccountNumber(), balenced);
 
 	}
 
@@ -1125,6 +1140,5 @@ public class Ledger {
 			rePostTransaction(t);
 		}
 	}
-
 
 }

@@ -27,7 +27,8 @@
 				</ul>
 				<div class="tab-content" id="suppliersTabsContent">
 					<div class="tab-pane fade show active" id="report" role="tabpanel" aria-labelledby="report-tab">
-						<div class="container shadow min-vh-100 py-2">
+						<button id="download">Download PDF</button>
+						<div id="report" class="container shadow min-vh-100 py-2">
 							<div
 								th:replace="fragments/reportHeader :: reportHeader('Income Statement', ${companyName}, ${fiscal_end_day}, ${fiscal_end_month}, ${fiscal_end_year})" />
 							<div class="card mb-4">
@@ -125,7 +126,11 @@
 					<div class="tab-pane fade show active" id="transactions" role="tabpanel"
 						aria-labelledby="transaction-tab">
 						<h2>Accounting Ledger</h2>
-
+						<div class="nav-item">
+							<a class="nav-link" th:href="${'/download/excel/'+year}">
+								<i class="fa fa-file-excel-o">Download</i>
+							</a>
+						</div>
 						<table id="ledger-table" border="1" class="table table-striped" style="width:100%">
 							<thead>
 								<tr>
@@ -164,11 +169,33 @@
 		</div>
 	</div>
 
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+
+
+
 	<script src="/webjars/jquery/3.6.4/jquery.min.js"></script>
 	<script src="/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 	<script src="/webjars/popper.js/2.11.7/umd/popper.min.js"></script>
 	<script src="/webjars/datatables/1.13.5/js/jquery.dataTables.min.js"></script>
 	<script src="/js/ledger.js"></script>
+	<script>
+		$(document).ready(function () {
+			$('#download').click(function () {
+				var element = document.getElementById('report');
+
+				var opt = {
+					margin: 10,
+					filename: 'myfile.pdf',
+					image: {type: 'jpeg', quality: 0.98},
+					html2canvas: {scale: 2},
+					jsPDF: {unit: 'mm', format: 'a4', orientation: 'portrait'}
+				};
+
+				html2pdf().from(element).set(opt).save();
+			});
+		});
+
+	</script>
 </body>
 
 </html>

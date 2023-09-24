@@ -12,6 +12,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.springboot.accounting.model.TransactionNature;
+import com.example.springboot.accounting.model.TransactionType;
 import com.example.springboot.accounting.model.dto.LedgerEntryDTO;
 import com.example.springboot.accounting.model.entities.Amortisation;
 import com.example.springboot.accounting.model.entities.AmortisationLeg;
@@ -21,18 +23,16 @@ import com.example.springboot.accounting.model.entities.Invoice;
 import com.example.springboot.accounting.model.entities.qb.AccountManager;
 import com.example.springboot.accounting.model.entities.qb.AccountType;
 import com.example.springboot.accounting.model.entities.qb.Ledger;
-import com.example.springboot.accounting.model.entities.qb.LedgerRuleFactory;
 import com.example.springboot.accounting.repository.AssetRepository;
 import com.example.springboot.accounting.repository.InvoiceRepository;
 import com.example.springboot.accounting.repository.RuleRepository;
 import com.example.springboot.accounting.repository.TransactionRepository;
-import com.example.springboot.accounting.service.ledger.GeneralLedgerFactory;
-import com.example.springboot.accounting.service.ledger.MutualFundStrategy;
-import com.example.springboot.accounting.service.util.RuleStatementPromptFactory;
 
 @Service
 public class GeneralLedgerService implements PropertyChangeListener {
 
+	@Autowired
+	private FiscalYearService fys;
 
 	@Autowired
 	private InvoiceRepository i_repo;
@@ -151,8 +151,8 @@ public class GeneralLedgerService implements PropertyChangeListener {
 			String message = "I " + invoice.getOrigine() + ":" + invoice.getNoFacture();
 			String mo = invoice.getNoFacture();
 			String amount = "" + invoice.getAmount();
-			String type = "Debit";
-			String cath = "Invoice";
+			TransactionNature type = TransactionNature.Debit;
+			TransactionType cath = TransactionType.Invoice;
 
 			String acc = fixAccountInfo.checkingAccount.accountNo;
 			
@@ -176,16 +176,16 @@ public class GeneralLedgerService implements PropertyChangeListener {
 						+ leg.getFiscalYear();
 				String mo = "";
 				String amount = "" + leg.getAmount();
-				String type = "Debit";
-				String cath = "Depreciation";
+				TransactionNature type = TransactionNature.Debit;
+				TransactionType cath = TransactionType.Depreciation;
 
 				String acc = fixAccountInfo.checkingAccount.accountNo;
 				ledger.addTransaction(d, message, mo, amount, type, cath, acc,null);
 			}
 			if (d != null) {
 				String message = asset.getPurchaceTransaction().getDescription() + ":Lost Of Asset Write Off";
-				String cath = "LostOfAssetWriteOff";
-				String type = "Debit";
+				TransactionType cath = TransactionType.LostOfAssetWriteOff;
+				TransactionNature type = TransactionNature.Debit;
 				String acc = fixAccountInfo.checkingAccount.accountNo;
 				String amount = asset.getCurrentValue() + "";
 				String mo = "";
@@ -222,17 +222,30 @@ public class GeneralLedgerService implements PropertyChangeListener {
 				String message = transaction.getDescription();
 				String mo = transaction.getNote();
 				String amount = "" + transaction.getAmount();
-				String type = transaction.getTransactionNature().name();
+				TransactionNature type = transaction.getTransactionNature();
 				String cath = "Unknown";
 				if (transaction.getType() != null)
 					cath = transaction.getType().name();
 				String acc = transaction.getAccount();
 				Double solde = transaction.getSolde();
-				ledger.addTransaction(transaction.getDate(), message, mo, amount, type, cath, acc,solde);
+				ledger.addTransaction(transaction.getDate(), message, mo, amount, type, transaction.getType(), acc,solde);
 			}
 		}
 	}
 
+	public List<LedgerEntryDTO> getLedgerDtos(int fy) {
+		List<LedgerEntryDTO> dtos = getLedgerDtos();
+		List<LedgerEntryDTO> fyDtos= new ArrayList<LedgerEntryDTO>();
+		for (LedgerEntryDTO ledgerEntryDTO : dtos) {
+			if(fys.getFiscalYear(ledgerEntryDTO.getDate()) == fy) 
+			{
+				fyDtos.add(ledgerEntryDTO);
+			}
+		
+		}
+		return fyDtos;
+	}
+	
 	public List<LedgerEntryDTO> getLedgerDtos() {
 
 		if (cashedLedger.isEmpty()) {
@@ -273,6 +286,8 @@ public class GeneralLedgerService implements PropertyChangeListener {
 		clearCashedLedger();
 		
 	}
+
+
 
 
 }

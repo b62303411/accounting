@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.springboot.accounting.model.TransactionNature;
 import com.example.springboot.accounting.model.entities.FixAccountInfo;
 import com.example.springboot.accounting.model.entities.qb.Account;
 import com.example.springboot.accounting.model.entities.qb.AccountManager;
@@ -57,7 +58,7 @@ public class CashStrategy implements TransactionStrategy {
 	}
 
 	@Override
-	public void populate(double amount, Account transactionAccount, TransactionAccount cardinality, String type,
+	public void populate(double amount, Account transactionAccount, TransactionAccount cardinality, TransactionNature type,
 			Double balence) {
 		//handleCash(message,transactionAccount,balence,amount,cardinality)
 		

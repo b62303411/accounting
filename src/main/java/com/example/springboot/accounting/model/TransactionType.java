@@ -19,6 +19,8 @@ public enum TransactionType {
     Transfer,
     Liability,
     Cash,
+    LostOfAssetWriteOff,
+    Invoice,
     Income(TransactionCategory.Revenue),
     BankFees(TransactionCategory.Expense), // For charges and potentially refunds
     Refunds(TransactionCategory.Revenue); // If you want to categorize refunds separately

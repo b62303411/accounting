@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.springboot.accounting.model.TransactionNature;
 import com.example.springboot.accounting.model.entities.qb.Account;
 import com.example.springboot.accounting.model.entities.qb.AccountManager;
 import com.example.springboot.accounting.model.entities.qb.TransactionAccount;
@@ -99,7 +100,7 @@ public class ConsultingRevenueStrategy implements TransactionStrategy{
 	}
 
 	@Override
-	public void populate(double amount, Account transactionAccount, TransactionAccount cardinality, String type,
+	public void populate(double amount, Account transactionAccount, TransactionAccount cardinality, TransactionNature type,
 			Double balence) {
 		// TODO Auto-generated method stub
 		
