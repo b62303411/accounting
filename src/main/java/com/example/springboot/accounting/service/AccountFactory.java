@@ -110,7 +110,7 @@ public class AccountFactory {
 		SuffixCount count_asset = new SuffixCount("S");
 		List<String> assets = List.of(
 				"Tax Savings from NOL", 
-				"Ca");
+				"CA");
 		for (String string : assets) {
 			accountManager.addAccount(string, count_asset.getNext(), AccountType.SOMMATION, false);
 		}

@@ -2,20 +2,24 @@ package com.example.springboot.accounting.service;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.springboot.accounting.model.FinancialData;
+import com.example.springboot.accounting.model.dto.IncomeStatementDto;
+import com.example.springboot.accounting.model.dto.LedgerEntryDTO;
 import com.example.springboot.accounting.model.entities.Account;
 import com.example.springboot.accounting.model.entities.qb.AccountManager;
 import com.example.springboot.accounting.model.entities.qb.AccountType;
+import com.example.springboot.accounting.presentation.NavigationFixture;
+import com.example.springboot.accounting.service.FiscalYearService.DateBoundaries;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -26,8 +30,23 @@ public class LatexGenerator {
 
 	@Autowired
 	AccountManager accountManager;
+	
+	@Autowired
+	FinancialStatementService financeStatementService;
+	
+	@Autowired
+	LedgerTransactionToDto dtoParser;
+	
+	@Autowired
+	AccountService accountService;
+	
+	@Autowired
+	NavigationFixture navFixture;
 	Configuration cfg;
 
+	@Autowired
+	FiscalYearService fys;
+	
 	public LatexGenerator() {
 		cfg = getFreeMarkerConfiguration();
 		System.err.println();
@@ -136,6 +155,58 @@ public class LatexGenerator {
 		return tableCode.toString();
 	}
 
+	@GetMapping("/incomeStatement/latex/{year}")
+	public String incomeStatement(Model model, @PathVariable("year") Integer year) 
+	{
+		if (year == null) {
+			year = 2023;
+		}
+		DateBoundaries boundaries = fys.getBoundaries(year);
+		//31-03-2023
+		model.addAttribute("year", boundaries.date_end);
+		model.addAttribute("selected_report_type", "transactions");
+		navFixture.insertOptions(year, model);
+		model.addAttribute("currentPage", "Income Statement");
+		
+		IncomeStatementDto dto = this.financeStatementService.incomeStatementService.generateIncomeStatement(year);
+		//dto.expenseAccounts
+		model.addAttribute("operatingExpenseAccounts",dto.operatingExpenseAccounts);
+		model.addAttribute("otherExpenseAccounts",dto.otherExpenseAccounts);
+		model.addAttribute("revenueAccounts",dto.revenueAccounts);
+		model.addAttribute("totalRevenue",dto.totalRevenue);
+		model.addAttribute("totalOperatingExpenses",dto.totalOperatingExpenses);
+		model.addAttribute("totalOtherExpenses",dto.totalOtherExpenses);
+		model.addAttribute("totalExpenses", dto.totalOperatingExpenses);
+		model.addAttribute("incomeBeforeTax", dto.incomeBeforeTax);
+		model.addAttribute("netIncome",dto.incomeAfterTax);
+		model.addAttribute("incomeTax", dto.incomeTax);
+		model.addAttribute("incomeAfterTax", dto.incomeAfterTax);
+		List<LedgerEntryDTO> dtos = dtoParser.convertToLedgerEntryDTOs(dto.wb.getTransactions());
+		model.addAttribute("ledgerEntries",dtos);
+		
+		
+		model.addAttribute("assets", accountService.getAccountsByType(AccountType.ASSET));
+		model.addAttribute("totalAssets", accountService.getTotalByType(AccountType.ASSET));
+
+		model.addAttribute("liabilities", accountService.getAccountsByType(AccountType.LIABILITY));
+		model.addAttribute("totalLiabilities", accountService.getTotalByType(AccountType.LIABILITY));
+
+		model.addAttribute("equity", accountService.getAccountsByType(AccountType.EQUITY));
+		model.addAttribute("totalEquity", accountService.getTotalByType(AccountType.EQUITY));
+		
+		
+		StringWriter stringWriter = new StringWriter();
+		try {
+			Template template = cfg.getTemplate("template.ftlh");
+			template.process(model, stringWriter);
+		} catch (TemplateException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return stringWriter.toString();
+	}
+	
+	
 	@GetMapping("/latex")
 	public String getLatex() {
 		FinancialData data = new FinancialData();
