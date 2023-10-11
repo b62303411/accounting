@@ -1,4 +1,4 @@
-package com.example.springboot.accounting.service;
+package com.example.springboot.accounting.service.util;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import com.example.springboot.accounting.model.AiFileResult;
 import com.example.springboot.accounting.model.AssistantAnswer;
 import com.example.springboot.accounting.model.dto.InvoiceDto;
-import com.example.springboot.accounting.service.util.OpenAiRequestService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 @Service
@@ -67,7 +66,7 @@ public class BankStatementPromptFactory {
 		
 
 					
-			AssistantAnswer answer =service.reallyRun(prompt);
+			AssistantAnswer answer =service.reallyRun(prompt,null);
 			
 			result.firstMetaData=answer;
 			return result;

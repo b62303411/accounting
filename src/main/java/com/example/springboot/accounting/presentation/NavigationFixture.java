@@ -28,6 +28,7 @@ public class NavigationFixture {
 		model.addAttribute("menuOptions", menuOptions);
 		model.addAttribute("companyName", service.getProfile().getName());	
 		FiscalYearEnd fiscalYearEnd = service.getProfile().getFiscalYearEnd();
+		model.addAttribute("year",year);
 		model.addAttribute("fiscal_end_day", fiscalYearEnd.day);
 		model.addAttribute("fiscal_end_month", fiscalYearEnd.month);
 		model.addAttribute("fiscal_end_year", year);

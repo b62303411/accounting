@@ -5,7 +5,8 @@ public enum AccountType {
 	LIABILITY(AccountBalance.CREDIT), 
 	EQUITY(AccountBalance.CREDIT),
 	REVENUE(AccountBalance.CREDIT), 
-	EXPENSE(AccountBalance.DEBIT);
+	EXPENSE(AccountBalance.DEBIT),
+	SOMMATION(AccountBalance.DEBIT),;
 
 	private final AccountBalance naturalBalance;
 

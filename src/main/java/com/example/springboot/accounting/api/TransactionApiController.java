@@ -43,10 +43,10 @@ import com.example.springboot.accounting.model.entities.BankStatement;
 import com.example.springboot.accounting.model.entities.Transaction;
 import com.example.springboot.accounting.repository.AccountRepository;
 import com.example.springboot.accounting.service.BankReccordService;
-import com.example.springboot.accounting.service.BankStatementPromptFactory;
 import com.example.springboot.accounting.service.DataParsingService;
 import com.example.springboot.accounting.service.TransactionParser;
 import com.example.springboot.accounting.service.TransactionService;
+import com.example.springboot.accounting.service.util.BankStatementPromptFactory;
 import com.example.springboot.accounting.service.util.PdfService;
 
 @Controller

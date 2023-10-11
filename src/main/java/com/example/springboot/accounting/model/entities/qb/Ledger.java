@@ -1,5 +1,7 @@
 package com.example.springboot.accounting.model.entities.qb;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -7,70 +9,102 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import com.example.springboot.accounting.model.Sequence;
+import com.example.springboot.accounting.model.TransactionNature;
+import com.example.springboot.accounting.model.TransactionType;
+import com.example.springboot.accounting.model.dto.TransactionDTO;
+import com.example.springboot.accounting.model.entities.FixAccountInfo;
+import com.example.springboot.accounting.repository.RuleRepository;
 import com.example.springboot.accounting.service.TaxService;
+import com.example.springboot.accounting.service.ledger.MutualFundStrategy;
+import com.example.springboot.accounting.service.ledger.TransactionStrategy;
 
 public class Ledger {
+	private RuleRepository ruleRepo;
 	private static final String Owner = "Samuel Audet-Arsenault";
 	private AccountManager accountManager;
 	private Set<String> postedTransactionIds;
 	private Set<Transaction> transactions;
-	private ClassificationRule taxes_rule;
+	private ClassificationRule revenueTaxrule;
 	private ClassificationRule amazon_rule;
-	private LedgerRuleFactory factory;
-	private List<ClassificationRule> operatingExpensesRules;
-	private List<ClassificationRule> assetPurchaceRules;
+	private ClassificationRule cashDepositRule;
+	private ClassificationRule creditCardPaymentRule;
+	private ClassificationRule tpsTvqPaymentRule;
 	private List<String> vendors;
 	private TaxService taxService;
-	String creditCardAccountNo = "7053";
-	String checkAccountNo = "5235425";
+
+	private HashMap<AccountType, TransactionStrategy> strategies;
+
+	PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+
+	FixAccountInfo fixAccountInfo = new FixAccountInfo();
+
 	private Sequence seq;
+	private MutualFundStrategy mutual;
 
 	public Sequence getSeq() {
 		return seq;
+	}
+
+	public void addObserver(PropertyChangeListener l) {
+		pcs.addPropertyChangeListener("theProperty", l);
 	}
 
 	protected void setSeq(Sequence seq) {
 		this.seq = seq;
 	}
 
-	public Ledger(AccountManager manager, LedgerRuleFactory factory, TaxService taxService) {
+	public Ledger(MutualFundStrategy mutual, RuleRepository ruleRepo, AccountManager manager, LedgerRuleFactory factory,
+			TaxService taxService) {
 		seq = new Sequence();
-		this.factory = factory;
+		this.mutual = mutual;
 		this.accountManager = manager;
 		this.postedTransactionIds = new HashSet<>();
 		this.transactions = new HashSet<Transaction>();
-		this.operatingExpensesRules = new ArrayList<ClassificationRule>();
-		this.assetPurchaceRules = new ArrayList<ClassificationRule>();
 		this.vendors = new ArrayList<String>();
 		this.taxService = taxService;
+		this.ruleRepo = ruleRepo;
 		vendors.add("Cloutier & Longtin");
 		vendors.add("MTA");
 
-		taxes_rule = new ClassificationRule();
-		taxes_rule.addKeyWord("QUEBEC GOV'T");
-		taxes_rule.addKeyWord("ARC");
-		taxes_rule.addKeyWord("Ministere du revenue");
-		taxes_rule.addKeyWord("Revenue QC");
-		taxes_rule.addKeyWord("MRQ");
-		taxes_rule.addKeyWord("Revenue Quebec");
-		taxes_rule.addKeyWord("CRA");
-		taxes_rule.addAccountNumber(checkAccountNo);
-		taxes_rule.addAccountNumber("1");
+		revenueTaxrule = new ClassificationRule();
+		revenueTaxrule.addKeyWord("QUEBEC GOV'T");
+		revenueTaxrule.addKeyWord("ARC");
+		revenueTaxrule.addKeyWord("Ministere du revenue");
+		revenueTaxrule.addKeyWord("Revenue QC");
+		revenueTaxrule.addKeyWord("MRQ");
+		revenueTaxrule.addKeyWord("Revenue Quebec");
+		revenueTaxrule.addKeyWord("CRA");
+		revenueTaxrule.addAccountNumber(fixAccountInfo.checkingAccount.accountNo);
+		revenueTaxrule.addAccountNumber("1");
 
 		amazon_rule = new ClassificationRule();
 
-		amazon_rule.addAccountNumber(creditCardAccountNo);
+		amazon_rule.addAccountNumber(fixAccountInfo.visaAccount.accountNo);
 		amazon_rule.addKeyWord("AMZNMktpCA");
 		amazon_rule.addKeyWord("amazon");
 		amazon_rule.addKeyWord("Amazon.ca");
 		amazon_rule.addKeyWord("Amazon*");
 		amazon_rule.addKeyWord("Amazon");
 
+		cashDepositRule = new ClassificationRule();
+		cashDepositRule.addKeyWord("Owner Initial deposit");
+		cashDepositRule.addAccountNumber(fixAccountInfo.checkingAccount.accountNo);
+		
+		creditCardPaymentRule = new ClassificationRule();
+		creditCardPaymentRule.addAccountNumber(fixAccountInfo.checkingAccount.accountNo);
+		creditCardPaymentRule.addKeyWord("PMT PREAUTOR VISA TD");
+		creditCardPaymentRule.addKeyWord("PAIEMENTPRÉAUTORISÉ");
+		
+		tpsTvqPaymentRule = new ClassificationRule();
+		tpsTvqPaymentRule.addAccountNumber(fixAccountInfo.checkingAccount.accountNo);
+		tpsTvqPaymentRule.addKeyWord("TPS&TVQ");
+		
 	}
 
 	public AccountManager getAccountManager() {
@@ -79,148 +113,6 @@ public class Ledger {
 
 	public void setAccountManager(AccountManager accountManager) {
 		this.accountManager = accountManager;
-	}
-
-	public void createRules() {
-		
-		
-		addTrainingPurchaceRule(creditCardAccountNo,List.of("SANS"),"SANS Institute");
-		
-		addOfficeEquipementPurchaceRule(creditCardAccountNo,List.of("Amazon","AMZNMktpCA"),
-				"Amazon");
-		addOfficeEquipementPurchaceRule(creditCardAccountNo,List.of("BESTBUY"),
-				"BESTBUY");
-		addOfficeSuppliesRule(creditCardAccountNo, List.of("NEWEGG"), "NEWEGG");
-		addOfficeSuppliesRule(creditCardAccountNo, List.of("Microsoft*Store"), "Microsoft");
-		addOfficeSuppliesRule(creditCardAccountNo, List.of("Acme"), "Acme");
-		addOfficeSuppliesRule(creditCardAccountNo, List.of("Dri Nvidia"), "Dri Nvidia");
-		addOfficeSuppliesRule(creditCardAccountNo, List.of("Sears"), "Sears");
-		addOfficeSuppliesRule(creditCardAccountNo, List.of("Best Buy"), "Best Buy");
-		addOfficeSuppliesRule(creditCardAccountNo, List.of("Sparkfun"), "Sparkfun");
-		addOfficeSuppliesRule(creditCardAccountNo, List.of("Master Vox Electronique"), "Master Vox");
-		addOfficeSuppliesRule(creditCardAccountNo, List.of("AMZN Mktp ","AMZNMktpCA", "amazon", "Amazon.ca", "Amazon*"),
-				List.of("PrimeMemberamazon"), "Amazon");
-		addOfficeSuppliesRule(creditCardAccountNo, List.of("MAGASINCDNTIRE"), "MAGASIN CDN TIRE");
-		addOfficeSuppliesRule(creditCardAccountNo, List.of("THEHOMEDEPOT"), "THE HOME DEPOT");
-		addOfficeSuppliesRule(creditCardAccountNo, List.of("FEDEX-YUDMONTREAL"), "FEDEX");
-		addOfficeSuppliesRule(creditCardAccountNo, List.of("DOLLARAMA"), "DOLLARAMA");
-		addOfficeSuppliesRule(creditCardAccountNo, List.of("BUREAUENGROS", "STAPLES"), "BUREAU EN GROS");
-		addOfficeSuppliesRule(creditCardAccountNo, List.of("COOP", "COOP ETS MONTREAL"), "COOP ETS MONTREAL");
-
-		addTravelAndMealsRule(creditCardAccountNo, List.of("Nettoyeur"), "Nettoyeur");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("Subway"), "Subway");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("Okane"), "Okane");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("Kanda"), "Kanda");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("Vinci"), "Vinci");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("Zibo","RESTAURANT ZIBO"), "Zibo");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("Amir"), "Amir");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("Billet Ad Com"), "Billet Ad Com");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("Watan"), "Watan Boucherie");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("Rest Shaan Tandoori"), "Rest Shaan Tandoori");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("Hoang Huong"), "Hoang Huong");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("Thai Express"), "Thai Express");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("La Cuisine De"), "La Cuisine De");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("New York Grill"), "New York Grill");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("Basha"), "Basha");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("Piazza Pazza"), "Piazza Pazza");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("Watan Boucherie"), "Amigos Resto");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("Amigos Resto"), "Amigos Resto");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("Grillades Torino"), "Grillades Torino");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("Les Brasseurs Brossard"), "Les Brasseurs Brossard");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("PARKINGOTTAWA"), "PARKING OTTAWA");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("INDIGO"), "INDIGO");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("VINCIPARK","VINCI PARK"), "VINCI PARK TOUR ALTITU MONTREAL");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("ECOLEDETECHNOLOGIQPSES"), "ECOLE DE TECHNOLOGI QPSES");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("RESTAURANTZIBOMONTREAL"), "RESTAURANT ZIBO MONTREAL");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("IVANHOECAMBRIDGEINC","IVANHOE"), "IVANHOE CAMBRIDGE INC");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("LOT39MONTREAL"), "LOT 39 MONTREAL");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("OLDDUBLINPUBMONTREAL"), "OLD DUBLIN PUB MONTREAL");
-		addTravelAndMealsRule(creditCardAccountNo, List.of("SERVICESDETRANSPORTADORVAL"),
-				"SERVICES DE TRANSPORT A DORVAL");
-
-		addSasRule(List.of("PrimeMemberamazon"), "Amazon.ca", creditCardAccountNo);
-		addSasRule(List.of("ADOBESEND", "AdobeInc"), "Adobe Inc", creditCardAccountNo);
-		addSasRule(List.of("GOOGLE"), "Google", creditCardAccountNo);
-
-		addProfessionalFeeRule(checkAccountNo, List.of("Northon and rose"), "Northon and rose");
-		addProfessionalFeeRule(checkAccountNo,
-				List.of("Cloutier & Longtin", "Cloutier Longtin Accounting", "Cloutier Longtin"), "Cloutier & Longtin");
-		addBankFeeRule(checkAccountNo, List.of("FRAIS MENS PLAN SERV", "FRAIS-COMMANDE CHEQ"), "TD");
-	}
-
-	/**
-	 * 
-	 * @param accountNo
-	 * @param keywords
-	 * @param vendor
-	 */
-	private void addTrainingPurchaceRule(String accountNo, List<String> keywords, String vendor) {
-		ClassificationRule amp = factory.makeTrainingRule(keywords, vendor, accountNo);
-		operatingExpensesRules.add(amp);
-		
-	}
-
-	private void addBankFeeRule(String accountNo, List<String> keywords, String vendor) {
-		ClassificationRule amp = factory.makeBankFeeRule(keywords, vendor, accountNo);
-		operatingExpensesRules.add(amp);
-	}
-
-	/**
-	 * 
-	 * @param accountNo
-	 * @param keywords
-	 * @param vendor
-	 */
-	private void addTravelAndMealsRule(String accountNo, List<String> keywords, String vendor) {
-		ClassificationRule amp = factory.makeTravelAndMealRule(keywords, vendor, accountNo);
-		operatingExpensesRules.add(amp);
-	}
-	
-	private void addOfficeEquipementPurchaceRule(String accountNo, List<String> keywords, String vendor) {		
-		Account creditCard = getCreditCardAccount();
-		Account oe = getAccountByName("Office Equipment");		
-		ClassificationRule amp = factory.makeOfficeEquipementPurchaceRule(
-				keywords, 
-				vendor, 
-				"Office Equipment",
-				"VISA_TD_REMISES_AFFAIRES"
-				);
-		this.assetPurchaceRules.add(amp);
-	}
-
-	/**
-	 * 
-	 * @param accountNo
-	 * @param keywords
-	 * @param vendor
-	 */
-	private void addProfessionalFeeRule(String accountNo, List<String> keywords, String vendor) {
-		ClassificationRule amp = factory.makeProfessionalFeesRule(keywords, vendor, accountNo);
-		operatingExpensesRules.add(amp);
-	}
-
-	/**
-	 * 
-	 * @param keywords
-	 * @param vendor
-	 * @param accountNo
-	 */
-	private void addSasRule(List<String> keywords, String vendor, String accountNo) {
-		ClassificationRule amp = factory.makeSasRule(keywords, vendor, accountNo);
-		operatingExpensesRules.add(amp);
-	}
-
-	private void addOfficeSuppliesRule(String accountNo, List<String> keywords, String vendor) {
-		ClassificationRule amp = factory.makeOfficeSuppliesRule(keywords, vendor, accountNo);
-		operatingExpensesRules.add(amp);
-	}
-
-	private void addOfficeSuppliesRule(String accountNo, List<String> keywords, List<String> exception, String vendor) {
-		ClassificationRule amp = factory.makeOfficeSuppliesRule(keywords, vendor, accountNo);
-		for (String string : exception) {
-			amp.addExcludeWord(string);
-		}
-		operatingExpensesRules.add(amp);
 	}
 
 	public void postTransaction(Transaction transaction) {
@@ -233,6 +125,7 @@ public class Ledger {
 		postedTransactionIds.add(transaction.getId());
 		transactions.add(transaction);
 		transaction.post();
+		pcs.firePropertyChange("theProperty", transaction, null);
 	}
 
 	public void rePostTransaction(Transaction transaction) {
@@ -291,15 +184,19 @@ public class Ledger {
 	 * @param category
 	 * @param account
 	 */
-	public void addTransaction(Date date, String message, String message_o, String amountStr, String type,
-			String category, String account, Double balence) {
-		Account receivable = accountManager.getAccount("Accounts Receivable");
-		double amount = Double.parseDouble(amountStr);
-		// Transaction transaction = new Transaction();
-		Account relatedAccount;
-
-		Account checkingAccount = accountManager.getAccountByName("TD_EVERY_DAY_A_BUSINESS_PLAN");
+	public void addTransaction(Date date, String message, String message_o, String amountStr, TransactionNature type,
+			TransactionType category, String account, Double balence) {
 		TransactionAccount cardinality = new TransactionAccount();
+		double amount = Double.parseDouble(amountStr);
+
+		// handleRule(message, message_o, type, category,account,amount, cardinality);
+
+		Account receivable = accountManager.getAccount("Accounts Receivable");
+
+		Account checkingAccount = getCheckingAccount();
+
+		Account transactionAccount = accountManager.getAccountByAccountNo(account);
+
 		String vendor_client = "";
 		List<String> words = new ArrayList<String>();
 		words.add(message.trim());
@@ -307,156 +204,23 @@ public class Ledger {
 			words.add(message_o);
 
 		switch (category) {
-		case "Transfer":
-			if (message.equals("TRAITE $CA 01755011")) {
-				handleLoanToOwner(amount, checkingAccount, cardinality);
-			} else if (message.equals("DEPOT") && checkAccountNo.equals(account)) {
-				populateDepot(amount, checkingAccount, cardinality);
-			} else if (message.contains("CORRECTION")) {
-				cardinality.amount = amount;
-				cardinality.vendor_client = "self";
-				switch (type) {
-				case "Debit":
-					cardinality.debited = checkingAccount;
-					cardinality.setCredited(getAccountByName("Unknown"));
-					break;
-				case "Credit":
-					cardinality.debited = getAccountByName("Unknown");
-					cardinality.setCredited(checkingAccount);
-					break;
-
-				}
-
-			} else {
-				if (account.contains(checkAccountNo))
-					populateFontMutuel(amount, checkingAccount, cardinality, type, balence);
-				else {
-					System.err.println();
-				}
-			}
+		case Transfer:
+			handleTransfer(message, type, account, balence, amount, checkingAccount, cardinality);
 			break;
-		case "Bank Fee":
-			handleBankFee(amount, checkingAccount, cardinality, balence);
+		case Income:
+			handleIncome(message, message_o, account, cardinality, amount, receivable, checkingAccount);
 			break;
-		case "Income":
-			if (account.contains(checkAccountNo)) {
-				if (null != message_o && message_o.contains("RED SOLDE CPTE")
-						|| null != message_o && message_o.contains("Red Solde")) {
-
-					handleBankFeeRefund(amount, checkingAccount, cardinality);
-				} else {
-					handleSalesRevenue(message, message_o, receivable, amount, checkingAccount, cardinality);
-				}
-			} else if (account.contains(creditCardAccountNo)) {
-				if (message.contains("REMISEENARGENTTD")||message.contains("ANNUAL")) {
-					handleCreditCardCashback(amount, cardinality);
-				}
-			}
-			// postTransaction(ledger, checkingAccount, relatedAccount, amount, type);
-
-			break;
-		case "Credit Card Payment":
-			handleCreditCardPayment(amount, checkingAccount, cardinality, balence);
-			break;
-		case "Dividend & Cap Gains":
-			handleDividend(amount, checkingAccount, cardinality, balence);
-			break;
-		case "Invoice":
-			handleInvoice(message, message_o, type, receivable, amount, cardinality, balence);
-			break;
-		case "OperatingExpenses":
+		case OperatingExpenses:
 			handleOperatingExpense(message, message_o, words, account, amount, checkingAccount, cardinality,
 					vendor_client, balence);
-
 			break;
-		case "AssetPurchased":
-			handleAssetPurchaced(message, words, account, amount, cardinality, balence);
+		case Dividend:
+			handleDividend(amount, checkingAccount, cardinality, balence);
 			break;
-		case "DeptRepayment":
-			if (message.contains("TPS&TVQ") || (null != message_o && message_o.contains("TPS&TVQ"))) {
-				populateSalesTaxPayment(amount, checkingAccount, cardinality, balence);
-			} else if (this.taxes_rule.keyWordFount(account, words)) {
-				populateTax(amount, checkingAccount, cardinality, balence);
-			} else if (message.contains("PMT PREAUTOR VISA TD")) {
-				handleCreditCardPayment(amount, checkingAccount, cardinality, balence);
-			} else if (message.contains("PAIEMENTPRÉAUTORISÉ")) {
-				// handleCreditCardPayment(date, amount, checkingAccount, cardinality);
-			} else if (message.contains("View Cheque CHQ")) {
-				if (amount > 4000)
-					populateTax(amount, checkingAccount, cardinality, balence);
-				else {
-					if (account.contains(checkAccountNo))
-						populateToClassify(amount, checkingAccount, cardinality, balence);
-				}
-			} else {
-				if (account.contains(checkAccountNo))
-					populateToClassify(amount, checkingAccount, cardinality, balence);
-			}
-
+		case Liability:
+			handleLiability(message, account, balence, amount, checkingAccount, cardinality, words);
 			break;
-		case "Dividend":
-			if (message.contains("FONDS MUTUELS")) {
-
-				populateFontMutuel(amount, checkingAccount, cardinality, type, balence);
-			} else {
-				if (message.contains("TRAITE $CA 01755011")) {
-					handleLoanToOwner(amount, checkingAccount, cardinality);
-				} else
-					handleDividend(amount, checkingAccount, cardinality, balence);
-			}
-			break;
-		// ... Handle other categories similarly ...
-		case "SalesRevenue":
-			handleSalesRevenue(message, message_o, receivable, amount, checkingAccount, cardinality);
-			break;
-		case "Liability":
-			if (this.taxes_rule.keyWordFount(account, words)) {
-				switch (account) {
-				case "1":
-//					+----------+------------------+---------------------+----------------+---------+---------+
-//					|   Date   | Account Type     | Account Name        | Vendor/Client  |  Debit  | Credit  |
-//					+----------+------------------+---------------------+----------------+---------+---------+
-//					| 1-May-23 | ASSET            | Loan to Owner       | Owner's Name   | 5,000   |   -     |
-//					| 1-May-23 | LIABILITY        | Income Tax Payable  | ARC            |   -     | 5,000   |
-//					+----------+------------------+---------------------+----------------+---------+---------+
-
-					cardinality.vendor_client_from = Owner;
-					cardinality.vendor_client_to = "ARC";
-					populateLoanPaymentViaTaxRefund(amount, cardinality);
-
-					break;
-				default:
-					populateTax(amount, checkingAccount, cardinality, balence);
-					break;
-				}
-
-			} else {
-//				+----------+------------------+---------------------+----------------+---------+---------+
-//				|   Date   | Account Type     | Account Name        | Vendor/Client  |  Debit  | Credit |
-//				+----------+------------------+---------------------+----------------+---------+---------+
-//				| 1-May-23 | ASSET            | Loan to Owner       | Owner's Name   | 5,000   |   -    |
-//				| 1-May-23 | LIABILITY        | Income Tax Payable  | ARC            |   -     | 5,000  |
-//				+----------+------------------+---------------------+----------------+---------+---------+
-				if (message.contains("Cloutier & Longtin")) {
-					cardinality.vendor_client_from = Owner;
-					cardinality.vendor_client_to = "Cloutier & Longtin";
-					populateLoanRefundViaPayable(amount, cardinality);
-				} else if (message.contains("CPA")) {
-					cardinality.vendor_client_from = Owner;
-					cardinality.vendor_client_to = "MTA";
-					populateLoanRefundViaPayable(amount, cardinality);
-				} else if (message.contains("VISA")) {
-					cardinality.vendor_client_from = Owner;
-					cardinality.vendor_client_to = "VISA";
-					populateLoanRefundViaCredit(amount, cardinality);
-				} else {
-					populateToClassify(amount, checkingAccount, cardinality, balence);
-				}
-
-			}
-
-			break;
-		case "Credit":
+		case Credit:
 			if (message.contains("FONDS MUTUELS TD")) {
 				populateFontMutuel(amount, checkingAccount, cardinality, type, balence);
 			} else if (message.contains("DEPOT")) {
@@ -464,38 +228,17 @@ public class Ledger {
 			} else {
 				populateToClassify(amount, checkingAccount, cardinality, balence);
 			}
-
 			break;
-		case "Debit":
-			System.err.println();
-			if (message.contains("View Cheque CHQ")) {
-				if (amount - Math.floor(amount) > 0) {
-					System.out.println("Number has a decimal point.");
-					if (amount > 3000) {
-						populateTax(amount, checkingAccount, cardinality, balence);
-					}
-				} else {
-					handleDividend(amount, checkingAccount, cardinality, balence);
-				}
-
-			} else if (message.contains("TD investment transfer to")) {
-				// populateFontMutuel(amount, checkingAccount, cardinality, type);
-
-			} else {
-				populateToClassify(amount, checkingAccount, cardinality, balence);
-			}
-			if (this.taxes_rule.keyWordFount(account, words)) {
-				populateTax(amount, checkingAccount, cardinality, balence);
-
-			} else {
-				if (account.contains(checkAccountNo))
-					populateToClassify(amount, checkingAccount, cardinality, balence);
-			}
+		case Debit:
+			handleDebit(message, account, balence, amount, checkingAccount, cardinality, words);
 			break;
-		case "LostOfAssetWriteOff":
-			this.handleLostOfAssetWriteOff(cardinality, amount);
+		case BankFees:
+			handleBankFee(amount, checkingAccount, cardinality, balence);
 			break;
-		case "Depreciation":
+		case Cash:
+			handleCash(words, account, cardinality, amount, type, balence);
+			break;
+		case Depreciation:
 //			+------------+----------+--------------------------+-----+----------------+----------+----------+
 //			| Date       | Type     | Name                     | No  | Vendor/Client  |  Debit   | Credit   |
 //			+------------+----------+--------------------------+-----+----------------+----------+----------+
@@ -507,59 +250,29 @@ public class Ledger {
 			cardinality.amount = Math.abs(amount);
 			cardinality.vendor_client = "Self";
 			break;
-		case "Unknown":
-			if (this.taxes_rule.keyWordFount(account, words)) {
-				populateTax(amount, checkingAccount, cardinality, balence);
-			} else if (message.contains("View Cheque CHQ")) {
-				if (amount - Math.floor(amount) > 0) {
-					System.out.println("Number has a decimal point.");
-					populateToClassify(amount, checkingAccount, cardinality, balence);
-				} else {
-					handleDividend(amount, checkingAccount, cardinality, balence);
-				}
-			} else if (amazon_rule.keyWordFount(account, words)) {
-				handleOperatingExpense(message, message_o, words, account, amount, checkingAccount, cardinality,
-						vendor_client, balence);
-			} else {
-				if (type.contains("Credit")) {
-					if (message.contains("ANNUALCASHBACKCREDIT")) {
-						handleBankFeeRefund(amount, checkingAccount, cardinality);
-					} else {
-						if (account.contains(checkAccountNo)) {
-							populateToClassify(amount, checkingAccount, cardinality, balence);
-							// postTransaction(cardinality, date, message);
-						} else
-							System.out.println(amount);
-					}
-
-				} else {
-
-//					+------------+----------+-------------------------+-----+---------------------+---------+--------+
-//					| Date       | Type     | Name                    | No  | Vendor/Client       |  Debit  | Credit |
-//					+------------+----------+-------------------------+-----+---------------------+---------+--------+
-//					| 28/01/2023 | LIABILITY| Credit Card             | 024 | Credit Card Company | $100.00 |   -    |
-//					| 28/01/2023 | REVENUE  | Other Income/Cashback   | 025 | Credit Card Company |   -     | $100.00|
-//					+------------+----------+-------------------------+-----+---------------------+---------+--------+
-					if (message.contains("ANNUALCASHBACKCREDIT")) {
-//						cardinality.credited = accountManager.getAccountByName("Miscellaneous Revenue");
-//						cardinality.vendor_client = "VISA";
-//						cardinality.debited = getCreditCardAccount();
-//						cardinality.amount = amount;
-						handleCreditCardCashback(amount, cardinality);
-					} else {
-						if (account.contains(checkAccountNo)) {
-							populateToClassify(amount, checkingAccount, cardinality, balence);
-
-						} else
-							System.err.println(message);
-					}
-				}
-
-			}
-
+		case Invoice:
+			handleInvoice(message, message_o, type, receivable, amount, cardinality, balence);
+			break;
+		case Unknown:
+			handleUnknown(message, message_o, type, account, balence, amount, checkingAccount, cardinality,
+					vendor_client, words);
+			break;
+		case SalesRevenue:
+			handleSalesRevenue(message, message_o, receivable, amount, checkingAccount, cardinality);
+			break;
+		case DeptRepayment:
+			handleDebtRepayment(message, message_o, account, balence, amount, checkingAccount, cardinality, words);
+			break;
+		case AssetPurchased:
+			handleAssetPurchaced(message, words, account, amount, cardinality, balence);
+			break;
+		case LostOfAssetWriteOff:
+			handleLostOfAssetWriteOff(cardinality, amount);
 			break;
 		default:
-			throw new IllegalArgumentException("Unsupported category: " + category);
+			System.err.println(message);
+			break;
+
 		}
 		if (cardinality.debited == null || cardinality.creditedAccounts.isEmpty()) {
 
@@ -569,9 +282,13 @@ public class Ledger {
 				}
 			} else {
 				System.err.println("not splitted yet null " + message + " " + account);
-				if (account.contains(checkAccountNo)) {
+				if (isFromCheq(account)) {
 					populateToClassify(amount, checkingAccount, cardinality, balence);
 					postTransaction(cardinality, date, message);
+				}
+				else 
+				{
+					System.err.println(message);
 				}
 			}
 
@@ -579,6 +296,332 @@ public class Ledger {
 			postTransaction(cardinality, date, message);
 		}
 
+	}
+
+	private void handleIncome(String message, String message_o, String account, TransactionAccount cardinality,
+			double amount, Account receivable, Account checkingAccount) {
+		if (account.contains(fixAccountInfo.investmentAccount.accountNo)) {
+			cardinality.vendor_client = "TD";
+			// This seems to be your refund based on the provided transactions
+			cardinality.setCredited(getAccountByName("Unearned Revenue"));
+			cardinality.debited = getAccountByNo(fixAccountInfo.investmentAccount.accountNo);
+			cardinality.amount = amount;
+
+		} else if (isFromCheq(account)) {
+			if (null != message_o && message_o.contains("RED SOLDE CPTE")
+					|| null != message_o && message_o.contains("Red Solde")) {
+
+				handleBankFeeRefund(amount, checkingAccount, cardinality);
+			} else {
+				handleSalesRevenue(message, message_o, receivable, amount, checkingAccount, cardinality);
+			}
+		} else if (account.contains(fixAccountInfo.visaAccount.accountNo)) {
+			if (message.contains("REMISEENARGENTTD") || message.contains("ANNUAL")) {
+				handleCreditCardCashback(amount, cardinality);
+			}
+			else 
+			{
+				System.err.println(message);
+			}
+		}
+	}
+
+	private Account getAccountByNo(String no) {
+		return accountManager.getAccountByAccountNo(no);
+	}
+
+	/**
+	 * 
+	 * @param message
+	 * @param message_o
+	 * @param type
+	 * @param category
+	 * @param account
+	 * @param amount
+	 * @param cardinality
+	 */
+	private void handleRule(String message, String message_o, String type, String category, String account,
+			double amount, TransactionAccount cardinality) {
+		boolean found = false;
+		List<String> words = new ArrayList<String>();
+		words.add(message.trim());
+		if (message_o != null)
+			words.add(message_o);
+
+//		for (ClassificationRule r : rules) {
+//			
+//			if(r.keyWordFount(account,words)) 
+//			{
+////				AccountAction credit = r.getClassification().getCredit();
+////				AccountAction debit = r.getClassification().getDebit();
+////				cardinality.setCredited(getAccountByName(credit.getAccountName()));
+////				cardinality.debited = getAccountByName(debit.getAccountName());
+////				cardinality.amount = Math.abs(amount);
+////				cardinality.vendor_client = r.getVendor();
+////				System.out.println("found:"+r.getRuleName());
+////				System.out.println("Credited:"+credit.getAccountName());
+////				System.out.println("Debited:"+debit.getAccountName());
+//				found = true;
+//				break;
+//			}
+//		}
+		if (!found) {
+			// prompt.submituery("from account:"+account+" memo:"+message, account);
+			System.out.println(message);
+		}
+
+	}
+
+	private void handleLiability(String message, String account, Double balence, double amount, Account checkingAccount,
+			TransactionAccount cardinality, List<String> words) {
+		if (this.revenueTaxrule.keyWordFount(account, words)) {
+			switch (account) {
+			case "1":
+//					+----------+------------------+---------------------+----------------+---------+---------+
+//					|   Date   | Account Type     | Account Name        | Vendor/Client  |  Debit  | Credit  |
+//					+----------+------------------+---------------------+----------------+---------+---------+
+//					| 1-May-23 | ASSET            | Loan to Owner       | Owner's Name   | 5,000   |   -     |
+//					| 1-May-23 | LIABILITY        | Income Tax Payable  | ARC            |   -     | 5,000   |
+//					+----------+------------------+---------------------+----------------+---------+---------+
+
+				cardinality.vendor_client_from = Owner;
+				cardinality.vendor_client_to = "ARC";
+				populateLoanPaymentViaTaxRefund(amount, cardinality);
+
+				break;
+			default:
+				populateTax(amount, checkingAccount, cardinality, balence);
+				break;
+			}
+
+		} else {
+//				+----------+------------------+---------------------+----------------+---------+---------+
+//				|   Date   | Account Type     | Account Name        | Vendor/Client  |  Debit  | Credit |
+//				+----------+------------------+---------------------+----------------+---------+---------+
+//				| 1-May-23 | ASSET            | Loan to Owner       | Owner's Name   | 5,000   |   -    |
+//				| 1-May-23 | LIABILITY        | Income Tax Payable  | ARC            |   -     | 5,000  |
+//				+----------+------------------+---------------------+----------------+---------+---------+
+			if (message.contains("Cloutier & Longtin")) {
+				cardinality.vendor_client_from = Owner;
+				cardinality.vendor_client_to = "Cloutier & Longtin";
+				populateLoanRefundViaPayable(amount, cardinality);
+			} else if (message.contains("CPA")) {
+				cardinality.vendor_client_from = Owner;
+				cardinality.vendor_client_to = "MTA";
+				populateLoanRefundViaPayable(amount, cardinality);
+			} else if (message.contains("VISA")) {
+				cardinality.vendor_client_from = Owner;
+				cardinality.vendor_client_to = "VISA";
+				populateLoanRefundViaCredit(amount, cardinality);
+			} else {
+				populateToClassify(amount, checkingAccount, cardinality, balence);
+			}
+
+		}
+	}
+
+	/**
+	 * 
+	 * @param message
+	 * @param cardinality
+	 * @param amount
+	 * @param type
+	 * @param balence
+	 */
+	private void handleCash(List<String> message, String account, TransactionAccount cardinality, double amount,
+			TransactionNature type, Double balence) {
+		String vendor = "Self";
+		Account check = getCheckingAccount();
+		switch (type) {
+		case Credit:
+				cardinality.debited = getAccountByName("To Classify");
+				cardinality.setCredited(check);
+				cardinality.credited_balence = balence;
+				cardinality.amount = Math.abs(amount);
+				cardinality.vendor_client = vendor;
+		
+			break;
+		case Debit:
+//			Date       Account Title         Debit     Credit
+//			---------- --------------------  -------   -------
+//			XX/XX/XXXX Checking Account      600
+//			           Owner's Contributions           600
+			if (cashDepositRule.keyWordFount(account, message)) {
+			cardinality.debited = check;// To Classify
+			cardinality.setCredited(getAccountByName("Owner's Contributions"));
+			cardinality.credited_balence = balence;
+			cardinality.amount = Math.abs(amount);
+			cardinality.vendor_client = vendor;
+			}
+			break;
+			default:
+				System.err.println(type);
+		}
+
+	}
+
+	private void handleDebit(String message, String account, Double balence, double amount, Account checkingAccount,
+			TransactionAccount cardinality, List<String> words) {
+
+		if (message.contains("View Cheque CHQ")) {
+			if (amount - Math.floor(amount) > 0) {
+				System.out.println("Number has a decimal point.");
+				if (amount > 3000) {
+					populateTax(amount, checkingAccount, cardinality, balence);
+				}
+			} else {
+				handleDividend(amount, checkingAccount, cardinality, balence);
+			}
+
+		} else if (message.contains("TD investment transfer to")) {
+			// populateFontMutuel(amount, checkingAccount, cardinality, type);
+			System.err.println(message);
+
+		} else {
+			populateToClassify(amount, checkingAccount, cardinality, balence);
+		}
+		if (this.revenueTaxrule.keyWordFount(account, words)) {
+			populateTax(amount, checkingAccount, cardinality, balence);
+
+		} else {
+			if (isFromCheq(account))
+				populateToClassify(amount, checkingAccount, cardinality, balence);
+		}
+	}
+
+	private boolean isFromCheq(String account) {
+		return account.contains(fixAccountInfo.checkingAccount.accountNo);
+	}
+
+	private Account getCheckingAccount() {
+		return accountManager.getAccountByName(this.fixAccountInfo.checkingAccount.accountName);
+	}
+
+	private void handleUnknown(String message, String message_o, TransactionNature type, String account, Double balence,
+			double amount, Account checkingAccount, TransactionAccount cardinality, String vendor_client,
+			List<String> words) {
+		if (this.revenueTaxrule.keyWordFount(account, words)) {
+			populateTax(amount, checkingAccount, cardinality, balence);
+		} else if (message.contains("View Cheque CHQ")) {
+			if (amount - Math.floor(amount) > 0) {
+				System.out.println("Number has a decimal point.");
+				populateToClassify(amount, checkingAccount, cardinality, balence);
+			} else {
+				handleDividend(amount, checkingAccount, cardinality, balence);
+			}
+		} else if (amazon_rule.keyWordFount(account, words)) {
+			handleOperatingExpense(message, message_o, words, account, amount, checkingAccount, cardinality,
+					vendor_client, balence);
+		} else {
+			if (type.name().contains("Credit")) {
+				if (message.contains("ANNUALCASHBACKCREDIT")) {
+					handleBankFeeRefund(amount, checkingAccount, cardinality);
+				} else {
+					if (isFromCheq(account)) {
+						populateToClassify(amount, checkingAccount, cardinality, balence);
+						// postTransaction(cardinality, date, message);
+					} else
+						System.out.println(amount);
+				}
+
+			} else {
+
+//					+------------+----------+-------------------------+-----+---------------------+---------+--------+
+//					| Date       | Type     | Name                    | No  | Vendor/Client       |  Debit  | Credit |
+//					+------------+----------+-------------------------+-----+---------------------+---------+--------+
+//					| 28/01/2023 | LIABILITY| Credit Card             | 024 | Credit Card Company | $100.00 |   -    |
+//					| 28/01/2023 | REVENUE  | Other Income/Cashback   | 025 | Credit Card Company |   -     | $100.00|
+//					+------------+----------+-------------------------+-----+---------------------+---------+--------+
+				if (message.contains("ANNUALCASHBACKCREDIT")) {
+
+					handleCreditCardCashback(amount, cardinality);
+				} else {
+					if (isFromCheq(account)) {
+						populateToClassify(amount, checkingAccount, cardinality, balence);
+
+					} else
+						System.err.println(message);
+				}
+			}
+
+		}
+	}
+
+	private void handleDebtRepayment(String message, String message_o, String account, Double balence, double amount,
+			Account checkingAccount, TransactionAccount cardinality, List<String> words) {
+		
+		if(creditCardPaymentRule.keyWordFount(account, words)) 
+		{
+			handleCreditCardPayment(amount, checkingAccount, cardinality, balence);
+		}
+		else if (tpsTvqPaymentRule.keyWordFount(account, words))
+		{
+			populateSalesTaxPayment(amount, checkingAccount, cardinality, balence);
+		} 
+		else if (this.revenueTaxrule.keyWordFount(account, words)) {
+			populateTax(amount, checkingAccount, cardinality, balence);
+		}else if (message.contains("View Cheque CHQ")) {
+			if (amount > 4000)
+				populateTax(amount, checkingAccount, cardinality, balence);
+			else {
+				if (isFromCheq(account))
+					populateToClassify(amount, checkingAccount, cardinality, balence);
+				else 
+				{
+					System.err.println(message);
+				}
+			}
+		} else {
+			if (isFromCheq(account))
+				populateToClassify(amount, checkingAccount, cardinality, balence);
+			else 
+			{
+				System.err.println(message);
+			}
+		}
+	}
+
+	/**
+	 * 
+	 * @param message
+	 * @param type
+	 * @param account
+	 * @param balence
+	 * @param amount
+	 * @param checkingAccount
+	 * @param cardinality
+	 */
+	private void handleTransfer(String message, TransactionNature type, String account, Double balence, double amount,
+			Account checkingAccount, TransactionAccount cardinality) {
+		if (message.equals("TRAITE $CA 01755011")) {
+			handleLoanToOwner(amount, checkingAccount, cardinality);
+		} else if (message.equals("DEPOT") && isFromCheq(account)) {
+			populateDepot(amount, checkingAccount, cardinality);
+		} else if (message.contains("CORRECTION")) {
+			cardinality.amount = amount;
+			cardinality.vendor_client = "self";
+			switch (type) {
+			case Debit:
+				cardinality.debited = checkingAccount;
+				cardinality.setCredited(getAccountByName("Unknown"));
+				break;
+			case Credit:
+				cardinality.debited = getAccountByName("Unknown");
+				cardinality.setCredited(checkingAccount);
+				break;
+				default:
+					System.err.println(type);
+					break;
+
+			}
+
+		} else {
+			if (isFromCheq(account))
+				populateFontMutuel(amount, checkingAccount, cardinality, type, balence);
+			else {
+				System.err.println();
+			}
+		}
 	}
 
 	private Account getAccountByName(String name) {
@@ -717,18 +760,10 @@ public class Ledger {
 //	+------------+----------+-----------------------+-----+------------------+----------+----------+
 	private void populateTax(double amount, Account checkingAccount, TransactionAccount cardinality, Double balence) {
 
-//TransactionAccount incomeTaxInvoice = new TransactionAccount();
 		TransactionAccount incomeTaxPayment = new TransactionAccount();
 
 		String vendor = "Revenue Agency";
 		Account payable = getAccountByName("Taxes Payable");
-
-//		incomeTaxInvoice.debited = accountManager.getAccountByName("Income Tax Expense");
-//		incomeTaxInvoice.credited = payable;
-//		incomeTaxInvoice.amount = Math.abs(amount);
-//
-//		incomeTaxInvoice.vendor_client = vendor;
-
 		incomeTaxPayment.debited = payable;
 		incomeTaxPayment.setCredited(checkingAccount);
 		incomeTaxPayment.credited_balence = balence;
@@ -779,30 +814,16 @@ public class Ledger {
 	 * @param cardinality
 	 * @param type
 	 */
-	private void populateFontMutuel(double amount, Account checkingAccount, TransactionAccount cardinality, String type,
-			Double balence) {
-		Account font_mutuel = accountManager.getAccountByName("FONDS MUTUELS TD");
-		switch (type) {
-		case "Credit":
-			cardinality.setCredited(checkingAccount);
-			cardinality.debited = font_mutuel;
-			cardinality.credited_balence = balence;
-			break;
-		case "Debit":
-			cardinality.setCredited(font_mutuel);
-			cardinality.debited = checkingAccount;
-			break;
-		}
-
-		cardinality.vendor_client = "Self";
-		cardinality.amount = Math.abs(amount);
+	private void populateFontMutuel(double amount, Account transactionAccount, TransactionAccount cardinality,
+			TransactionNature type, Double balence) {
+		mutual.populate(amount, transactionAccount, cardinality, type, balence);
 	}
 
 	private void handleOperatingExpense(String message, String message_o, List<String> words, String account,
 			double amount, Account checkingAccount, TransactionAccount cardinality, String vendor_client,
 			Double balence) {
 
-		for (ClassificationRule rule : operatingExpensesRules) {
+		for (ClassificationRule rule : ruleRepo.operatingExpensesRules) {
 			if (rule.keyWordFount(account, words)) {
 				rule.populate(cardinality, amount, accountManager, balence, account);
 				return;
@@ -811,7 +832,7 @@ public class Ledger {
 		if (message.contains("RED SOLDE CPTE")) {
 			handleBankFeeRefund(amount, checkingAccount, cardinality);
 		} else {
-			if (account.contains(checkAccountNo)) {
+			if (isFromCheq(account)) {
 				populateToClassify(amount, checkingAccount, cardinality, balence);
 				// postTransaction(cardinality, date, message);
 			} else
@@ -826,14 +847,14 @@ public class Ledger {
 
 	private void handleAssetPurchaced(String message, List<String> words, String account, double amount,
 			TransactionAccount cardinality, Double balence) {
-		
-		for (ClassificationRule rule : assetPurchaceRules) {
+
+		for (ClassificationRule rule : ruleRepo.assetPurchaceRules) {
 			if (rule.keyWordFount(account, words)) {
 				rule.populate(cardinality, amount, accountManager, balence, account);
 				return;
 			}
 		}
-		
+
 		Account relatedAccount;
 		Account oe = getAccountByName("Office Equipment");
 		if (this.amazon_rule.keyWordFount(account, words)) {
@@ -884,8 +905,8 @@ public class Ledger {
 	 * @param cardinality
 	 * @param balence
 	 */
-	private void handleInvoice(String message, String message_o, String type, Account receivable, double amount,
-			TransactionAccount cardinality, Double balence) {
+	private void handleInvoice(String message, String message_o, TransactionNature type, Account receivable,
+			double amount, TransactionAccount cardinality, Double balence) {
 		boolean vendor = false;
 		for (String vendor_str : vendors) {
 			if (message.contains(vendor_str)) {
@@ -1057,20 +1078,40 @@ public class Ledger {
 		return transactions;
 	}
 
-	public void addTransaction(String dateString, String message, String message_o, String amountStr, String type,
-			String category, String account, double balence) {
+	public void addTransaction(TransactionDTO dto) {
+		addTransaction(dto.getDate(), dto.getOriginalDescription(), dto.getDescription(), "" + dto.getAmount(),
+				dto.getTransactionType(), dto.getCategory(), dto.getAccountName(), 0);
+
+	}
+
+	/**
+	 * 
+	 * @param dateString
+	 * @param message
+	 * @param message_o
+	 * @param amountStr
+	 * @param type
+	 * @param category
+	 * @param account_name
+	 * @param balence
+	 */
+	public void addTransaction(String dateString, String message, String note, String amountStr, String type,
+			String category, String account_name, double balence) {
+
 		Date date;
 
 		// Create a DateTimeFormatter with the correct pattern
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yyyy");
 
+		Account transaction_account = getAccountByName(account_name);
 		// Parse the dateString using the formatter
 		LocalDate ldate = LocalDate.parse(dateString, formatter);
 
 		Double balenced = 0.0;
 		date = Date.from(ldate.atStartOfDay(ZoneId.systemDefault()).toInstant());
-
-		addTransaction(date, message, message_o, amountStr, type, category, account, balenced);
+		TransactionType c = TransactionType.valueOf(category);
+		TransactionNature n = TransactionNature.valueOf(type);
+		addTransaction(date, message, note, amountStr, n, c, transaction_account.getAccountNumber(), balenced);
 
 	}
 
@@ -1099,4 +1140,5 @@ public class Ledger {
 			rePostTransaction(t);
 		}
 	}
+
 }

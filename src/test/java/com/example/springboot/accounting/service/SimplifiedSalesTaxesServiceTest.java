@@ -30,8 +30,8 @@ class SimplifiedSalesTaxesServiceTest {
 		assertEquals(0, tf.getCheckingBalance());
 		assertEquals(0, tf.getBalance("Bank Fees"));
 		
-		String checking_account_name = "TD EVERY DAY A BUSINESS PLAN";
-	    String credit_account_name = "Transfer to TD BUSINESS VISA";
+		String checking_account_name = tf.getCheckingAccountName();
+	    String credit_account_name = tf.getCreditAccountName();
 		//  This paying the bank fees. s
 		tf.ledger.addTransaction("5/31/2018", 
 				"Frais Mens Plan", 

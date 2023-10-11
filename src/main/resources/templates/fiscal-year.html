@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<link rel="stylesheet" type="text/css" href="/css/accounting-table.css" />
+	<title>Assets</title>
+	<!-- include Bootstrap CSS -->
+	<link rel="stylesheet" type="text/css" href="/webjars/bootstrap/5.3.0/css/bootstrap.min.css" />
+	<link rel="stylesheet" type="text/css" href="/webjars/font-awesome/4.7.0/css/font-awesome.min.css" />
+	<link rel="stylesheet" type="text/css" href="/webjars/datatables/1.13.5/css/jquery.dataTables.min.css">
+	<style>
+		@import url('https://fonts.googleapis.com/css?family=Assistant');
+
+		body {
+			background: #eee;
+			font-family: Assistant, sans-serif;
+		}
+
+		.cell-1 {
+			border-collapse: separate;
+			border-spacing: 0 4em;
+			background: #ffffff;
+			border-bottom: 5px solid transparent;
+			/*background-color: gold;*/
+			background-clip: padding-box;
+			cursor: pointer;
+		}
+
+		thead {
+			background: #dddcdc;
+		}
+
+		.table-elipse {
+			cursor: pointer;
+		}
+
+		#demo {
+			-webkit-transition: all 0.3s ease-in-out;
+			-moz-transition: all 0.3s ease-in-out;
+			-o-transition: all 0.3s 0.1s ease-in-out;
+			transition: all 0.3s ease-in-out;
+		}
+
+		.row-child {
+			background-color: #000;
+			color: #fff;
+		}
+
+		tr.hide-table-padding td {
+			padding: 0;
+		}
+
+		.expand-button {
+			position: relative;
+		}
+
+		.accordion-toggle .expand-button:after {
+			position: absolute;
+			left: .75rem;
+			top: 50%;
+			transform: translate(0, -50%);
+			content: '-';
+		}
+
+		.accordion-toggle.collapsed .expand-button:after {
+			content: '+';
+		}
+
+		.table th {
+			font-size: 10px;
+		}
+	</style>
+</head>
+
+<body>
+	<header th:replace="fragments/header :: header"></header>
+	<div class="container-fluid">
+		<!-- Left Side Menu -->
+		<div class="row">
+			<div th:replace="fragments/sidebar :: sidebar"></div>
+			<div class="col-md-10">
+				<div th:replace="fragments/yearselect :: navbar"></div>
+			</div>
+		</div>
+	</div>
+
+
+	<script src="/webjars/jquery/3.6.4/jquery.min.js"></script>
+	<script src="/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+	<script src="/webjars/popper.js/2.11.7/umd/popper.min.js"></script>
+
+
+</body>
+
+</html>

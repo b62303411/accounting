@@ -1,0 +1,213 @@
+{
+	"rules": [
+		{
+			"credited": "Training",
+			"debited": "7053",
+			"cases": [
+				{
+					"vendor": "SANS Institute",
+					"descriptionContains": [
+						"SANS"
+					]
+				}
+			]
+		},
+		{
+			"credited": "Office Equipment",
+			"debited": "7053",
+			"cases": [
+				{
+					"vendor": "Amazon",
+					"descriptionContains": [
+						"Amazon",
+						"AMZNMktpCA"
+					]
+				},
+				{
+					"vendor": "BESTBUY",
+					"descriptionContains": [
+						"BESTBUY"
+					]
+				}
+			]
+		},
+		{
+			"credited": "Office Supplies",
+			"debited": "7053",
+			"cases": [
+				{
+					"vendor": "NEWEGG",
+					"descriptionContains": [
+						"NEWEGG"
+					]
+				},
+				{
+					"vendor": "Microsoft",
+					"descriptionContains": [
+						"Microsoft*Store"
+					]
+				},
+				{
+					"vendor": "Acme",
+					"descriptionContains": [
+						"Acme"
+					]
+				},
+				{
+					"vendor": "Dri Nvidia",
+					"descriptionContains": [
+						"Dri Nvidia"
+					]
+				},
+				{
+					"vendor": "Sears",
+					"descriptionContains": [
+						"Sears"
+					]
+				},
+				{
+					"vendor": "Sparkfun",
+					"descriptionContains": [
+						"Sparkfun"
+					]
+				},
+				{
+					"vendor": "Master Vox",
+					"descriptionContains": [
+						"Master Vox Electronique"
+					]
+				},
+				{
+					"vendor": "Amazon",
+					"descriptionContains": [
+						"AMZN Mktp ",
+						"AMZNMktpCA",
+						"amazon",
+						"Amazon.ca",
+						"Amazon*"
+					]
+				},
+				{
+					"vendor": "MAGASIN CDN TIRE",
+					"descriptionContains": [
+						"MAGASINCDNTIRE"
+					]
+				},
+				{
+					"vendor": "THE HOME DEPOT",
+					"descriptionContains": [
+						"THEHOMEDEPOT"
+					]
+				},
+				{
+					"vendor": "FEDEX",
+					"descriptionContains": [
+						"FEDEX-YUDMONTREAL"
+					]
+				},
+				{
+					"vendor": "DOLLARAMA",
+					"descriptionContains": [
+						"DOLLARAMA"
+					]
+				},
+				{
+					"vendor": "BUREAU EN GROS",
+					"descriptionContains": [
+						"BUREAUENGROS",
+						"STAPLES"
+					]
+				},
+				{
+					"vendor": "COOP ETS MONTREAL",
+					"descriptionContains": [
+						"COOP",
+						"COOP ETS MONTREAL"
+					]
+				}
+			]
+		},
+		{
+			"credited": "Travel & Meals",
+			"debited": "7053",
+			"cases": [
+				{
+					"vendor": "Nettoyeur",
+					"descriptionContains": [
+						"Nettoyeur"
+					]
+				},
+				{
+					"vendor": "Subway",
+					"descriptionContains": [
+						"Subway"
+					]
+				},
+				{
+					"vendor": "Okane",
+					"descriptionContains": [
+						"Okane"
+					]
+				}
+			]
+		},
+		{
+			"credited": "Software SAS",
+			"debited": "7053",
+			"cases": [
+				{
+					"vendor": "Amazon.ca",
+					"descriptionContains": [
+						"PrimeMemberamazon"
+					]
+				},
+				{
+					"vendor": "Adobe Inc",
+					"descriptionContains": [
+						"ADOBESEND",
+						"AdobeInc"
+					]
+				},
+				{
+					"vendor": "Google",
+					"descriptionContains": [
+						"GOOGLE"
+					]
+				}
+			]
+		},
+		{
+			"credited": "Professional Fees",
+			"debited": "7053",
+			"cases": [
+				{
+					"vendor": "Northon and rose",
+					"descriptionContains": [
+						"Northon and rose"
+					]
+				},
+				{
+					"vendor": "Cloutier & Longtin",
+					"descriptionContains": [
+						"Cloutier & Longtin",
+						"Cloutier Longtin Accounting",
+						"Cloutier Longtin"
+					]
+				}
+			]
+		},
+		{
+			"credited": "Bank Fees",
+			"debited": "5235425",
+			"cases": [
+				{
+					"vendor": "TD",
+					"descriptionContains": [
+						"FRAIS MENS PLAN SERV",
+						"FRAIS-COMMANDE CHEQ"
+					]
+				}
+			]
+		}
+	]
+}

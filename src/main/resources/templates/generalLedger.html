@@ -12,7 +12,10 @@
 	<header th:replace="fragments/header :: header"></header>
 	<div class="container">
 		<h2>Accounting Ledger</h2>
-        <button id="callApiButton">Call API</button>
+		<div class="spinner-border text-primary" role="status" id="loadingSpinner" style="display:none;">
+			<span class="visually-hidden">Loading...</span>
+		</div>
+		<button id="callApiButton">Call API</button>
 		<table id="ledger-table" border="1" class="table table-striped" style="width:100%">
 			<thead>
 				<tr>
@@ -29,19 +32,9 @@
 				</tr>
 			</thead>
 			<tbody>
-				<!-- Assuming you pass a list of entries named 'ledgerEntries' -->
-				<tr th:each="entry : ${ledgerEntries}">				
-					<td th:text="${entry.getUnixTime()}"></td>
-					<td th:text="${entry.accountType}"></td>
-					<td th:text="${entry.message}"></td>
-					<td th:text="${entry.glAccountName}"></td>
-					<td th:text="${entry.glAccountNumber}"></td>
-					<td th:text="${entry.vendorOrClient}"></td>
-					<td th:text="${entry.debit}"></td>
-					<td th:text="${entry.credit}"></td>
-					<td th:text="${entry.balence}"></td>
-					<td th:text="${entry.abalence}"></td>
-				</tr>
+
+				<!-- Rows will be added here by DataTables and JavaScript -->
+
 			</tbody>
 		</table>
 	</div>
@@ -55,14 +48,25 @@
 <script src="/js/ledger.js"></script>
 
 <script>
-document.getElementById("callApiButton").addEventListener("click", function() {
-      var xhr = new XMLHttpRequest();
-      xhr.open("POST", "/api/ledger/populate", true);
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4 && xhr.status === 200)
-          alert("API called successfully");
-      };
-      xhr.send();
-    });
-  </script>
+	document.getElementById("callApiButton").addEventListener("click", function () {
+		var xhr = new XMLHttpRequest();
+		xhr.open("POST", "/api/ledger/populate", true);
+		xhr.onreadystatechange = function () {
+			if (xhr.readyState === 4 && xhr.status === 200)
+				alert("API called successfully");
+		};
+		xhr.send();
+	});
+
+	
+
+	$(document).ready(function () {
+
+		updateDataTable();
+		$("#callApiButton").click(function () {
+			updateDataTable();
+		});
+	});
+</script>
+
 </html>

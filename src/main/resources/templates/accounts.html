@@ -42,7 +42,7 @@
 							<td th:text="${account.accountNumber}"></td>
 							<td th:text="${account.name}"></td>
 							<td th:text="${account.type}"></td>
-							<td th:text="${account.balance}"></td>
+							<td th:text="${#numbers.formatCurrency(account.balance)}"></td>
 						</tr>
 					</tbody>
 				</table>

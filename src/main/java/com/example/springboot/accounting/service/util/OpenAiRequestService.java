@@ -40,22 +40,20 @@ public class OpenAiRequestService {
 		ObjectMapper objectMapper = new ObjectMapper();
 
 		try {
-			
+
 			// Convert the supplier names list to a formatted string
 			// Convert the map to a formatted string
-		    String formattedSuppliers = suppliersWithServices.entrySet().stream()
-		        .map(entry -> String.format("\"%s\" (Service: %s)", entry.getKey(), entry.getValue()))
-		        .collect(Collectors.joining(",\n"));
-		    
-		    // Create the structured query
-		    // Create the structured query
-		    String query = String.format(
-		        "Given these suppliers and their services: \n%s\n\nWhich one matches closest to: \"%s\"?",
-		        formattedSuppliers,
-		        name
-		    );
-		    
-		    query+="\n please provide your answer as a json format with the field answer.";
+			String formattedSuppliers = suppliersWithServices.entrySet().stream()
+					.map(entry -> String.format("\"%s\" (Service: %s)", entry.getKey(), entry.getValue()))
+					.collect(Collectors.joining(",\n"));
+
+			// Create the structured query
+			// Create the structured query
+			String query = String.format(
+					"Given these suppliers and their services: \n%s\n\nWhich one matches closest to: \"%s\"?",
+					formattedSuppliers, name);
+
+			query += "\n please provide your answer as a json format with the field answer.";
 
 			List<String> messages = new ArrayList<String>();
 			messages.add(query);
@@ -65,21 +63,32 @@ public class OpenAiRequestService {
 		}
 		return null;
 	}
-	
-	public AssistantAnswer reallyRun(String prompt) throws JsonMappingException, JsonProcessingException 
-	{
+
+	public AssistantAnswer reallyRun(String prompt, Correction correction) throws JsonMappingException, JsonProcessingException {
 		List<String> messages = new ArrayList<String>();
 		messages.add(prompt);
 		AssistantAnswer answer = new AssistantAnswer();
-		String value = runPrompt(messages);			
-		JsonNode data = extractData(value);			
-		answer.result=value;
-		answer.answer= data;
-		
+		String value = runPrompt(messages);
+		JsonNode data = extractData(value,correction);
+		answer.result = value;
+		answer.answer = data;
+
 		return answer;
 
 	}
-	
+
+	public AssistantAnswer runPrompts(List<String> messages, Correction correction) throws JsonMappingException, JsonProcessingException {
+
+		AssistantAnswer answer = new AssistantAnswer();
+		String value = runPrompt(messages);
+		JsonNode data = extractData(value,correction);
+		answer.result = value;
+		answer.answer = data;
+
+		return answer;
+
+	}
+
 	public String runPrompt(List<String> prompts) {
 		try {
 			String apiKey = config.getApiKey();
@@ -117,9 +126,9 @@ public class OpenAiRequestService {
 		return null;
 
 	}
-	
-	public JsonNode extractData(String responseString) throws JsonMappingException, JsonProcessingException 
-	{
+
+	public JsonNode extractData(String responseString, Correction corr)
+			throws JsonMappingException, JsonProcessingException {
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode responseJson = mapper.readTree(responseString);
 
@@ -134,8 +143,17 @@ public class OpenAiRequestService {
 		// Process the extracted text as needed
 		// For example, you may want to convert it to a JSON object if it's in JSON
 		// format
-		JsonNode extractedData = mapper.readTree(assistantContent);
-		
-		return extractedData;
+		try {
+			JsonNode extractedData = mapper.readTree(assistantContent);
+			return extractedData;
+		} catch (Exception e) {
+
+			if (null != corr) {
+				return corr.correct(assistantContent);
+			}
+
+			return null;
+		}
+
 	}
 }

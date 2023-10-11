@@ -9,7 +9,7 @@
 <body>
 	<div th:fragment="sidebar" class="bg-light sidebar" style="width: 150px;">
 		<div class="sidebar-sticky">
-			<ul class="navbar-nav mr-auto">
+			<ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start">
 				<li th:each="menuOption : ${menuOptions}" class="nav-item"
 					th:classappend="${menuOption.name == currentPage} ? 'active' : ''"
 					th:style="${menuOption.name == currentPage} ? 'background-color: #f8f9fa; font-weight: bold;' : ''">

@@ -23,7 +23,8 @@ public class TaxAdjustmentService {
 	private CompanyProfileService cps;
 	
 	@Autowired
-	private GeneralLedgerService gls;
+	private GeneralLedger gl;
+	//private GeneralLedgerService gls;
 
 	/**
 	 * Create a tax adjustment transaction for Net Operating Loss
@@ -128,8 +129,8 @@ public class TaxAdjustmentService {
 	}
 
 	public void postTransactionToLedger(Transaction taxTransaction) {
-		gls.getLedger().postTransaction(taxTransaction);
-		gls.clearCashedLedger();
+		gl.getLedger().postTransaction(taxTransaction);
+		//gls.clearCashedLedger();
 
 	}
 

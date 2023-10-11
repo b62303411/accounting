@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.springboot.accounting.model.AiFileResult;
 import com.example.springboot.accounting.model.TransactionNature;
 import com.example.springboot.accounting.model.entities.Transaction;
+import com.example.springboot.accounting.service.util.BankStatementPromptFactory;
 import com.example.springboot.accounting.service.util.PdfService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;

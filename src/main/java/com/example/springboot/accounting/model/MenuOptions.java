@@ -10,11 +10,7 @@ public class MenuOptions {
 	{
 		List<MenuOption> options =Arrays.asList(
 			    new MenuOption("Transaction", "view/transactions/" ),
-			    new MenuOption("Income Statement", "view/incomeStatement/" ),
-			    new MenuOption("Balance Sheet", "view/balance/"),
-			    new MenuOption("Revenues", "view/revenues/"),
-			    new MenuOption("Expenses", "view/expenses/"),
-			    new MenuOption("Bills", "view/bills/")
+			    new MenuOption("Income Statement", "view/incomeStatement/" )
 			);
 
 		return options;
