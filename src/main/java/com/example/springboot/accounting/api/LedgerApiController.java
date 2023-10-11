@@ -36,21 +36,22 @@ public class LedgerApiController {
 	}
 	
 	
-	@GetMapping("/ledger/stream")
+	@GetMapping("/stream")
     public SseEmitter streamLedgerDtos() {
         SseEmitter emitter = new SseEmitter();
 
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
             	
-            	List<LedgerEntryDTO> cashedLedger = generalLedgerService.getLedgerDtos();
-              
-                
-                for (LedgerEntryDTO entry : cashedLedger) {
-                    emitter.send(entry);
-                    Thread.sleep(100); // Optional: introduce a delay between sends
-                }
-                
+            	List<LedgerEntryDTO> allEntries = generalLedgerService.getLedgerDtos();
+            	int batchSize = 50; // You can adjust this value based on your needs
+            	for (int i = 0; i < allEntries.size(); i += batchSize) {
+            		 List<LedgerEntryDTO> batch = allEntries.subList(i, Math.min(i + batchSize, allEntries.size()));
+            		  emitter.send(batch);
+            		 Thread.sleep(50); // Optional: introduce a delay between sends
+            	}
+            	// Once all the ledger entries are sent, send an end-of-stream message
+            	emitter.send(SseEmitter.event().name("message").data("{\"endOfStream\":true}"));                
                 emitter.complete();
                 
             } catch (Exception e) {
