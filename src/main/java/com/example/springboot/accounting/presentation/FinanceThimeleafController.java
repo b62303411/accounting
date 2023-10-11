@@ -96,6 +96,37 @@ public class FinanceThimeleafController {
 		model.addAttribute("currentPage", "Bills");
 		return "bills";
 	}
+	
+	@GetMapping("/fy")
+	public String fiscalYear(Model model) {
+		List<Invoice> bills = new ArrayList<Invoice>();
+		bills = invoiceRepo.findAll();
+		model.addAttribute("currentPage", "FiscalYear");
+		navFixture.insertOptions(2023, model);
+		return "fiscal-year";
+	}
+	
+	@GetMapping("/fy/{year}")
+	public String fiscalYears(Model model, @PathVariable("year") Integer year) {
+		List<Invoice> bills = new ArrayList<Invoice>();
+		bills = invoiceRepo.findAll();
+		model.addAttribute("bills", bills);
+		navFixture.insertOptions(year, model);
+		model.addAttribute("currentPage", "FiscalYear");
+		model.addAttribute("currentFyPage", "Bills");
+		return "fiscal-year";
+	}
+	
+	@GetMapping("/bills")
+	public String bills(Model model) {
+		List<Invoice> bills = new ArrayList<Invoice>();
+		bills = invoiceRepo.findAll();
+		model.addAttribute("bills", bills);
+		navFixture.insertOptions(2023, model);
+		model.addAttribute("currentPage", "Bills");
+		return "bills";
+	}
+	
 
 	@GetMapping("/transactions/{year}")
 	public String transactions(Model model, @PathVariable("year") Integer year) {
@@ -107,8 +138,8 @@ public class FinanceThimeleafController {
 		model.addAttribute("companyName", service.getProfile().getName());
 		model.addAttribute("transactions", transactions);
 		model.addAttribute("selected_report_type", "t");
-
-		model.addAttribute("currentPage", "Transaction");
+		model.addAttribute("currentPage", "FiscalYear");
+		model.addAttribute("currentFyPage", "Transaction");
 
 		navFixture.insertOptions(year, model);
 
@@ -175,7 +206,8 @@ public class FinanceThimeleafController {
 		List<FinancialStatementLine> assets = assetService.getAssetFinantialStatement();
 		model.addAttribute("assets", assets);
 		navFixture.insertOptions(year, model);
-		model.addAttribute("currentPage", "Balance Sheet");
+		model.addAttribute("currentPage", "FiscalYear");
+		model.addAttribute("currentFyPage", "Balance Sheet");
 		return "BalanceSheet";
 	}
 
@@ -188,7 +220,8 @@ public class FinanceThimeleafController {
 		}
 		model.addAttribute("selected_report_type", "transactions");
 		navFixture.insertOptions(year, model);
-		model.addAttribute("currentPage", "Income Statement");
+		model.addAttribute("currentPage", "FiscalYear");
+		model.addAttribute("currentFyPage", "Income Statement");
 		
 		IncomeStatementDto dto = this.financeStatementService.incomeStatementService.generateIncomeStatement(year);
 		//dto.expenseAccounts

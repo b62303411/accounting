@@ -164,6 +164,7 @@ public class LatexGenerator {
 		DateBoundaries boundaries = fys.getBoundaries(year);
 		//31-03-2023
 		model.addAttribute("year", boundaries.date_end);
+		model.addAttribute("fy_end",boundaries.date_end);
 		model.addAttribute("selected_report_type", "transactions");
 		navFixture.insertOptions(year, model);
 		model.addAttribute("currentPage", "Income Statement");

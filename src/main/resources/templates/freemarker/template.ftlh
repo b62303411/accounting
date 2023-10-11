@@ -1,18 +1,18 @@
 <#assign newline = "\n">
-\documentclass[12pt, letterpaper]{article} </br>
-\usepackage{booktabs} </br>
-\usepackage{siunitx} </br>
-\usepackage{fancyhdr} </br>
-\title{Financial Statements} </br>
-\date{${year?date}} </br>
-\author{${companyName}} </br>
-\pagestyle{fancy} </br>
-\fancyhf{}  % Clear header and footer </br>
-\fancyhead[L]{${companyName}}  % Left header </br>
-\fancyfoot[C]{${year?date}}  % Center footer  </br>
-${newline}</br>
-${newline}</br>
-\begin{document} </br>
+\documentclass[12pt, letterpaper]{article} 
+\usepackage{booktabs} 
+\usepackage{siunitx} 
+\usepackage{fancyhdr} 
+\title{Financial Statements} 
+\date{${fy_end?date}} 
+\author{${companyName}} 
+\pagestyle{fancy} 
+\fancyhf{}  % Clear header and footer 
+\fancyhead[L]{${companyName}}  % Left header 
+\fancyfoot[C]{${fy_end?date}}  % Center footer  
+${newline}
+${newline}
+\begin{document} 
 </br>
 </br>
 \maketitle
