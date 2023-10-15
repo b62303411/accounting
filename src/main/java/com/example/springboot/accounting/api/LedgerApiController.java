@@ -1,6 +1,7 @@
 package com.example.springboot.accounting.api;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +43,7 @@ public class LedgerApiController {
 
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
-            	
+        
             	List<LedgerEntryDTO> allEntries = generalLedgerService.getLedgerDtos();
             	int batchSize = 50; // You can adjust this value based on your needs
             	for (int i = 0; i < allEntries.size(); i += batchSize) {
