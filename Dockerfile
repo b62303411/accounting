@@ -1,5 +1,5 @@
 # Use the official Gradle image as a build-time image
-FROM gradle:jdk11 as builder
+FROM gradle:jdk17 as builder
 
 # Set the current working directory inside the image
 WORKDIR /app
@@ -17,7 +17,7 @@ COPY src ./src/
 RUN gradle bootJar --no-daemon
 
 # Use the official Java image as the base image
-FROM openjdk:11-jre-slim
+FROM openjdk:17-jre-slim
 
 # Set the current working directory inside the image
 WORKDIR /app
