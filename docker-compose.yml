@@ -1,0 +1,62 @@
+version: '3.8'
+services:
+  traefik:
+    image: traefik:v2.5
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.myresolver.acme.email=samuel.ars@gmail.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"  # For the Traefik dashboard (insecure for this example, consider securing it)
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./letsencrypt:/letsencrypt"
+    networks:
+      - traefik-public
+
+  accounting:
+    image: accounting:latest
+    restart: always
+    env_file:
+      - ./env_variables.env
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+    depends_on:
+      - db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.accounting.entrypoints=web"
+      - "traefik.http.routers.accounting.rule=Host(`accountingb62.ddns.net`)"
+      - "traefik.http.services.accounting.loadbalancer.server.port=8080"
+      - "traefik.docker.network=traefik_proxy"
+    networks:
+      - traefik-public
+      - default
+      - pg_network
+
+  db:
+    image: postgres:12
+    env_file:
+      - ./env_variables.env
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - ./data_postgres:/var/lib/postgresql/data
+    networks:
+      - pg_network
+
+networks:
+  pg_network:
+    external: false
+  traefik-public:
+    external: true

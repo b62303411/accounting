@@ -1,0 +1,39 @@
+version: '3.7'
+
+services:
+  traefik:
+    image: traefik:v2.5
+    container_name: traefik
+    command:
+      - "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.ws.address=:9000"
+      - "--providers.file.directory=/configuration/"
+      - "--providers.file.filename=traefik_dynamic.yml"
+      - "--providers.file.watch=true"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+      - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ../certs:/certs
+      - ../auth:/auth
+      - ./configuration/:/configuration/
+    dns:
+      - 10.0.0.38
+    networks:
+      - traefik_proxy
+      - taiga-docker_taiga
+networks:
+  traefik_proxy:
+    external: true
+  skynet:
+    external: true
+  taiga-docker_taiga:
+    external: true
