@@ -14,12 +14,12 @@ services:
       - "--certificatesresolvers.myresolver.acme.email=samuel.ars@gmail.com"
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
     labels:
-    
+
       # Middleware for HTTP to HTTPS redirection
       - "traefik.http.middlewares.redirect-https.redirectscheme.scheme=https"
       
       # Router for HTTP to HTTPS redirection
-      - "traefik.http.routers.redirs.rule=hostregexp(`{host:.+}`)"
+      - "traefik.http.routers.redirs.rule=hostregexp(`{host:[a-z-.]+}`)"
       - "traefik.http.routers.redirs.entrypoints=web"
       - "traefik.http.routers.redirs.middlewares=redirect-https"
 
