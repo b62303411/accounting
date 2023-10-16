@@ -34,4 +34,6 @@ fi
 
 # Print a message for things that can't be checked with the script
 echo "Please note:"
-echo "- Ensure that the email provided
+echo "- Ensure that the email provided"
+
+
