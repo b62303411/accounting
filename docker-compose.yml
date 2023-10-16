@@ -20,7 +20,7 @@ services:
       - "traefik.http.routers.redirs.middlewares=redirect-https"
       # Let's Encrypt resolver
       - "traefik.http.routers.api.tls.certresolver=myresolver"
-      - "traefik.http.routers.api.tls.domains[0].main=ddns.net"
+      - "traefik.http.routers.api.tls.domains[0].main=traefikb62.ddns.net"
       - "traefik.certificatesresolvers.myresolver.acme.email=samuel.ars@gmail.com"
       - "traefik.certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
       - "traefik.certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
