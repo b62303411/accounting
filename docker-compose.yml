@@ -34,10 +34,13 @@ services:
       - db
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.accounting.entrypoints=web"
+      - "traefik.http.routers.accounting.entrypoints=websecure"
       - "traefik.http.routers.accounting.rule=Host(`accountingb62.ddns.net`)"
+      - "traefik.http.routers.accounting.tls=true"
+      - "traefik.http.routers.accounting.tls.certresolver=myresolver"
       - "traefik.http.services.accounting.loadbalancer.server.port=8080"
       - "traefik.docker.network=traefik_proxy"
+  
     networks:
       - traefik-public
       - default
