@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   traefik:
-    image: traefik:v2.5
+    image: traefik:v2.10
     command:
       #- "--log.level=DEBUG"
       - "--api.insecure=true"
@@ -13,6 +13,10 @@ services:
       #- "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
       - "--certificatesresolvers.myresolver.acme.email=samuel.ars@gmail.com"
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    labels:
+      # Middleware for HTTP to HTTPS redirection
+      - "traefik.http.middlewares.redirect-https.redirectscheme.scheme=https"
+
     ports:
       - "80:80"
       - "443:443"
