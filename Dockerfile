@@ -17,13 +17,14 @@ COPY src ./src/
 RUN gradle bootJar --no-daemon
 
 # Use the official Java image as the base image
-FROM openjdk:17-jre-slim
+FROM eclipse-temurin:11
 
 # Set the current working directory inside the image
 WORKDIR /app
 
 # Copy the jar file built in the builder image
-COPY --from=builder /app/build/libs/my-app.jar .
+COPY --from=builder /app/build/libs/accounting-0.0.1-SNAPSHOT.jar ./app.jar
+
 
 # Specify the command to run on container start
-CMD ["java", "-jar", "my-app.jar"]
+CMD ["java", "-jar", "accounting-0.0.1-SNAPSHOT.jar"]

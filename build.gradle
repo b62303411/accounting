@@ -4,6 +4,7 @@ plugins {
 	id 'java'
 }
 apply plugin: 'org.springframework.boot'
+rootProject.name = 'accounting'
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '17'
