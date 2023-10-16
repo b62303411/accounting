@@ -17,7 +17,7 @@ COPY src ./src/
 RUN gradle bootJar --no-daemon
 
 # Use the official Java image as the base image
-FROM eclipse-temurin:11
+FROM eclipse-temurin:17
 
 # Set the current working directory inside the image
 WORKDIR /app
@@ -27,4 +27,4 @@ COPY --from=builder /app/build/libs/accounting-0.0.1-SNAPSHOT.jar ./app.jar
 
 
 # Specify the command to run on container start
-CMD ["java", "-jar", "accounting-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "app.jar"]
