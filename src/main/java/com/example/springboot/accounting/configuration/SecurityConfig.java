@@ -25,7 +25,7 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests((authz) -> {
 				try {
-					authz
+					authz.requestMatchers("/google8e62e7868a386efb.html").permitAll()
 					    .anyRequest().authenticated().and()
 					    .formLogin();
 				} catch (Exception e) {
