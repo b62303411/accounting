@@ -46,7 +46,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.accounting.entrypoints=websecure"
-      - "traefik.http.routers.accounting.rule=Host(`accountingb62.ddns.net`)"
+      #- "traefik.http.routers.accounting.rule=Host(`accountingb62.ddns.net`)"
+      - "traefik.http.routers.accounting.rule=Host(`accounting.frustratedcoder.net`)"
       - "traefik.http.routers.accounting.tls=true"
       - "traefik.http.routers.accounting.tls.certresolver=myresolver"
       - "traefik.http.services.accounting.loadbalancer.server.port=8080"
