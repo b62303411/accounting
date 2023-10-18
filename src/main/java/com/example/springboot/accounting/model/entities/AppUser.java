@@ -32,19 +32,19 @@ public class AppUser {
 	public String getUsername() {
 		return username;
 	}
-	protected void setUsername(String username) {
+	public void setUsername(String username) {
 		this.username = username;
 	}
 	public String getPassword() {
 		return password;
 	}
-	protected void setPassword(String password) {
+	public void setPassword(String password) {
 		this.password = password;
 	}
 	protected boolean isEnabled() {
 		return enabled;
 	}
-	protected void setEnabled(boolean enabled) {
+	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 	}
 
