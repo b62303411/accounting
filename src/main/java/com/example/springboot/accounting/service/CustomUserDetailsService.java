@@ -28,9 +28,11 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    	Logger.getAnonymousLogger().log(Level.INFO,username);
+    	
         AppUser user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("No user found with username: " + username));
-        Logger.getAnonymousLogger().log(Level.INFO,username);
+        
         return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),
                 Collections.singletonList(new SimpleGrantedAuthority("USER")));
     }
