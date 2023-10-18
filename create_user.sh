@@ -1,32 +1,32 @@
 #!/bin/bash
 
-# Script to add a user to the app_user table in the PostgreSQL database
+# Parse application.properties for database connection details
+DATABASE_URL=$(grep 'spring.datasource.url' application.properties | cut -d'=' -f2)
+DATABASE_NAME=$(echo $DATABASE_URL | awk -F"/" '{print $NF}' | awk -F"?" '{print $1}') # Extracting the DB name, while accounting for potential URL parameters
+DATABASE_USER=$(grep 'spring.datasource.username' application.properties | cut -d'=' -f2)
+DATABASE_PASSWORD=$(grep 'spring.datasource.password' application.properties | cut -d'=' -f2)
 
-# Ensure three arguments are passed
-if [ "$#" -ne 4 ]; then
-    echo "Usage: $0 <container_name> <username> <password>"
+# User details for insertion into app_user table
+NEW_USER_USERNAME=$1
+NEW_USER_PASSWORD=$2
+
+if [[ -z $NEW_USER_USERNAME || -z $NEW_USER_PASSWORD ]]; then
+    echo "Usage: $0 <username> <password>"
     exit 1
 fi
 
-CONTAINER_NAME=$1
-USERNAME=$2
-PASSWORD=$3
-DATABASE_NAME=$4
+# Assume your PostgreSQL is running in a Docker container
+CONTAINER_NAME=YOUR_POSTGRES_CONTAINER_NAME
 
-# Create an SQL script with the parameters
-cat > insert_user.sql <<EOF
-INSERT INTO app_user(username, password, enabled)
-VALUES('${USERNAME}', '${PASSWORD}', true);
-EOF
+# Create a temporary SQL script
+TMP_SQL_FILE="/tmp/insert_user_$$.sql"
+echo "INSERT INTO app_user(username, password, enabled) VALUES ('$NEW_USER_USERNAME', '$NEW_USER_PASSWORD', true);" > $TMP_SQL_FILE
 
-# Copy SQL script to PostgreSQL container
-docker cp insert_user.sql $CONTAINER_NAME:/tmp/insert_user.sql
+# Copy the SQL script to the PostgreSQL container
+docker cp $TMP_SQL_FILE $CONTAINER_NAME:$TMP_SQL_FILE
 
-# Execute SQL script in the PostgreSQL container
+# Execute the SQL script in the PostgreSQL container
+docker exec $CONTAINER_NAME psql -U $DATABASE_USER -d $DATABASE_NAME -a -f $TMP_SQL_FILE
 
-docker exec $CONTAINER_NAME psql -U accountant_pg -d $DATABASE_NAME -a -f /tmp/insert_user.sql
-
-# Cleanup local SQL script
-rm insert_user.sql
-
-echo "User ${USERNAME} added successfully!"
+# Optionally, remove the temporary SQL file
+rm $TMP_SQL_FILE
