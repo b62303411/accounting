@@ -3,7 +3,7 @@
 # Script to add a user to the app_user table in the PostgreSQL database
 
 # Ensure three arguments are passed
-if [ "$#" -ne 3 ]; then
+if [ "$#" -ne 4 ]; then
     echo "Usage: $0 <container_name> <username> <password>"
     exit 1
 fi
