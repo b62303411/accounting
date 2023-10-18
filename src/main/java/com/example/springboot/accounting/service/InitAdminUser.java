@@ -4,6 +4,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.example.springboot.accounting.model.entities.AppUser;
@@ -21,6 +22,10 @@ public class InitAdminUser {
 	
 	@Autowired
 	private PasswordUtil passwordUtil;
+	
+	
+	private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
 	@Autowired
 	private UsernameGenerator userGen;
 	    @PostConstruct
@@ -29,10 +34,11 @@ public class InitAdminUser {
 	            AppUser admin = new AppUser();
 	            
 	            admin.setUsername(userGen.generateRandomUsername());
-	            admin.setPassword(generateRandomPassword(16));  // ensure you encode/hash this password
+	            String password = generateRandomPassword(16);
+	            admin.setPassword(encoder.encode(password));  // ensure you encode/hash this password
 	            admin.setEnabled(true);
 	            userRepository.save(admin);
-	            String msg="Generated "+admin.getUsername()+" Password: " + admin.getPassword();
+	            String msg="Generated "+admin.getUsername()+" Password: " + password;
 	            // Optionally, log the password or send it via email, etc.
 	            System.out.println(msg);
 	            
