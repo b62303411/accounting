@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import com.example.springboot.accounting.model.entities.AppUser;
 
 @Repository
-public interface UserRepository extends JpaRepository<AppUser, Long> {
+public interface AppUserRepository extends JpaRepository<AppUser, Long> {
  
    public Optional<AppUser> findByUsername(String username);
 }

@@ -10,16 +10,16 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.example.springboot.accounting.model.entities.AppUser;
-import com.example.springboot.accounting.repository.UserRepository;
+import com.example.springboot.accounting.repository.AppUserRepository;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
   
-    private final UserRepository userRepository;
+    private final AppUserRepository userRepository;
   
     @Autowired
-    public CustomUserDetailsService(UserRepository userRepository) 
+    public CustomUserDetailsService(AppUserRepository userRepository) 
     {
     	this.userRepository=userRepository;
     }
