@@ -11,6 +11,7 @@ fi
 CONTAINER_NAME=$1
 USERNAME=$2
 PASSWORD=$3
+DATABASE_NAME=$4
 
 # Create an SQL script with the parameters
 cat > insert_user.sql <<EOF
@@ -22,7 +23,8 @@ EOF
 docker cp insert_user.sql $CONTAINER_NAME:/tmp/insert_user.sql
 
 # Execute SQL script in the PostgreSQL container
-docker exec $CONTAINER_NAME psql -U postgres -a -f /tmp/insert_user.sql
+
+docker exec $CONTAINER_NAME psql -U postgres -d $DATABASE_NAME -a -f /tmp/insert_user.sql
 
 # Cleanup local SQL script
 rm insert_user.sql
