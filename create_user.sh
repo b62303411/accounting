@@ -1,19 +1,20 @@
 #!/bin/bash
 
-# Parse application.properties for database connection details
-DATABASE_URL=$(grep 'spring.datasource.url' application.properties | cut -d'=' -f2)
-DATABASE_NAME=$(echo $DATABASE_URL | awk -F"/" '{print $NF}' | awk -F"?" '{print $1}') # Extracting the DB name, while accounting for potential URL parameters
-DATABASE_USER=$(grep 'spring.datasource.username' application.properties | cut -d'=' -f2)
-DATABASE_PASSWORD=$(grep 'spring.datasource.password' application.properties | cut -d'=' -f2)
+# The path to the application.properties file should be provided as the first argument
+PROPERTIES_PATH=$1
+NEW_USER_USERNAME=$2
+NEW_USER_PASSWORD=$3
 
-# User details for insertion into app_user table
-NEW_USER_USERNAME=$1
-NEW_USER_PASSWORD=$2
-
-if [[ -z $NEW_USER_USERNAME || -z $NEW_USER_PASSWORD ]]; then
-    echo "Usage: $0 <username> <password>"
+if [[ -z $PROPERTIES_PATH || -z $NEW_USER_USERNAME || -z $NEW_USER_PASSWORD ]]; then
+    echo "Usage: $0 <path_to_application.properties> <username> <password>"
     exit 1
 fi
+
+# Parse application.properties for database connection details
+DATABASE_URL=$(grep 'spring.datasource.url' $PROPERTIES_PATH | cut -d'=' -f2)
+DATABASE_NAME=$(echo $DATABASE_URL | awk -F"/" '{print $NF}' | awk -F"?" '{print $1}') # Extracting the DB name, while accounting for potential URL parameters
+DATABASE_USER=$(grep 'spring.datasource.username' $PROPERTIES_PATH | cut -d'=' -f2)
+DATABASE_PASSWORD=$(grep 'spring.datasource.password' $PROPERTIES_PATH | cut -d'=' -f2)
 
 # Assume your PostgreSQL is running in a Docker container
 CONTAINER_NAME=YOUR_POSTGRES_CONTAINER_NAME
