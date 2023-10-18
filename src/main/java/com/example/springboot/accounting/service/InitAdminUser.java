@@ -1,10 +1,12 @@
 package com.example.springboot.accounting.service;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.example.springboot.accounting.model.entities.AppUser;
@@ -23,8 +25,8 @@ public class InitAdminUser {
 	@Autowired
 	private PasswordUtil passwordUtil;
 	
-	
-	private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+	@Autowired
+	PasswordEncoder encoder;
 
 	@Autowired
 	private UsernameGenerator userGen;
@@ -39,6 +41,12 @@ public class InitAdminUser {
 	            admin.setEnabled(true);
 	            userRepository.save(admin);
 	            String msg="Generated "+admin.getUsername()+" Password: " + password;
+	            // Write the information to a file for debugging
+	            try (FileWriter writer = new FileWriter("auth_info.txt")) {
+	                writer.write(msg + "\n");
+	            } catch (IOException e) {
+	                e.printStackTrace();
+	            }
 	            // Optionally, log the password or send it via email, etc.
 	            System.out.println(msg);
 	            
