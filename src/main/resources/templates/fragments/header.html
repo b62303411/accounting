@@ -1,18 +1,13 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head>
-	<!-- Required meta tags -->
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<link rel="stylesheet" type="text/css" href="/webjars/bootstrap/5.3.0/css/bootstrap.min.css" />
-</head>
 
-<body>
 	<!-- The header fragment -->
-	<div th:fragment="header">
-	
+	<header th:fragment="header">
+
 		<!-- Bootstrap CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+		<link rel="stylesheet" type="text/css" href="/webjars/font-awesome/6.4.2/css/all.css">
 		<link rel="stylesheet" type="text/css" href="/webjars/font-awesome/6.4.2/css/fontawesome.min.css">
 		<link rel="stylesheet" type="text/css" href="/webjars/bootstrap/5.3.0/css/bootstrap.min.css" />
 
@@ -56,16 +51,16 @@
 					</li>
 					<li class="nav-item">
 						<a class="nav-link" href="/download/excel">
-						<i class="fa fa-file-excel-o">Download</i>
+							<i class="fa fa-file-excel-o">Download</i>
 						</a>
 					</li>
-					
+
 					<!-- Add more pages as needed -->
 				</ul>
-				
+
 			</div>
-		</nav>   
-	</div>
-</body>
+		</nav>
+	</header>
+
 
 </html>
