@@ -54,7 +54,7 @@ public class FiscalYearService {
 		return profile;
 	}
 
-	protected void setProfile(CompanyProfileService profile) {
+	public void setProfile(CompanyProfileService profile) {
 		this.profile = profile;
 	}
 	

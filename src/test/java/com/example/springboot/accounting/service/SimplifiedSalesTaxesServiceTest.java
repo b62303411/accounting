@@ -91,9 +91,9 @@ class SimplifiedSalesTaxesServiceTest {
 	
 		Set<Transaction> transactions = tf.ledger.getTransactions();
 		s.iswbf= new IncomeStatementWhiteBoardFactory();
-		s.iswbf.accountManager=tf.accountManager;
+		s.iswbf.setAccountManager(tf.accountManager);
 		s.simplifiedSalesTaxesStrategy= new SimplifiedSalesTaxesStrategy();
-		s.simplifiedSalesTaxesStrategy.accountManager=tf.accountManager;
+		s.simplifiedSalesTaxesStrategy.setAccountManager(tf.accountManager);
 		
 		s.run(tf.ledger.getSeq(), transactions, tf.ledger);
 		

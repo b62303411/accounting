@@ -10,13 +10,14 @@ import com.sam.accounting.model.entities.qb.AccountManager;
 public class IncomeStatementWhiteBoardFactory {
 	
 	@Autowired
+	private
 	AccountManager accountManager;
 	
 	public IncomeStatementWhiteBoard makeWhiteBoard() {
 		IncomeStatementWhiteBoard wb = new IncomeStatementWhiteBoard();
 
 		// Get all accounts from the AccountManager
-		wb.allAccounts = accountManager.getAccounts();
+		wb.allAccounts = getAccountManager().getAccounts();
 
 		if (wb.allAccounts.isEmpty()) {
 			System.err.println();
@@ -50,5 +51,13 @@ public class IncomeStatementWhiteBoardFactory {
 		}
 
 		return wb;
+	}
+
+	public AccountManager getAccountManager() {
+		return accountManager;
+	}
+
+	public void setAccountManager(AccountManager accountManager) {
+		this.accountManager = accountManager;
 	}
 }

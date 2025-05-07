@@ -23,6 +23,7 @@ public class SimplifiedSalesTaxesStrategy {
 	private static final double REDUCTION_RATE = 0.01; // 1%
 
 	@Autowired
+	private
 	AccountManager accountManager;
 
 	/**
@@ -108,9 +109,9 @@ public class SimplifiedSalesTaxesStrategy {
 	 */
 	public Transaction recordQuickMethodRemittance(double taxableSales,double collectedTaxes, Date date, int fy, Sequence seq) {
 		
-		Account quickMethodBenefit = accountManager.getAccountByName("Quick Method Benefit");
-		Account salesTaxPayable = accountManager.getAccountByName("Sales Tax Payable");
-		Account stc = accountManager.getAccountByName("Sales Tax Collected");
+		Account quickMethodBenefit = getAccountManager().getAccountByName("Quick Method Benefit");
+		Account salesTaxPayable = getAccountManager().getAccountByName("Sales Tax Payable");
+		Account stc = getAccountManager().getAccountByName("Sales Tax Collected");
 		double gst = calculateGST(taxableSales);
 		double qst = calculateQST(taxableSales);
 
@@ -165,5 +166,13 @@ public class SimplifiedSalesTaxesStrategy {
 	
 		return taxAdjustmentTransaction;
 
+	}
+
+	public AccountManager getAccountManager() {
+		return accountManager;
+	}
+
+	public void setAccountManager(AccountManager accountManager) {
+		this.accountManager = accountManager;
 	}
 }
