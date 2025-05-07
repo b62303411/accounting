@@ -1,0 +1,13 @@
+@media (max-width: 768px) {
+
+	.table-responsive .table th,
+	.table-responsive .table td {
+		font-size: 12px;
+		/* Adjust as needed */
+	}
+}
+
+.table td,
+.table th {
+	font-size: 8px;
+}

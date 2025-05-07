@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<link rel="stylesheet" type="text/css" href="/css/accounting-table.css" />
+	<title>Assets</title>
+	<!-- include Bootstrap CSS -->
+	<link rel="stylesheet" type="text/css" href="/webjars/bootstrap/5.3.0/css/bootstrap.min.css" />
+	<link rel="stylesheet" type="text/css" href="/webjars/font-awesome/6.4.2/css/fontawesome.min.css" />
+	<link rel="stylesheet" type="text/css" href="/webjars/datatables/1.13.5/css/jquery.dataTables.min.css">
+	<style>
+		@import url('https://fonts.googleapis.com/css?family=Assistant');
+
+		body {
+			background: #eee;
+			font-family: Assistant, sans-serif;
+		}
+
+		.cell-1 {
+			border-collapse: separate;
+			border-spacing: 0 4em;
+			background: #ffffff;
+			border-bottom: 5px solid transparent;
+			/*background-color: gold;*/
+			background-clip: padding-box;
+			cursor: pointer;
+		}
+
+		thead {
+			background: #dddcdc;
+		}
+
+		.table-elipse {
+			cursor: pointer;
+		}
+
+		#demo {
+			-webkit-transition: all 0.3s ease-in-out;
+			-moz-transition: all 0.3s ease-in-out;
+			-o-transition: all 0.3s 0.1s ease-in-out;
+			transition: all 0.3s ease-in-out;
+		}
+
+		.row-child {
+			background-color: #000;
+			color: #fff;
+		}
+
+		tr.hide-table-padding td {
+			padding: 0;
+		}
+
+		.expand-button {
+			position: relative;
+		}
+
+		.accordion-toggle .expand-button:after {
+			position: absolute;
+			left: .75rem;
+			top: 50%;
+			transform: translate(0, -50%);
+			content: '-';
+		}
+
+		.accordion-toggle.collapsed .expand-button:after {
+			content: '+';
+		}
+
+		.table th {
+			font-size: 10px;
+		}
+	</style>
+	<header th:replace="fragments/header :: header"></header>
+</head>
+
+<body>
+	
+	<div class="container-fluid">
+		<!-- Left Side Menu -->
+		<div class="row">
+		
+			<div class="col-md-10">
+			
+				<div class="container mt-5">
+					<ul class="nav nav-tabs" id="myTab" role="tablist">
+						<li class="nav-item">
+							<a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#createBill" role="tab"
+								aria-controls="createBill" aria-selected="true">Create Bill</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#billList" role="tab"
+								aria-controls="billList" aria-selected="false">Bill List</a>
+						</li>
+					</ul>
+					<div class="tab-content" id="myTabContent">
+						<div class="tab-pane fade show active" id="createBill" role="tabpanel"
+							aria-labelledby="edit-tab">
+							<div class="container shadow min-vh-100 py-2">
+								<div th:replace="~{fragments/create-bill-form::create-bill-form}"></div>
+							</div>
+						</div>
+						<div class="tab-pane fade" id="billList" role="tabpanel" aria-labelledby="list-tab">
+							<div class="container shadow min-vh-100 py-2">
+								<div th:replace="~{fragments/bill-list::bill-list}"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+	<!-- Modal -->
+	<div th:replace="~{fragments/modal-preview-pdf-fragments::previewModal}"></div>
+
+	<!-- Include the modal fragment -->
+	<div th:replace="fragments/upload-modal-fragment::uploadModal"></div>
+	<script src="/webjars/jquery/3.6.4/jquery.min.js"></script>
+	<script src="/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+	<script src="/webjars/popper.js/2.11.7/umd/popper.min.js"></script>
+	<!-- add more content or navigation here -->
+	<script>
+		function showPreview(billId) {
+			fetch("/api/attachment/preview/" + billId) // Replace "/preview/1" with the correct URL for the preview
+				.then(response => response.text())
+				.then(data => {
+					document.getElementById("previewImage").src = "data:image/png;base64," + data;
+					var previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+					previewModal.show();
+				});
+
+
+		}
+
+		function deleteBill(invoiceId) {
+			$.ajax({
+				url: "/api/invoice/" + invoiceId,
+				type: "DELETE",
+				success: function (result) {
+					// You can do something here on success, like removing the invoice from the page
+					alert("Invoice deleted successfully!");
+				},
+				error: function (xhr, status, error) {
+					// You can handle errors here if something goes wrong
+					alert("Failed to delete invoice: " + error);
+				}
+			});
+		}
+
+		function editBill(billId) {
+			// Toggle contenteditable attribute for the specific bill
+			var description = document.getElementById("description-" + billId);
+			var amount = document.getElementById("amount-" + billId);
+			var date = document.getElementById("date-" + billId);
+			var recipient = document.getElementById("recipient-" + billId);
+			var isEditable = description.isContentEditable;
+			var noFacture = document.getElementById("nofac-" + billId);
+			description.contentEditable = !isEditable;
+			amount.contentEditable = !isEditable;
+			date.disabled = isEditable; // Enable or disable the date input field
+
+			// Optionally, change the styling of the row to indicate it's being edited
+			var row = description.closest('tr');
+			if (isEditable) {
+				row.classList.remove('editing');
+			} else {
+				row.classList.add('editing');
+			}
+		}
+
+		function saveBill(billId) {
+			// Get the edited values for the specific bill
+			var description = document.getElementById("description-" + billId).innerText;
+			var amount = document.getElementById("amount-" + billId).innerText;
+			var date = document.getElementById("date-" + billId).value;
+			var recipient = document.getElementById("recipient-" + billId).innerText;
+			var tps = document.getElementById("tps-" + billId).innerText;
+			var tvq = document.getElementById("tvq-" + billId).innerText;
+			var noFacture = document.getElementById("nofac-" + billId).innerText;
+			// Create a data object to send to the server
+			var data = {
+				id: billId,
+				description: description,
+				amount: amount,
+				date: date,
+				recipient: recipient,
+				tps: tps,
+				tvq: tvq,
+				noFacture: noFacture
+				// Add other fields as needed
+			};
+
+			// Send the data to the server via an AJAX request
+			fetch("/api/invoice/updateBill", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify(data)
+			})
+				.then(response => response.json())
+				.then(data => {
+					// Handle the response, e.g., show a success message or update the UI
+
+					alert("Bill updated successfully!");
+					// Optionally, update the UI or redirect the user
+
+				})
+				.catch(error => {
+					// Handle any errors that occur during the fetch
+					alert("An error occurred while updating the bill: " + error.message);
+				});
+		}
+
+		$("#createBillForm").submit(function (e) {
+			e.preventDefault(); // prevent the form from submitting in the normal way
+
+			var formData = new FormData(this); // create FormData object from the form
+
+			$.ajax({
+				url: $(this).attr("action"), // use the form's action attribute as the URL
+				type: "POST",
+				data: formData,
+				processData: false,
+				contentType: false,
+				success: function (response) {
+					// handle successful response here
+					alert("Bill created successfully!");
+				},
+				error: function (jqXHR, textStatus, errorThrown) {
+					// handle error response here
+					alert("An error occurred while creating the bill. Please try again.");
+				}
+			});
+		});
+
+	</script>
+	<script src="/webjars/jquery/3.6.4/jquery.min.js"></script>
+	<script src="/webjars/datatables/1.13.5/js/jquery.dataTables.min.js"></script>
+	<script>
+		function openModal(billId) {
+			// Set the action URL based on the billId
+			document.getElementById('uploadForm').action = '/bills/' + billId + '/addAttachment';
+
+			// Open the modal
+			$('#uploadModal').modal('show');
+		}
+
+		$('#bill-list').DataTable();
+
+	</script>
+	<script src="/js/createExpenseForm.js"></script>
+
+</body>
+
+</html>

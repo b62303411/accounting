@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Assets</title>
+    <!-- include Bootstrap CSS -->
+   <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/5.3.0/css/bootstrap.min.css" />
+  
+</head>
+<body>
+	<header th:replace="fragments/header :: header"></header>
+<div class="container my-3">
+        <h1>Assets</h1>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Asset Type</th>
+                    <th scope="col">Number of Depreciation Legs</th>
+                    <!-- add more columns headers as needed -->
+                </tr>
+            </thead>
+            <tbody>
+                <!-- loop through each asset -->
+                <tr th:each="asset : ${assets}">
+                    <td th:text="*{asset.type}"></td>
+                    <td th:text="*{asset.amortisation.numDepreciationLegs}"></td>
+                    <!-- add more data columns as needed -->
+                    <!-- add additional row for depreciation legs -->
+                    <td th:if="${asset != null }" style="display:none">
+                        <td colspan="2">
+                            <!-- loop through each leg -->                          
+                        <td colspan="2">
+                            <p th:each="leg : *{asset.getDepreciationLegs()}">
+                                Leg: <span th:text="*{leg.id}"></span>, 
+                                Fiscal Year: <span th:text="*{leg.fiscalYear}"></span>,
+                                Amount: <span th:text="*{leg.amount}"></span>
+                            </p>
+                        </td>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+      
+    </div>
+    <script src="/webjars/jquery/3.6.4/jquery.min.js"></script>
+    <!-- add more content or navigation here -->
+ 	<script>
+        $(document).ready(function() {
+            $('.clickable-row').on('click', function() {
+                $(this).next('tr').toggle();
+            });
+        });
+    </script>
+</body>
+</html>

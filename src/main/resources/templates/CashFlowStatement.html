@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="common-header">
+<title>Cash Flow Statement</title>
+</head>
+<body>
+	<header th:replace="fragments/header :: header"></header>
+
+        <!-- Header contents go here -->
+        <h1>Company Header</h1>
+    </header>
+<h1>Cash Flow Statement for <span th:text="${companyName}">Company</span> for the year ended <span th:text="${year}">Year</span></h1>
+
+<table>
+<thead>
+<tr>
+<th>Description</th>
+<th>Amount</th>
+</tr>
+</thead>
+<tbody>
+<tr th:each="line : ${cashFlowStatement}">
+<td th:text="${line.description}"></td>
+<td th:text="${line.amount}"></td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

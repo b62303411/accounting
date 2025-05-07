@@ -1,0 +1,36 @@
+{
+    "accountTypes": [
+        {
+            "name": "Sales Revenue",
+            "description": "Income from sales of goods and services."
+        },
+        {
+            "name": "Cost of Goods Sold",
+            "description": "Direct costs attributable to the production of goods and services sold by a company."
+        },
+        {
+            "name": "Rent",
+            "description": "Costs associated with renting property or equipment."
+        },
+        {
+            "name": "Salaries",
+            "description": "Payments made to employees for services rendered."
+        },
+        {
+            "name": "Depreciation",
+            "description": "Reduction in the value of an asset over time, which does not involve an actual outflow of cash."
+        },
+        {
+            "name": "Accrued Expenses",
+            "description": "Expenses that a business has incurred but has not yet paid, which do not involve an actual outflow of cash until paid."
+        },
+        {
+            "name": "Unrealized Gains/Losses",
+            "description": "Increases or decreases in the value of an asset that has not yet been sold, which do not involve an actual inflow or outflow of cash."
+        },
+        {
+    		"name": "Dividends",
+   			"description": "Payments made to shareholders, representing a distribution of profits. This is considered a cash flow transaction and is an outflow of cash from the company."
+		}
+    ]
+}

@@ -1,0 +1,28 @@
+package com.sam.accounting.model.dto;
+
+public class MenuOption {
+	private String name;
+    private String link;
+
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getLink() {
+		return link;
+	}
+	public void setLink(String link) {
+		this.link = link;
+	}
+
+	public MenuOption(String name, String link) {
+		super();
+		this.name = name;
+		this.link = link;
+
+	}
+    
+    
+}

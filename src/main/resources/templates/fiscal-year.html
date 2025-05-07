@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<link rel="stylesheet" type="text/css" href="/css/accounting-table.css" />
+	<title>Assets</title>
+	<!-- include Bootstrap CSS -->
+
+	<style>
+		@import url('https://fonts.googleapis.com/css?family=Assistant');
+
+		body {
+			background: #eee;
+			font-family: Assistant, sans-serif;
+		}
+
+		.cell-1 {
+			border-collapse: separate;
+			border-spacing: 0 4em;
+			background: #ffffff;
+			border-bottom: 5px solid transparent;
+			/*background-color: gold;*/
+			background-clip: padding-box;
+			cursor: pointer;
+		}
+
+		thead {
+			background: #dddcdc;
+		}
+
+		.table-elipse {
+			cursor: pointer;
+		}
+
+		#demo {
+			-webkit-transition: all 0.3s ease-in-out;
+			-moz-transition: all 0.3s ease-in-out;
+			-o-transition: all 0.3s 0.1s ease-in-out;
+			transition: all 0.3s ease-in-out;
+		}
+
+		.row-child {
+			background-color: #000;
+			color: #fff;
+		}
+
+		tr.hide-table-padding td {
+			padding: 0;
+		}
+
+		.expand-button {
+			position: relative;
+		}
+
+		.accordion-toggle .expand-button:after {
+			position: absolute;
+			left: .75rem;
+			top: 50%;
+			transform: translate(0, -50%);
+			content: '-';
+		}
+
+		.accordion-toggle.collapsed .expand-button:after {
+			content: '+';
+		}
+
+		.table th {
+			font-size: 10px;
+		}
+	</style>
+	<meta name="google-site-verification" content="17l5Zjwu7tydA2bdb2prU1ihfJXuNBDhfNPwLnbadTg" />
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="/webjars/font-awesome/6.4.2/css/all.css">
+
+	<link rel="stylesheet" type="text/css" href="/webjars/bootstrap/5.3.0/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/fontawesome.min.css" integrity="sha384-QYIZto+st3yW+o8+5OHfT6S482Zsvz2WfOzpFSXMF9zqeLcFV0/wlZpMtyFcZALm" crossorigin="anonymous">
+	<header th:replace="fragments/header :: header"></header>
+</head>
+
+<body>
+
+	
+	<div class="container-fluid">
+		<!-- Left Side Menu -->
+		<div class="row">
+			<div th:replace="fragments/sidebar :: sidebar"></div>
+			<div class="col-md-10">
+				<div th:replace="fragments/yearselect :: navbar"></div>
+			</div>
+		</div>
+	</div>
+
+
+	<script src="/webjars/jquery/3.6.4/jquery.min.js"></script>
+	<script src="/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+	<script src="/webjars/popper.js/2.11.7/umd/popper.min.js"></script>
+
+
+</body>
+
+</html>

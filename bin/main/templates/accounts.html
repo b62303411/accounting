@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Account Information</title>
+	<style>
+		table,
+		th,
+		td {
+			border: 1px solid black;
+			border-collapse: collapse;
+		}
+
+		th,
+		td {
+			padding: 15px;
+			text-align: left;
+		}
+	</style>
+</head>
+
+<body>
+	<header th:replace="fragments/header :: header"></header>
+	<div class="container-fluid">
+		<!-- Left Side Menu -->
+		<div class="row">
+			<div th:replace="fragments/sidebar :: sidebar"></div>
+			<div class="col-md-10">
+
+				<h1 class="mt-4 mb-4">Account Information</h1>
+				<table>
+					<thead>
+						<tr>
+							<th>Account No</th>
+							<th>Account Name</th>
+							<th>Account Type</th>
+							<th>Balance</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="account : ${accounts}">
+							<td th:text="${account.accountNumber}"></td>
+							<td th:text="${account.name}"></td>
+							<td th:text="${account.type}"></td>
+							<td th:text="${#numbers.formatCurrency(account.balance)}"></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</body>
+
+</html>

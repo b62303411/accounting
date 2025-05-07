@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:fragment="common-header">
+	<title>Income Statement</title>
+	<link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+	<header th:replace="fragments/header :: header"></header>
+
+	<div class="container-fluid">
+		<!-- Left Side Menu -->
+		<div class="row">
+			<div th:replace="fragments/sidebar :: sidebar"></div>
+			<div class="col-md-10">
+				<div th:replace="fragments/yearselect :: navbar"></div>
+				<div class="container shadow min-vh-100 py-2">
+					
+					<div th:replace="fragments/reportHeader :: reportHeader('Income Statement', ${companyName}, ${fiscal_end_day}, ${fiscal_end_month}, ${fiscal_end_year})"/>
+				
+					<table class="table table-striped">
+						<thead>
+							<tr>
+								<th>Description</th>
+								<th>Amount</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="line : ${incomeStatement}">
+								<td th:title="${line.tooltip}" th:text="${line.description}"></td>
+								<td th:text="${#numbers.formatDecimal(line.amount, 1, 'COMMA', 2, 'POINT')}+'$'"></td>
+							</tr>
+						</tbody>
+					</table>
+					<table>
+						<thead>
+							<tr>
+								<th>Description</th>
+								<th>Amount</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="line : ${cashFlowStatement}">
+								<td th:text="${line.description}"></td>
+								<td th:text="${line.amount}"></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div th:replace="fragments/footer :: footer"></div>
+</body>
+
+</html>

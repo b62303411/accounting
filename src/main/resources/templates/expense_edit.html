@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Assets</title>
+	<!-- include Bootstrap CSS -->
+	<link rel="stylesheet" type="text/css" href="/webjars/bootstrap/5.3.0/css/bootstrap.min.css" />
+	<link rel="stylesheet" type="text/css" href="/webjars/font-awesome/6.4.2/css/fontawesome.min.css" />
+	<link rel="stylesheet" type="text/css" href="/css/accounting-table.css" />
+</head>
+
+<body>
+	<header th:replace="~{fragments/header :: header}"></header>
+	<div class="container-fluid">
+		<!-- Left Side Menu -->
+		<div class="row">
+			<div th:replace="~{fragments/sidebar :: sidebar}"></div>
+			<div class="col-md-10">
+
+				<form id="editExpenseForm">
+					<div class="form-group">
+						<label for="id">ID:</label>
+						<input type="text" id="id" name="id" th:value="${expense.id}" class="form-control" readonly />
+					</div>
+					<div class="form-group">
+						<label for="date">Date:</label>
+						<input type="date" id="date" name="date" th:value="${#dates.format(expense.date, 'yyyy-MM-dd')}"
+							class="form-control" required />
+					</div>
+					<div class="form-group">
+						<label for="expenseType">Expense Type:</label>
+						<select id="expenseType" name="expenseType" class="form-control" required>
+							<option
+								th:each="type : ${ExploitationExpenseTypes}"
+								th:value="${type}" th:selected="${type == expense.expenseType}" th:text="${type}">
+							</option>
+						</select>
+					</div>
+
+					<div class="form-group">
+						<label for="description">Description:</label>
+						<input type="text" id="description" name="description" th:value="${expense.description}"
+							class="form-control" required />
+					</div>
+					<div class="form-group">
+						<label for="tbst">Total Before Sales Tax:</label>
+						<input type="number" id="totalBeforeSalesTaxes" name="totalBeforeSalesTaxes"
+							th:value="${#numbers.formatDecimal(expense.totalBeforeSalesTaxes, 1, 'COMMA', 2, 'POINT')}"
+							class="form-control" required />
+					</div>
+					<div class="form-group">
+						<label for="st">Tps:</label>
+						<input type="number" id="tps" name="tps"
+							th:value="${#numbers.formatDecimal(expense.tps, 1, 'COMMA', 2, 'POINT')}"
+							class="form-control" step="0.01" required />
+					</div>
+					<div class="form-group">
+						<label for="tvq">Tvq:</label>
+						<input type="number" id="tvq" name="tvq"
+							th:value="${#numbers.formatDecimal(expense.tvq, 1, 'COMMA', 2, 'POINT')}"
+							class="form-control" step="0.01" required />
+					</div>
+					<div class="form-group">
+						<label for="amount">Total Before Sales Taxes:</label>
+						<input type="number" id="amount" name="amount"
+							th:value="${#numbers.formatDecimal(expense.totalBeforeSalesTaxes, 1, 'COMMA', 2, 'POINT')}"
+							class="form-control" step="0.01" required />
+					</div>
+					<div class="form-group">
+						<label for="invoices">Select Invoice:</label>
+						<select class="form-control" id="invoices" name="invoices">
+							<!-- Option values will be filled dynamically -->
+						</select>
+					</div>
+					<button th:onclick="'saveExpense(' + ${expense.id} + ')'" class="btn btn-primary">Save</button>
+
+
+				</form>
+				<div class="container my-3">
+					<h2 class="text-center">Transaction Details</h2>
+					<div style="max-height: 200px; overflow-y: auto;"> <!-- Add scrollable div -->
+						<div th:insert="~{fragments/transactionFragment :: transactionDetails(${expense.transaction})}">
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+<script src="/webjars/jquery/3.6.4/jquery.min.js"></script>
+<script>
+	function saveExpense(expenseId) {
+		// Get the edited values for the specific bill
+		var description = document.getElementById("description").value;
+		var totalBeforeSalesTaxes = document.getElementById("totalBeforeSalesTaxes").value;
+		var date = document.getElementById("date").value;
+		var selectElement = document.getElementById("expenseType");
+		var expenseType = selectElement.options[selectElement.selectedIndex].value;
+		var tps = document.getElementById("tps").value;
+		var tvq = document.getElementById("tvq").value;
+		var transaction_id=document.getElementById("transaction_id").innerText;
+
+		// Create a data object to send to the server
+		const data = {
+			description: description,
+			totalBeforeSalesTaxes: totalBeforeSalesTaxes,
+			date: date,
+			expenseType: expenseType,
+			tps: tps,
+			tvq: tvq,
+			transactionId:transaction_id
+		};
+		
+
+		const jsonStr = JSON.stringify(data);
+		// Send the data to the server via an AJAX request
+		$.ajax({
+			url: "/api/expenses/" + expenseId,
+			type: "PUT",
+			contentType: "application/json",
+			data: jsonStr,
+			success: function (data) {
+				// Handle successful update
+				alert('Saved.');
+			},
+			error: function (error) {
+						// Handle error if deletion fails
+						alert('An error occurred while saving the expenses.'+error.responseText+"/n"+jsonStr);
+					}
+		});
+	}
+	
+	$("#editExpenseForm").submit(function (e) {
+			e.preventDefault();
+			// Collect form data
+			
+			//saveExpense(1);
+		});
+		
+</script>
+
+</html>

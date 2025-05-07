@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Edit Company Profile</title>
+</head>
+<body>
+	<header th:replace="fragments/header :: header"></header>
+     <div class="container">
+        <h1 class="mt-4 mb-4">Edit Company Profile</h1>
+
+    <form action="#" th:action="@{/saveCompanyProfile}" th:object="${companyProfile}" method="post">
+
+        <label for="name">Company Name:</label><br>
+        <input type="text" id="name" name="name" th:field="*{name}" required><br>
+
+        <label for="fiscalYear">Fiscal Year End:</label><br>
+        
+        <input type="text" id="fiscalYearEndDay" name="fiscalYearEndDay" th:field="*{fiscalYearEnd.day}"><br>
+        <input type="text" id="fiscalYearEndMonth" name="fiscalYearEndMonth" th:field="*{fiscalYearEnd.month}"><br>
+
+        <button type="submit">Save</button>
+
+    </form>
+     </div>
+</body>
+</html>
