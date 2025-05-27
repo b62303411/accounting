@@ -51,8 +51,7 @@ build/
 Thumbs.db
 
 bin/*
-<<<<<<< HEAD
+
 /application.properties.back
 /application.properties.dev
-=======
->>>>>>> refs/remotes/origin/main
+
