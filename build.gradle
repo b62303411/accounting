@@ -14,7 +14,7 @@ repositories {
 }
 
 dependencies {
-<<<<<<< HEAD
+
 	//compile("org.apache.httpcomponents:httpcore")
     //compile("org.apache.httpcomponents:httpclient")
 	// https://mvnrepository.com/artifact/com.auth0/java-jwt
@@ -23,8 +23,7 @@ dependencies {
     implementation 'com.intuit.quickbooks-online:ipp-v3-java-data:6.0.6'
     implementation 'com.intuit.quickbooks-online:ipp-v3-java-devkit:6.0.6'
     implementation 'com.intuit.quickbooks-online:oauth2-platform-api:6.0.6'
-=======
->>>>>>> refs/remotes/origin/main
+
     implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
 	// tag::actuator[]
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
