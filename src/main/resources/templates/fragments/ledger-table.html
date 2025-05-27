@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="ledger-table(title,entries)" class="container my-3">
+	<h2 th:text="${title}">Accounting Ledger</h2>
+
+	<div class="nav-item">
+		<a class="nav-link" th:href="${'/download/excel/'+year}">
+			<i class="fa fa-file-excel-o">Download</i>
+		</a>
+		<a class="nav-link" th:href="${'/download-tex/'+year}">
+			<i class="fa fa-file-o">Download tex</i>
+		</a>
+		<a class="nav-link" th:href="${'/download-pdf/'+year}">
+			<i class="fa fa-file-o">Download pdf</i>
+		</a>
+
+	</div>
+	<table id="ledger-table" border="1" class="table table-striped" style="width:100%">
+		<thead>
+			<tr>
+				<th name="date">Date</th>
+				<th>Account Type</th>
+				<th>Memo</th>
+				<th>GL Account Name</th>
+				<th>GL Account #</th>
+				<th>Vendor/Client</th>
+				<th style="width:50px;">Debit</th>
+				<th style="width:50px;">Credit</th>
+				<th>Balence</th>
+				<th>Actual Balence</th>
+			</tr>
+		</thead>
+		<tbody>
+			<!-- Assuming you pass a list of entries named 'ledgerEntries' -->
+			<tr th:each="entry : ${entries}">
+				<td th:text="${entry.getUnixTime()}"></td>
+				<td th:text="${entry.accountType}"></td>
+				<td th:text="${entry.message}"></td>
+				<td th:text="${entry.glAccountName}"></td>
+				<td th:text="${entry.glAccountNumber}"></td>
+				<td th:text="${entry.vendorOrClient}"></td>
+				<td th:text="${entry.debit}"></td>
+				<td th:text="${entry.credit}"></td>
+				<td th:text="${entry.balence}"></td>
+				<td th:text="${entry.abalence}"></td>
+			</tr>
+		</tbody>
+	</table>
+</div>
+
+</html>

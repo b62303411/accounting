@@ -5,6 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+<<<<<<< HEAD
+import com.sam.accounting.service.SimplifiedSalesTaxesStrategy;
+
+=======
+>>>>>>> refs/remotes/origin/main
 class SimplifiedSalesTaxesStrategyTest {
 
 	@BeforeEach

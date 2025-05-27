@@ -34,9 +34,13 @@ services:
     networks:
       - pg_network
 
+<<<<<<< HEAD
+
+=======
 volumes:
     odoo-sessions:  # Define the named volume for sessions
     odoo-data:
+>>>>>>> refs/remotes/origin/main
 
 networks:
   pg_network:

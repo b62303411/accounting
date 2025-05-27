@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="bilan">
+	<button id="download">Download PDF</button>
+	<div id="report" class="container shadow min-vh-100 py-2">
+		<div
+			th:replace="fragments/reportHeader :: reportHeader('Income Statement', ${companyName}, ${fiscal_end_day}, ${fiscal_end_month}, ${fiscal_end_year})" />
+		<div class="card mb-4">
+			<!-- Revenues -->
+			<div class="card-header bg-primary text-white">
+				<h2>Revenues</h2>
+			</div>
+			<table class="table">
+				<tr>
+					<th>Description</th>
+					<th>Amount</th>
+				</tr>
+				<tr th:each="account : ${revenueAccounts}">
+					<td th:text="${account.name}"></td>
+					<td th:text="${'$'+#numbers.formatDecimal(account.balance, 1, 2)}"></td>
+
+				</tr>
+			</table>
+			<div class="container my-3">
+				<strong>Total Revenue: </strong>
+				<h3 th:text="${'$'+#numbers.formatDecimal(totalRevenue, 1, 2)}"></h3>
+			</div>
+		</div>
+		<div class="card mb-4">
+			<!-- Revenues -->
+			<div class="card-header bg-primary text-white">
+				<!-- Operating Expenses -->
+				<h2>Operating Expenses</h2>
+			</div>
+			<table class="table">
+				<tr>
+					<th>Description</th>
+					<th>Amount</th>
+				</tr>
+				<tr th:each="account : ${operatingExpenseAccounts}">
+					<td th:text="${account.name}"></td>
+					<td th:text="${'$'+#numbers.formatDecimal(account.balance, 1, 2)}"></td>
+				</tr>
+			</table>
+			<div class="container my-3">
+				<strong>Total Operating Expenses: </strong>
+				<h3 th:text="${'$'+#numbers.formatDecimal(totalOperatingExpenses, 1, 2)}">
+				</h3>
+			</div>
+		</div>
+		<div class="card mb-4">
+			<!-- Revenues -->
+			<div class="card-header bg-primary text-white">
+				<!-- Operating Expenses -->
+				<h2>Other Expenses</h2>
+			</div>
+			<table class="table">
+				<tr>
+					<th>Description</th>
+					<th>Amount</th>
+				</tr>
+				<tr th:each="account : ${otherExpenseAccounts}">
+					<td th:text="${account.name}"></td>
+					<td th:text="${'$'+#numbers.formatDecimal(account.balance, 1, 2)}"></td>
+				</tr>
+			</table>
+			<div class="container my-3">
+				<strong>Total Other Expenses: </strong>
+				<h3 th:text="${'$'+#numbers.formatDecimal(totalOtherExpenses, 1, 2)}"></h3>
+			</div>
+		</div>
+		<div class="card mb-4">
+			<!-- Revenues -->
+			<div class="card-header bg-primary text-white">
+				<!-- Net Income -->
+				<h2>Tax Information</h2>
+			</div>
+			<div class="container my-3">
+				<table class="table">
+					<tr>
+						<th>Description</th>
+						<th>Amount</th>
+					</tr>
+					<tr>
+						<td>Income Before Tax</td>
+						<td th:text="${'$'+#numbers.formatDecimal(incomeBeforeTax, 1, 2)}">
+						</td>
+					</tr>
+					<tr>
+						<td>Income Tax</td>
+						<td th:text="${'$'+#numbers.formatDecimal(incomeTax, 1, 2)}"></td>
+					</tr>
+					<tr>
+						<td>Income After Tax</td>
+						<td th:text="${'$'+#numbers.formatDecimal(incomeAfterTax, 1, 2)}">
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+</html>

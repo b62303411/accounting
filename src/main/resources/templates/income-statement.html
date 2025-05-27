@@ -43,6 +43,29 @@
 								<a class="nav-link" id="transactions-tab" data-bs-toggle="tab"
 									href="#transactions">Transaction</a>
 							</li>
+<<<<<<< HEAD
+							<li class="nav-item" th:each="ledger : ${accounts_ledgers}">
+								<a class="nav-link" th:id="${ledger.account.accountNumber+'-tab'}" data-bs-toggle="tab"
+									th:href="${'#'+ledger.account.accountNumber}" th:text="${ledger.account.name}">Transaction</a>
+							</li>
+
+						</ul>
+						<div class="tab-content" id="suppliersTabsContent">
+							<div class="tab-pane fade show active" id="report" role="tabpanel"
+								aria-labelledby="report-tab">
+								<div th:replace="fragments/bilan :: bilan"></div>
+							</div>
+							<div class="tab-pane fade" id="transactions" role="tabpanel"
+								aria-labelledby="transaction-tab">
+								<div th:replace="fragments/ledger-table :: ledger-table('transactions',${ledgerEntries})"></div>
+							</div>
+							<div th:each="ledger : ${accounts_ledgers}" 
+							class="tab-pane fade" 
+							th:id="${ledger.account.accountNumber}" 
+							role="tabpanel"
+							th:aria-labelledby="${ledger.account.accountNumber+'-tab'}">
+								<div th:replace="fragments/ledger-table :: ledger-table(${ledger.account.name},${ledger.entries})"></div>
+=======
 
 						</ul>
 						<div class="tab-content" id="suppliersTabsContent">
@@ -193,6 +216,7 @@
 										</tr>
 									</tbody>
 								</table>
+>>>>>>> refs/remotes/origin/main
 							</div>
 
 						</div>
