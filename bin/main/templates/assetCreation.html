@@ -13,7 +13,11 @@
 			<div class="form-group">
 				<label for="assetType">Asset Type:</label>
 				<select th:field="*{assetType}" id="assetType" class="form-control">
+<<<<<<< HEAD
 					<option th:each="assetType : ${AssetTypes}"
+=======
+					<option th:each="assetType : ${T(com.example.springboot.accounting.model.AssetType).values()}"
+>>>>>>> refs/remotes/origin/main
 						th:value="${assetType}" th:text="${assetType}"></option>
 				</select>
 			</div>

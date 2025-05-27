@@ -2,6 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 
+<<<<<<< HEAD
 <!-- The header fragment -->
 <header th:fragment="header">
 
@@ -61,6 +62,67 @@
 		</div>
 	</nav>
 </header>
+=======
+	<!-- The header fragment -->
+	<header th:fragment="header">
+
+		<!-- Bootstrap CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+		<link rel="stylesheet" type="text/css" href="/webjars/font-awesome/6.4.2/css/all.css">
+		<link rel="stylesheet" type="text/css" href="/webjars/font-awesome/6.4.2/css/fontawesome.min.css">
+		<link rel="stylesheet" type="text/css" href="/webjars/bootstrap/5.3.0/css/bootstrap.min.css" />
+
+		<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+			<a class="navbar-brand" href="#">Open Accounting</a>
+			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+				aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse" id="navbarNav">
+				<ul class="navbar-nav ml-auto">
+					<li class="nav-item">
+						<a class="nav-link" href="/view/companyProfile">Company Profile</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="/view/accounts">Accounts</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="/view/assets">Assets</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="/view/suppliers">Suppliers</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="/view/ledger">Ledger</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="/view/invoices/folder">Folder Import</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="/view/balance-sheet">Balence Sheet</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="/view/expense-balance-sheet">Balence Expense</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="/view/bills">Bills</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="/view/fy">Fiscal Year</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="/download/excel">
+							<i class="fa fa-file-excel-o">Download</i>
+						</a>
+					</li>
+
+					<!-- Add more pages as needed -->
+				</ul>
+
+			</div>
+		</nav>
+	</header>
+>>>>>>> refs/remotes/origin/main
 
 
 </html>

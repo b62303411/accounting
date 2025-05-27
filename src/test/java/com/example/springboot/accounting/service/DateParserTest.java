@@ -6,7 +6,11 @@ import java.util.Date;
 
 import org.junit.jupiter.api.Test;
 
+<<<<<<< HEAD
 import com.sam.accounting.service.util.DateParser;
+=======
+import com.example.springboot.accounting.service.util.DateParser;
+>>>>>>> refs/remotes/origin/main
 
 class DateParserTest {
 

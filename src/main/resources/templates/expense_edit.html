@@ -31,7 +31,11 @@
 						<label for="expenseType">Expense Type:</label>
 						<select id="expenseType" name="expenseType" class="form-control" required>
 							<option
+<<<<<<< HEAD
 								th:each="type : ${ExploitationExpenseTypes}"
+=======
+								th:each="type : ${T(com.example.springboot.accounting.model.ExploitationExpenseType).values()}"
+>>>>>>> refs/remotes/origin/main
 								th:value="${type}" th:selected="${type == expense.expenseType}" th:text="${type}">
 							</option>
 						</select>
