@@ -8,9 +8,14 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 import com.example.springboot.accounting.TestFixture;
-import com.example.springboot.accounting.model.Sequence;
-import com.example.springboot.accounting.model.entities.qb.Ledger;
-import com.example.springboot.accounting.model.entities.qb.Transaction;
+import com.sam.accounting.model.Sequence;
+import com.sam.accounting.model.entities.qb.Ledger;
+import com.sam.accounting.model.entities.qb.Transaction;
+import com.sam.accounting.service.CompanyProfileService;
+import com.sam.accounting.service.FiscalYearService;
+import com.sam.accounting.service.IncomeStatementWhiteBoardFactory;
+import com.sam.accounting.service.SimplifiedSalesTaxesService;
+import com.sam.accounting.service.SimplifiedSalesTaxesStrategy;
 
 class SimplifiedSalesTaxesServiceTest {
 	SimplifiedSalesTaxesService s = new SimplifiedSalesTaxesService();
