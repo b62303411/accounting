@@ -35,7 +35,7 @@
 								<div class="form-group">
 									<select class="form-control transaction-row" th:id="${transaction.id}" name="type">
 										<option
-											th:each="type : ${T(com.example.springboot.accounting.model.TransactionType).values()}"
+											th:each="type : ${TransactionTypes}"
 											s th:value="${type}" th:selected="${transaction.type == type}">
 											[[${type}]]
 										</option>

@@ -21,7 +21,7 @@
 						<label for="newType">New Type:</label>
 						<select id="newType" name="newType" class="form-control" required>
 							<option
-								th:each="type : ${T(com.example.springboot.accounting.model.ExploitationExpenseType).values()}"
+								th:each="type : ${ExploitationExpenseTypes}"
 								th:value="${type}" th:text="${type}"></option>
 						</select>
 					</div>

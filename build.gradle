@@ -1,11 +1,11 @@
 plugins {
-	id 'org.springframework.boot' version '3.0.0'
+	id 'org.springframework.boot' version '3.5.0'
 	id 'io.spring.dependency-management' version '1.1.0'
 	id 'java'
 }
 apply plugin: 'org.springframework.boot'
 
-group = 'com.example'
+group = 'com.sam'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '17'
 
@@ -14,7 +14,14 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+	implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1' // or latest
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.freemarker:freemarker:2.3.32'
+	implementation 'org.neo4j.driver:neo4j-java-driver:5.18.0' // Use latest version
+   
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter
+	implementation("org.springframework.boot:spring-boot-starter:3.5.0")
+ 
 	// tag::actuator[]
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	// end::actuator[]

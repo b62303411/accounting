@@ -4,15 +4,15 @@ package com.example.springboot.accounting;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-import com.example.springboot.accounting.model.entities.FixAccountInfo;
-import com.example.springboot.accounting.model.entities.qb.AccountManager;
-import com.example.springboot.accounting.model.entities.qb.AccountType;
-import com.example.springboot.accounting.model.entities.qb.Ledger;
-import com.example.springboot.accounting.model.entities.qb.LedgerRuleFactory;
-import com.example.springboot.accounting.repository.RuleRepository;
-import com.example.springboot.accounting.service.AccountFactory;
-import com.example.springboot.accounting.service.TaxService;
-import com.example.springboot.accounting.service.ledger.MutualFundStrategy;
+import com.sam.accounting.model.entities.FixAccountInfo;
+import com.sam.accounting.model.entities.qb.AccountManager;
+import com.sam.accounting.model.entities.qb.AccountType;
+import com.sam.accounting.model.entities.qb.Ledger;
+import com.sam.accounting.model.entities.qb.LedgerRuleFactory;
+import com.sam.accounting.repository.RuleRepository;
+import com.sam.accounting.service.AccountFactory;
+import com.sam.accounting.service.TaxService;
+import com.sam.accounting.service.ledger.MutualFundStrategy;
 
 /**
  * 

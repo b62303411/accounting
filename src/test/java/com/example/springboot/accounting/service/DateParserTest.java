@@ -6,7 +6,7 @@ import java.util.Date;
 
 import org.junit.jupiter.api.Test;
 
-import com.example.springboot.accounting.service.util.DateParser;
+import com.sam.accounting.service.util.DateParser;
 
 class DateParserTest {
 

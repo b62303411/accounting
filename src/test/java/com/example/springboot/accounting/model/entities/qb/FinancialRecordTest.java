@@ -5,7 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
 import com.example.springboot.accounting.TestFixture;
-import com.example.springboot.accounting.model.dto.TransactionDTO;
+import com.sam.accounting.model.dto.TransactionDTO;
+import com.sam.accounting.model.entities.qb.AccountManager;
+import com.sam.accounting.model.entities.qb.Ledger;
 
 class FinancialRecordTest {
 
