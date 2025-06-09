@@ -12,12 +12,12 @@
         <td>
         <span th:text="${#numbers.formatCurrency(account.balance)}">Amount</span>
                <!-- For DEBIT accounts -->
-                <span th:if="${account.accountingType.getNaturalBalance() == T(com.example.springboot.accounting.model.entities.qb.AccountBalance).DEBIT and account.balance > 0}" class="arrow-up">↑</span>
-                <span th:if="${account.accountingType.getNaturalBalance() == T(com.example.springboot.accounting.model.entities.qb.AccountBalance).DEBIT and account.balance < 0}" class="arrow-down">↓</span>
+                <span th:if="${account.accountingType.getNaturalBalance() == AccountBalance.DEBIT and account.balance > 0}" class="arrow-up">↑</span>
+                <span th:if="${account.accountingType.getNaturalBalance() == AccountBalance.DEBIT and account.balance < 0}" class="arrow-down">↓</span>
 
                 <!-- For CREDIT accounts -->
-                <span th:if="${account.accountingType.getNaturalBalance() == T(com.example.springboot.accounting.model.entities.qb.AccountBalance).CREDIT and account.balance < 0}" class="arrow-up">↑</span>
-                <span th:if="${account.accountingType.getNaturalBalance() == T(com.example.springboot.accounting.model.entities.qb.AccountBalance).CREDIT and account.balance > 0}" class="arrow-down">↓</span>
+                <span th:if="${account.accountingType.getNaturalBalance() == AccountBalance.CREDIT and account.balance < 0}" class="arrow-up">↑</span>
+                <span th:if="${account.accountingType.getNaturalBalance() == AccountBalance.CREDIT and account.balance > 0}" class="arrow-down">↓</span>
         </td>
         <td th:text="${account.accountingType.getNaturalBalance()}">Natural Balance</td>
      

@@ -155,7 +155,11 @@
 
 					const response = await fetch('/api/parse-bank-statement', {
 						method: 'POST',
-						body: formData
+						body: formData, // your data
+						    					crossDomain: true,
+						    					xhrFields: {
+						        					withCredentials: true
+						   						 }
 					})
 
 

@@ -103,7 +103,7 @@ public class RuleStatementPromptFactory {
 
 		try {
 			 NormalCorrectionSaveStrategy first = new NormalCorrectionSaveStrategy();
-			AssistantAnswer result_str = service.runPrompts(local_context, first);
+			AssistantAnswer result_str = service.runPrompt(local_context, first);
 			Context c = getRule(result_str);
 			// context.add("You provided this rule:"+prettyString+" make sure it make sense
 			// given our current list of accounts and make sure you only asnwer with the

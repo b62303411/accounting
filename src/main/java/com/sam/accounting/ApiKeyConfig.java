@@ -7,8 +7,12 @@ import org.springframework.context.annotation.Configuration;
 public class ApiKeyConfig {
 	@Value("${openai.api.key}")
 	private String apiKey;
-
+	@Value("${openai.api.url}")
+	private String url;
 	public String getApiKey() {
 		return apiKey;
+	}
+	public String getUrl() {
+		return url;
 	}
 }

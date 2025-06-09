@@ -145,7 +145,7 @@ public class TransactionApiController {
 
 		try {
 			AiFileResult r = parser.populateTransaction(file, "");
-
+			System.out.println(r.toString());
 			return ResponseEntity.ok(results);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

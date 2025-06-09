@@ -135,6 +135,10 @@ public ClassificationRule makeTrainingRule(List<String> keywords, String vendor,
 	rule.setKeyWords(keywords);
 	rule.client_vendor = vendor;
 	rule.debited = "Training";
+	if(  accountManager.getAccountByAccountNo(accountNo) == null)
+	{
+		accountManager.addAccount(vendor, accountNo, AccountType.ASSET, false);
+	}
 	rule.credited = accountManager.getAccountByAccountNo(accountNo).getName();
 	rule.addAccountNumber(accountNo);
 	return rule;

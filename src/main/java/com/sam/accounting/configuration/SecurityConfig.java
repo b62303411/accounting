@@ -24,7 +24,7 @@ public class SecurityConfig {
 	
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		http.authorizeHttpRequests((authz) -> {
+		http.csrf().disable().authorizeHttpRequests((authz) -> {
 			try {
 				authz.requestMatchers("/google8e62e7868a386efb.html").permitAll().anyRequest().authenticated().and()
 						.formLogin();

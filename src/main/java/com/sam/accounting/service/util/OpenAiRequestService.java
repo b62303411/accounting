@@ -28,48 +28,38 @@ import com.sam.accounting.model.AssistantAnswer;
 
 @Service
 public class OpenAiRequestService {
-
+	List<DialogLine> dialogues;
 	private ApiKeyConfig config;
-
+	private JsonBlockExtractor extractor;
+	
 	@Autowired
-	public OpenAiRequestService(ApiKeyConfig config) {
+	public OpenAiRequestService(ApiKeyConfig config,JsonBlockExtractor extractor) {
 		this.config = config;
+		this.extractor = extractor;
+		dialogues = new ArrayList();
 	}
 
-	public String guessSupplier(Map<String, String> suppliersWithServices, String name) {
-		ObjectMapper objectMapper = new ObjectMapper();
+	
+	public AssistantAnswer reallyRun(String prompt, Correction correction)
+			throws JsonMappingException, JsonProcessingException {
 
-		try {
-
-			// Convert the supplier names list to a formatted string
-			// Convert the map to a formatted string
-			String formattedSuppliers = suppliersWithServices.entrySet().stream()
-					.map(entry -> String.format("\"%s\" (Service: %s)", entry.getKey(), entry.getValue()))
-					.collect(Collectors.joining(",\n"));
-
-			// Create the structured query
-			// Create the structured query
-			String query = String.format(
-					"Given these suppliers and their services: \n%s\n\nWhich one matches closest to: \"%s\"?",
-					formattedSuppliers, name);
-
-			query += "\n please provide your answer as a json format with the field answer.";
-
-			List<String> messages = new ArrayList<String>();
-			messages.add(query);
-			return runPrompt(messages);
-		} catch (Exception e) {
-			// TODO: handle exception
+		AssistantAnswer answer = new AssistantAnswer();
+		
+		String value = exec_prompt(prompt);
+		
+		JsonNode data = extractData(value, correction);
+		if( null == data) 
+		{
+			String not_great =""
+					+ "Make sure that your json response respect the required formatting."
+					+ "We agreed to have our json response within delimiter ```json  ```"
+					+ "Remember that we have code that need to parse your answer and the delimiter is very important.";
+			
+			 ObjectMapper objectMapper = new ObjectMapper();
+			 objectMapper.writeValueAsString(this.dialogues);
+			value = exec_prompt(not_great);
+			data = extractData(value, correction);
 		}
-		return null;
-	}
-
-	public AssistantAnswer reallyRun(String prompt, Correction correction) throws JsonMappingException, JsonProcessingException {
-		List<String> messages = new ArrayList<String>();
-		messages.add(prompt);
-		AssistantAnswer answer = new AssistantAnswer();
-		String value = runPrompt(messages);
-		JsonNode data = extractData(value,correction);
 		answer.result = value;
 		answer.answer = data;
 
@@ -77,34 +67,89 @@ public class OpenAiRequestService {
 
 	}
 
-	public AssistantAnswer runPrompts(List<String> messages, Correction correction) throws JsonMappingException, JsonProcessingException {
+	public AssistantAnswer runPrompts__(String message, Correction correction)
+			throws JsonMappingException, JsonProcessingException {
 
 		AssistantAnswer answer = new AssistantAnswer();
-		String value = runPrompt(messages);
-		JsonNode data = extractData(value,correction);
+		String value = exec_prompt(message);
+		JsonNode data = extractData(value, correction);
 		answer.result = value;
 		answer.answer = data;
 
 		return answer;
 
 	}
+	public HttpPost getPost()
+	{
+		String apiKey = config.getApiKey();
+		String host = config.getUrl();
 
-	public String runPrompt(List<String> prompts) {
+		HttpPost httpPost = new HttpPost(String.format("http://%s/v1/chat/completions", host));
+		httpPost.setHeader("content-type", "application/json");
+		httpPost.setHeader("authorization", "Bearer " + apiKey);
+		return httpPost;
+
+	}
+	
+	public String exec_prompt(String message) 
+	{
 		try {
-			String apiKey = config.getApiKey();
-
+			DialogLine user_line = new DialogLine();
+			user_line.content=message;
+			user_line.role="user";
+			this.dialogues.add(user_line);
+			
 			CloseableHttpClient httpClient = HttpClients.createDefault();/// v1/chat/completions
-			HttpPost httpPost = new HttpPost("https://api.openai.com/v1/chat/completions");
-			httpPost.setHeader("content-type", "application/json");
-			httpPost.setHeader("authorization", "Bearer " + apiKey);
+			HttpPost httpPost = getPost();
 			ObjectMapper mapper = new ObjectMapper();
 			ObjectNode payload = mapper.createObjectNode();
 			// payload.put("prompt", prompt);
 			payload.put("model", "gpt-3.5-turbo");
 			payload.put("max_tokens", 2000);
 			ArrayNode messagesArray = mapper.createArrayNode();
+		
+			// Creating messages array
+			for (DialogLine line : this.dialogues) {
+				ObjectNode userMessage = mapper.createObjectNode();
+				userMessage.put("role", line.role);
+				userMessage.put("content", line.content);
+				messagesArray.add(userMessage);
+			}
+			payload.set("messages", messagesArray);
+
+			// String jsonPayload = "{ \"prompt\": \"" + prompt + "\", \"max_tokens\": 100
+			// }";
+			httpPost.setEntity(new StringEntity(payload.toString(), StandardCharsets.UTF_8));
+
+			try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
+				HttpEntity entity = response.getEntity();
+				return entity != null ? EntityUtils.toString(entity) : null;
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public String runPromptList(List<String> prompts) {
+		try {
+		
+			CloseableHttpClient httpClient = HttpClients.createDefault();/// v1/chat/completions
+			HttpPost httpPost = getPost();
+			ObjectMapper mapper = new ObjectMapper();
+			ObjectNode payload = mapper.createObjectNode();
+			// payload.put("prompt", prompt);
+			payload.put("model", "gpt-3.5-turbo");
+			payload.put("max_tokens", 2000);
+			ArrayNode messagesArray = mapper.createArrayNode();
+		
 			// Creating messages array
 			for (String message : prompts) {
+				DialogLine line = new DialogLine();
+				line.content=message;
+				line.role="user";
+				this.dialogues.add(line);
+				
 				ObjectNode userMessage = mapper.createObjectNode();
 				userMessage.put("role", "user");
 				userMessage.put("content", message);
@@ -127,6 +172,10 @@ public class OpenAiRequestService {
 
 	}
 
+	public JsonNode extractJsonFromDelimitedBlock(String rawResponse) throws Exception {
+	    return this.extractor.extractJsonFromFencedBlock(rawResponse);
+	}
+
 	public JsonNode extractData(String responseString, Correction corr)
 			throws JsonMappingException, JsonProcessingException {
 		ObjectMapper mapper = new ObjectMapper();
@@ -140,11 +189,17 @@ public class OpenAiRequestService {
 		}
 		// Get the assistant's message content
 		String assistantContent = responseJson.path("choices").get(0).path("message").path("content").asText();
+		DialogLine line = new DialogLine();
+		line.content=assistantContent;
+		line.role = "assistant";
+		this.dialogues.add(line);
+		
 		// Process the extracted text as needed
 		// For example, you may want to convert it to a JSON object if it's in JSON
 		// format
 		try {
-			JsonNode extractedData = mapper.readTree(assistantContent);
+			JsonNode extractedData = extractJsonFromDelimitedBlock(assistantContent);
+
 			return extractedData;
 		} catch (Exception e) {
 
@@ -156,4 +211,34 @@ public class OpenAiRequestService {
 		}
 
 	}
+	
+	
+	public String guessSupplier(Map<String, String> suppliersWithServices, String name) {
+		ObjectMapper objectMapper = new ObjectMapper();
+
+		try {
+
+			// Convert the supplier names list to a formatted string
+			// Convert the map to a formatted string
+			String formattedSuppliers = suppliersWithServices.entrySet().stream()
+					.map(entry -> String.format("\"%s\" (Service: %s)", entry.getKey(), entry.getValue()))
+					.collect(Collectors.joining(",\n"));
+
+			// Create the structured query
+			// Create the structured query
+			String query = String.format(
+					"Given these suppliers and their services: \n%s\n\nWhich one matches closest to: \"%s\"?",
+					formattedSuppliers, name);
+
+			query += "\n please provide your answer as a json format with the field answer.";
+
+			List<String> messages = new ArrayList<String>();
+			messages.add(query);
+			return null; //runPrompts(messages);
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		return null;
+	}
+
 }
