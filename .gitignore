@@ -57,3 +57,4 @@ bin/*
 /application.properties.dev
 
 /application-dev.properties
+/auth_info.txt
